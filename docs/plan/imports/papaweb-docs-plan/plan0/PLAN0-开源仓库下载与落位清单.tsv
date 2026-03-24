@@ -1,0 +1,23 @@
+﻿component	status	doc_ref	repo	target_path	commit
+Airflow	ready	重构方案 §3/§4, 采集方案 §5	https://github.com/papaweb-org/airflow.git	D:\demo1\papaweb\services\orchestrator-airflow\upstream-airflow	75386ca
+Crawlab	ready	重构方案 §3/§4, 采集方案 §5	https://github.com/papaweb-org/crawlab.git	D:\demo1\papaweb\services\gateway-crawlab\upstream-crawlab	0485310
+Pinchtab	ready	重构方案 §3, 采集方案 §3/§5	https://github.com/papaweb-org/pinchtab.git	D:\demo1\papaweb\services\worker-fetch-browser\upstream-pinchtab	eeaa630
+Playwright	ready	重构方案 §3, 采集方案 §3	https://github.com/papaweb-org/playwright.git	D:\demo1\papaweb\services\worker-fetch-browser\upstream-playwright	d26a26d
+MediaCrawler	ready	MediaCrawler方案 §3/§6/§7, 重构方案 §3/§4（实验参考，二次改造来源）	https://github.com/papaweb-org/MediaCrawler.git	D:\demo1\papaweb\services\social-adapters\upstream-mediacrawler	2b049d0
+TanStack Table	ready	重构方案 §4, 采集方案 §1/§3	https://github.com/papaweb-org/table.git	D:\demo1\papaweb\services\web-console\upstream-tanstack-table	34df449
+Temporal(备选)	ready	采集方案 §2/§5	https://github.com/papaweb-org/temporal.git	D:\demo1\papaweb\services\orchestrator-temporal\upstream-temporal	640369f
+PostgreSQL	ready	重构方案 §3/§4, 采集方案 §3/§5	https://github.com/papaweb-org/postgres.git	D:\demo1\papaweb\data\postgres\upstream-postgresql	02976b0
+ClickHouse	ready	采集方案 §3/§5	https://github.com/papaweb-org/ClickHouse.git	D:\demo1\papaweb\data\clickhouse\upstream-clickhouse	d0440790
+dbt-core	ready	重构方案 §3, 采集方案 §3/§5	https://github.com/papaweb-org/dbt-core.git	D:\demo1\papaweb\data\dbt\upstream-dbt-core	2473613
+Great Expectations	ready	重构方案 §3/§4, 采集方案 §3/§5	https://github.com/papaweb-org/great_expectations.git	D:\demo1\papaweb\data\great-expectations\upstream-gx	b5578aa
+SeaweedFS	ready	采集方案 §3/§4/§5	https://github.com/papaweb-org/seaweedfs.git	D:\demo1\papaweb\infra\docker\vendor\seaweedfs	92a76fc
+Valkey	ready	重构方案 §3, 采集方案 §3/§5	https://github.com/papaweb-org/valkey.git	D:\demo1\papaweb\infra\docker\vendor\valkey	c9ce3e0
+Kafka	ready	重构方案 §3, 采集方案 §3.2/§5	https://github.com/papaweb-org/kafka.git	D:\demo1\papaweb\infra\docker\vendor\kafka	e64a324
+OpenSearch	ready	采集方案 §5	https://github.com/papaweb-org/OpenSearch.git	D:\demo1\papaweb\infra\docker\vendor\opensearch	4b9021fe
+MinIO(兼容评估)	ready	采集方案 §4/§5 备注	https://github.com/papaweb-org/minio.git	D:\demo1\papaweb\infra\docker\vendor\minio	7aac2a2
+Prometheus	ready	重构方案 §3/§4, 采集方案 §5	https://github.com/papaweb-org/prometheus.git	D:\demo1\papaweb\infra\monitoring\prometheus	24a057b
+Alertmanager	ready	重构方案 §3/§4, 采集方案 §5	https://github.com/papaweb-org/alertmanager.git	D:\demo1\papaweb\infra\monitoring\alertmanager	eac945c
+Grafana(可选)	ready	采集方案 §3/§5	https://github.com/papaweb-org/grafana.git	D:\demo1\papaweb\infra\monitoring\grafana	aae6b520
+OpenTelemetry Collector	ready	采集方案 §5	https://github.com/papaweb-org/opentelemetry-collector.git	D:\demo1\papaweb\infra\monitoring\opentelemetry-collector	c74f90f
+Jaeger	ready	采集方案 §5	https://github.com/papaweb-org/jaeger.git	D:\demo1\papaweb\infra\monitoring\jaeger	099e207
+Superset	ready	重构方案 §3, 采集方案 §3/§5	https://github.com/papaweb-org/superset.git	D:\demo1\papaweb\infra\monitoring\superset	09e9c6a
