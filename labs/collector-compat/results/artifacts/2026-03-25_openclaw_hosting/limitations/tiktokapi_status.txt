@@ -1,0 +1,2 @@
+Exception: Failed to create minimum required sessions. Created 0/1, needed at least 1.
+Errors: ['Timeout 30000ms exceeded.']

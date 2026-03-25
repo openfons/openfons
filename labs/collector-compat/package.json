@@ -1,0 +1,17 @@
+{
+  "name": "@openfons/collector-compat",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "smoke:node": "node scripts/smoke-node.mjs"
+  },
+  "dependencies": {
+    "crawlee": "^3.16.0",
+    "firecrawl": "^4.17.0",
+    "pinchtab": "^0.8.5",
+    "playwright": "^1.58.2",
+    "ytcog": "^2.5.5",
+    "yt-dlp-exec": "^1.0.2"
+  }
+}

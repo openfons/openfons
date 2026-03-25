@@ -1,0 +1,6 @@
+{
+  "pip_show_exit": 1,
+  "installed_in_current_env": false,
+  "stdout": "",
+  "stderr": "D:\\demo1\\openfons\\labs\\collector-compat\\.venv\\Scripts\\python.exe: No module named pip\n"
+}

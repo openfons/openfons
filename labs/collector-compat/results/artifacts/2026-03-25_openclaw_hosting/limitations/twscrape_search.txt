@@ -1,0 +1,6 @@
+﻿2026-03-25 17:10:01.820 | INFO     | twscrape.db:migrate:96 - Running migration to v1
+2026-03-25 17:10:01.824 | INFO     | twscrape.db:migrate:96 - Running migration to v2
+2026-03-25 17:10:01.830 | INFO     | twscrape.db:migrate:96 - Running migration to v3
+2026-03-25 17:10:01.833 | INFO     | twscrape.db:migrate:96 - Running migration to v4
+2026-03-25 17:10:01.842 | WARNING  | twscrape.accounts_pool:get_for_queue_or_wait:297 - No active accounts. Stopping...
+2026-03-25 17:10:01.845 | WARNING  | twscrape.accounts_pool:get_for_queue_or_wait:297 - No active accounts. Stopping...
