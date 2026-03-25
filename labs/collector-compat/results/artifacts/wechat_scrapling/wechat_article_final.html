@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可能是龙虾提取任何网页的终极方案</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .article-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            color: #222;
+        }
+        h2, h3, h4 {
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        h2 { font-size: 20px; }
+        h3 { font-size: 18px; }
+        h4 { font-size: 16px; }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            border-left: 3px solid #ddd;
+            margin: 15px 0;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 14px;
+        }
+        blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 20px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        strong {
+            font-weight: bold;
+            color: #222;
+        }
+        em {
+            font-style: italic;
+        }
+        .meta {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        section {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="article-container">
+        <h1>可能是龙虾提取任何网页的终极方案</h1>
+        <div class="meta">微信公众号文章</div>
+        <div class="rich_media_content">
+<section><section><section><img src="images/image_001.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><section><section><section><section><section><section><section><p><span><span leaf="">大家还记得上上周</span><span><span><span leaf="">《</span></span><span leaf=""><a class="normal_text_link mp_article_text_link" target="_blank" style="" href="https://mp.weixin.qq.com/s?__biz=MzU2NTAzNzYzMg==&amp;mid=2247640484&amp;idx=1&amp;sn=c2dbda22500b7599c198a75d00f620da&amp;scene=21#wechat_redirect" textvalue="我被大模型的幻觉坑惨了" data-itemshowtype="0" linktype="text" data-linktype="2">我被大模型的幻觉坑惨了</a></span><span><span><span leaf="">》这篇</span></span></span></span><span><span leaf="">文章吧？</span></span></span></p><p><span><span leaf="">12 个模型，11 个平台，132 次测试，最后得出一个结论：没有哪个大模型，能稳稳当当地帮你读任何一个链接。</span></span></p><p><span><span leaf="">你永远不知道它到底是真的读了，还是在忽悠人。</span></span></p><p><span><span leaf="">上次的测试是真的让我意难平，因为这个需求太刚需了：把链接塞给 AI 让它识别和总结，这是再高频不过的场景了。</span></span></p><p><span><span leaf="">但最近我刷到一个 Skill，《</span><span><a class="normal_text_link mp_article_text_link" target="_blank" style="" href="https://mp.weixin.qq.com/s?__biz=Mzg4ODY1NTcxNg==&amp;mid=2247498905&amp;idx=1&amp;sn=92f77d88a9c19b59f385ebf7a5d8bbf0&amp;scene=21#wechat_redirect" textvalue="OpenClaw 永久免费的提取任何网页的终极方案" data-itemshowtype="0" linktype="text" data-linktype="2">OpenClaw 永久免费的提取任何网页的终极方案</a></span><span><span leaf="">》</span></span><span leaf="">提供了一个解决问题的新思路，我测试了两天，跑了 N 多链接，直接说结论，值得推荐，值得写一篇分享给大家。</span></span></p></section><span>  web-content-fetcher</span></section><section><section><section><section><p><span>我先替大家总结一下这个工具的解题思路：</span></p></section></section></section></section><p><span>具体点说，它用的是三种工具的组合：Jina、Scrapling 和 web_fetch。</span></p><p><span>Jina 是其中最体面的那个。你把 URL 扔给它，它帮你把整个网页里的</span><span>导航栏、广告、边栏、版权声明这些多余</span><span>垃圾全部过滤掉，只把正文以干净的 Markdown 格式吐给你。</span></p><p><span>用起来非常爽，输出的内容看着就舒服。但它有个硬伤：每天只能用 200 次。对于偶尔查查资料的人，够了；对于重度用户，根本不够。</span></p><section><img src="images/image_002.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>Scrapling 是路子有点野，但是真的能打。</span></p><section><img src="images/image_003.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>它能绕过反爬虫机制，连微信公众号这种号称铁板一块的内容它都能读进去（Jina 在这里直接白旗投降）。</span></p><p><span>更关键的是：无限制，不要 API Key，不花一分钱。代价是，你得自己动手配环境，它不是开箱即用的那种。不过配好之后，稳如老狗。</span></p><section><img src="images/image_004.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>web_fetch 是 Claude 原生的工具，给你返回的是整个网页的原始 HTML，导航、广告、页脚、各种推荐，全部一锅端，你拿到的真正有价值的正文可能只占 30%。</span></p><p><span>最妙的是这位博主把这三兄弟的调度逻辑全部封装进了一个 Skill，叫做 </span><span>web-content-fetcher，</span><span>并且开源。</span></p><p><span>还设计了一套很聪明的优先级：优先用 Jina，达到上限或者遇到微信公众号就切 Scrapling，web_fetch 作为最后的保底。</span></p><p><span>还有一个</span><span>细节：maxChars （</span><strong data-v-c3629e60="" style='font-family: mp-quote, "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;font-style: normal;font-variant-ligatures: none;font-variant-caps: normal;font-weight: 400;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: break-spaces;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;max-width: 100%;min-height: 1em;text-align: justify;line-height: 28px;background-color: rgb(255, 255, 255);color: rgb(85, 85, 85);font-size: 15px;letter-spacing: 1px;user-select: initial !important;box-sizing: border-box !important;overflow-wrap: break-word !important;' data-pm-slice="0 0 []"><span data-v-c3629e60="" answer="" seq="1"><span>最大字符数</span></span></strong><span>）统一设成 30000，在省 token 和保留完整正文之间，找了个相当好的平衡点。</span></p><p><span><span>github.com/shirenchuang/web-content-fetcher</span></span></p><section><img src="images/image_005.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>一句话总结：你终于有了一把提取网页真正的万能钥匙。</span></p><p><span>安装</span></p><p><span><span>安装的话，别用龙虾（因为大家</span></span><span>现在一般都是用的 skillhub 和 clawhub 源</span><span><span>）进行自动安装。</span></span></p><p><span><span>因为自动安装的并非博主开源的版本，无法抓取微信公众号文章，只有使用博主提供的开源版本，才能正常实现微信文章的爬取。</span></span></p><p><span>自己手动安装也不麻烦，先</span><span>去下载 </span><span>web-content-fetcher 的压缩</span><span>包。</span></p><section><img src="images/image_006.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>下载解压之后，先在你的 OpenClaw 的 Skills 路径里新建一个对应的文件夹，压缩包里的所有文件都上传在这个文件夹中：</span></p><p><span>~/.openclaw/workspace/skills/web-content-fetcher/</span></p><p><span>比如我是以扣子上的龙虾为例，上传到对应目录：</span></p><section><img src="images/image_007.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>然后装两个 Python 依赖，以 Windows 电脑为例：</span></p><p><span>按下 Win 键，搜索 cmd（命令提示符）或 PowerShell 并打开。</span></p><p><span>再在打开的终端窗口中，复制粘贴命令：</span></p><p><span>pip install scrapling html2text --break-system-packages</span></p><section><img src="images/image_008.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>粘贴好之后，按下回车键。</span></p><p><span>电脑会自动联网下载并安装这些依赖包。等待屏幕上的进度条跑完，出现 Successfully installed... 字样就说明安装成功了。</span></p><p><span>再重启 OpenClaw，Skill 自动加载，不需要额外配置。</span></p><p><span>然后我把上次那批链接，又丢进去跑了一遍。</span></p><p><span>注意，这个 Skill 的触发词是这些：</span></p><p><span><span>抓取某个URL的正文内容</span></span><span><span>/读取某篇文章/提取网页内容/总结这个链接的内容/任何包含网页链接并要求提取/总结内容的请求</span></span></p><p><span>实测</span></p><p><span>ok，下面直接上真实结果，截图都在。</span></p><p><span><span>1.微信公众号：</span><span>直接满分通过。</span></span></p><p><span>把上篇讲 Lovart AI 设计工具的文章链接丢进去，几秒钟，文章提取成功。200 字总结清晰完整，多角度功能、矢量化功能、使用场景，核心信息一个没丢。</span></p><section><img src="images/image_009.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>这是我最在意的一关，现在一次过。没有幻觉，没有编造，你给什么它总结什么。就这一点，我觉得这个 Skill 已经值了。</span></p><p><span><span>2.飞书文档：</span><span>提取成功，而且读懂了文章在讲什么。</span></span></p><p><span>把一篇飞书文档链接丢进去，直接就显示出来标题，总结准确命中了文章的核心。</span></p><section><img src="images/image_010.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>内容结构、情感基调、核心观点，全部归纳到位。</span></p><p><span><span>3.小红书</span>：Jina 被屏蔽，Scrapling 顶上，成功了。</span></p><p><span>这里有个细节值得单独说。丢进去一篇小红书链接，Jina Reader 先被暂时屏蔽，它自动切换到 Scrapling 再试，然后成功获取内容。一篇讲后汉隐帝刘承祐在广政殿伏杀权臣的历史笔记。</span></p><section><img src="images/image_011.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>这才是这套优先级调度逻辑的价值所在。不是一条路死磕到底，是遇墙绕行，自动找备路。上次测试里，小红书几乎让所有大模型当场去世，这次 Scrapling 悄悄绕过去了。</span></p><p><span><span>4.X（Twitter）</span>：成功，内容总结相当到位。</span></p><p><span>上次我测 12 个大模型，X 平台只有 Grok 能读，因为那是它的主场。这次也过了。</span><span><br></span></p><p><span>X 帖子链接丢进去，总结出的是一名 xAI 前员工分享的亲身经历。</span></p><section><img src="images/image_012.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>没问题，它把这整段曲折的故事完整提炼出来了。</span></p><p><span><span>5.CSDN 博客</span>：秒过，总结精准。</span></p><p><span>CSDN 的博客链接经常打开会弹出让你登录注册的窗口，但同样也能搞定。</span></p><section><img src="images/image_013.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><section><section><section><section><section><p><span><span>6.知乎</span></span></p><p><span>这次还特意加试了一题知乎的帖子，上次漏了这个重要的信息源，后来评论区小伙伴提醒知乎也容易被拦住，这次试了一下，也没问题。</span></p><section><img src="images/image_014.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>200 字总结把作者的三条核心论点全部命中。</span></p></section></section></section></section></section><p><span><span>7.Google Docs</span>：坦诚报错，给了替代方案。</span></p><p><span>这是测试里唯一让我有点遗憾的结果，把一个 Google 文档链接扔进去，Jina 只能连接到 Google Docs 的界面，无法读取实际文档内容。</span></p><p><span>原因很直接：内容区域需要登录 Google 账号才能查看，Jina 只抓到了菜单栏、工具栏这些界面元素。</span></p><section><img src="images/image_015.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></section><p><span>但注意，它没有编造。它老实告诉我进不去，解释了原因。</span></p><p><span>这</span><span>很难得，</span><span>读不了就说读不了，</span><span>别学 Gemini 给我瞎忽悠。</span></p><p><span>整体测试下来，做个粗略统计：</span></p><p><span>稳定通过：微信公众号、飞书文档、小红书、X/Twitter、CSDN、知乎。</span></p><p><span>进不去： Google Docs。</span></p><p><span>这个成绩，比上次那 12 个大模型的平均水平，不知道高到哪里去了。</span></p><p><span>结语</span><span><br></span></p><p><span>不过坦白讲，这个 Skill 并不能 100% 读取任何网页，有些需要登录的私有内容、有严格防爬机制的平台，它可能还有进不去的时候。</span></p><p><span>它真正做到的事情是：对于你日常 90% 的网页抓取需求，它给了你一个稳定、免费、可预期的解法。</span></p><p><span>但我更想说的，其实是这件事背后的逻辑。</span></p><p><span>你看，Jina、Scrapling、html2text，这三个东西本来就存在，没有一个是那位博主发明的。他做的事情，是把这三个现成的工具拼在一起，设计了一套调度优先级，然后封装成一个 Skill，开放出来，让所有人直接用。</span></p><p><span>这就是 Skill 最妙的地方。</span></p><p><span>一个人攻下了一个难题，所有人都可以直接复用他的解法，不需要再从零开始踩一遍坑。</span></p><p><span>你不需要知道 Scrapling 是怎么绕过反爬的，不需要理解 Jina 的底层逻辑，你只需要把链接扔进去，等结果。</span></p><p><span>但更值得学的，其实是他解决问题的思路，遇到一个卡了很久的问题，别死盯着一个工具硬凿，先看看现有的技术里有没有能组合起来用的东西，把最优解打包成一个可复用的方案，封装好，存起来。</span></p><p><span>这个方法论，不只适用于网页提取，适用于你用 OpenClaw 做的每一件事。每次跑通一个任务，都值得停下来问自己一句：这套逻辑，能不能封装成一个 Skill？</span></p><p><span>能的话，别偷懒，封装好。</span></p><p><span>下次遇到同样的问题，你就是那个一个链接搞定所有人的人。</span></p><p><span data-font-family="微软雅黑"><span><img src="images/image_016.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;"></span></span></p></section></section></section></section></section></section></section><section><mp-common-profile class="custom_select_card mp_profile_iframe mp_common_widget" data-pluginname="mpprofile" data-nickname="网罗灯下黑" data-alias="wldxh8" data-from="0" data-headimg="http://mmbiz.qpic.cn/mmbiz_png/ncicWtGoBHtKUwZ0CzQHd5EokZtiavicrdnVevkhrRiaibVCK0mPSSG3nicDKUPE9GvkT6dqtO6IPX4yzIuibiatOsgjbQ/0?wx_fmt=png" data-signature="聊点网络生活中不为人知的有趣事" data-id="MzU2NTAzNzYzMg==" data-service_type="1"></mp-common-profile></section><p><mp-style-type data-value="3"></mp-style-type></p></div>
+          </div>
+                        
+                
+        <div id="content_bottom_area"></div>
+        
+         <div id="font_pannel_area"></div>
+        
+        
+
+        
+        <div id="js_temp_bottom_area" class="rich_media_tool_area">
+          
+<div class="rich_media_tool__wrp">
+    <div class="rich_media_tool">
+    
+                  <div class="rich_media_info weui-flex ">
+      
+            
+            
+          </div>
+  </div>
+  </div>
+
+        </div>
+
+
+                
+              </div>
+    </div>
+
+    <div class="rich_media_area_primary sougou" id="sg_tj" style="display:none"></div>
+
+    
+    <div class="rich_media_area_extra">
+      <div class="rich_media_area_extra_inner">
+        
+        <div id="page_bottom_area"></div>
+      </div>
+    </div>
+
+    
+    <div id="js_pc_qr_code" class="qr_code_pc_outer" style="display:none;">
+      <div class="qr_code_pc_inner">
+        <div class="qr_code_pc">
+          <img id="js_pc_qr_code_img" class="qr_code_pc_img"><p>Scan to Follow</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  
+
+<div class="wx_stream_article_slide_tip" id="wx_stream_article_slide_tip">
+  <div class="wx_stream_article_slide_tip_wrp">
+    <span class="wx_stream_article_slide_tip_arrow"></span>
+  <span class="wx_stream_article_slide_tip_text">继续滑动看下一个</span>
+  </div>
+</div>
+
+</div>
+
+
+<div class="wx_network_msg_wrp" id="js_network_msg_wrp"></div>
+
+
+
+
+
+<div class="wx_expand_article " id="wx_expand_article">
+  <div class="wx_expand_article_gradient_background" id="wx_expand_background"></div>
+  <div class="wx_expand_article_bottom_area" id="wx_expand_bottom">
+    
+    <div class="wx_expand_article_button_wrap" id="wx_expand_article_placeholder">
+              <button class="wx_expand_article_button" id="wx_expand_article_button">轻触阅读原文</button>
+          </div>
+    <div id="js_stream_bottom_bar" class="stream_bottom_bar_wrp">
+      <div id="js_stream_bottom_bar_placeholder" class="bottom_bar_placeholder">
+        <div class="wx_follow_context wx_follow_primary wx_follow_smart wx_follow_top wx_follow_bottom">
+          <div class="function_mod js_function_mod wx_tap_cell">
+            <div class="function_mod_inner js_function_mod_inner">
+              <div class="function_bd">
+                <div class="wx_follow_media weui-flex weui-flex_align-center">
+                  <div class="wx_follow_hd">
+                    <span class="wx_follow_avatar">
+                                          <img src="images/image_018.jpg" style="max-width: 100%; height: auto; display: block; margin: 20px auto;" alt=""></span>
+                  </div>
+                  <div class="wx_follow_bd weui-flex__item">
+                    <div class="wx_follow_info">
+                      <div role="link" tabindex="0" aria-labelledby="js_wx_follow_nickname" aria-describedby="js_wx_follow_tips" class="wx_follow_nickname">
+                        网罗灯下黑                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="interaction_bar__wrap" style="opacity: 1;">
+          <div class="interaction_bar" style="-webkit-text-size-adjust: 100%;">
+                                                          </div>
+        </div>
+      </div>
+      <div id="stream_article_bottom_area"></div>
+    </div>
+  </div>
+  <div id="wx_expand_slidetip" class="wx_expand_article_slide_tip">
+    <div class="wx_stream_article_slide_tip">
+      <div class="wx_stream_article_slide_tip_wrp">
+        <span class="wx_stream_article_slide_tip_arrow"></span>
+        <span class="wx_stream_article_slide_tip_text">向上滑动看下一个</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="js_ad_control"></div>
+
+
+<div id="audio_panel_area"></div>
+
+
+<div id="js_profile_card_modal"></div>
+
+
+<div class="comment_primary_emotion_panel_wrp" id="js_emotion_panel_pc" style="display: none">
+  <div class="comment_primary_emotion_panel">
+    <ul class="comment_primary_emotion_list_pc" id="js_emotion_list_pc"></ul></div>
+</div>
+
+
+<div class="weui-dialog__wrp" id="js_alert_panel" style="display:none;">
+  <div class="weui-mask"></div>
+  <div class="weui-dialog">
+    <div class="weui-dialog__bd" id="js_alert_content"></div>
+    <div class="weui-dialog__ft">
+      <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" id="js_alert_confirm">Got It</a>
+    </div>
+  
+        </div>
+    </div>
+</body>
+</html>

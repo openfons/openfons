@@ -23,6 +23,7 @@
 ### Python / uv
 
 - `camoufox`
+- `scrapling`
 - `twscrape`
 - `TikTokApi`
 - `praw`
@@ -53,6 +54,7 @@
 - `scripts/smoke-sources.py`: 平台级来源与仓库级脚本冒烟
 - `scripts/smoke-platforms-node.mjs`: YouTube 等 Node 平台测试
 - `scripts/smoke-platforms-python.py`: Reddit / TikTok / X / Facebook 等平台测试
+- `scripts/smoke-scrapling.py`: Scrapling 反检测采集框架测试
 - `results/compatibility-matrix.md`: 人工维护的验证矩阵
 - `repos/`: 外部仓库级验证对象的本地克隆目录
 
@@ -77,6 +79,15 @@ uv pip install -r requirements.txt
 $env:PATH='C:\Users\ai\AppData\Roaming\uv\python\cpython-3.12-windows-x86_64-none;'+$env:PATH
 node scripts\smoke-platforms-node.mjs
 .venv\Scripts\python.exe scripts\smoke-platforms-python.py
+.venv\Scripts\python.exe scripts\smoke-scrapling.py
+```
+
+### Scrapling 专项验证
+
+```powershell
+cd labs/collector-compat
+uv pip install scrapling curl_cffi
+.venv\Scripts\python.exe scripts\smoke-scrapling.py
 ```
 
 ### 仓库级项目

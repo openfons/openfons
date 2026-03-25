@@ -1,4 +1,6 @@
 camoufox==0.4.11
+scrapling==0.4.2
+curl-cffi==0.14.0
 twscrape==0.17.0
 TikTokApi==7.3.2
 praw==7.8.1
