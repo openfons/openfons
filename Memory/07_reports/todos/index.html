@@ -1662,7 +1662,7 @@ pre.mermaid {
 <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem"><button class="reader-toggle-btn" id="reader-toggle" type="button" title="Toggle reader mode">📖</button></div>
 <div class="page-header">
   <h1>Todos</h1>
-  <p class="subtitle">2 todo file(s)</p>
+  <p class="subtitle">3 todo file(s)</p>
 </div>
 <div class="card" id="todo-v001-001-20260324-md">
   <h2>项目待办</h2>
@@ -1750,6 +1750,65 @@ pre.mermaid {
 <ul>
 <li>如需要，继续拆解 Phase 0 / Phase 1 的执行级任务清单。</li>
 <li>如需要，补一版 <code>report-web</code> 的信息架构和页面模板说明。</li>
+</ul></div>
+</div>
+<div class="card" id="todo-v003-001-20260325-md">
+  <h2>项目待办</h2>
+  <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">todo_v003_001_20260325.md</p>
+  <nav class="toc" id="toc">
+  <button class="toc-toggle" id="toc-toggle" type="button" aria-expanded="true">
+    Contents <span class="toc-arrow">▾</span>
+  </button>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#todo-v003-001-20260325-md-">绑定信息</a></li>
+      <li><a href="#todo-v003-001-20260325-md--1">里程碑</a></li>
+      <li><a href="#todo-v003-001-20260325-md--2">进行中</a></li>
+      <li><a href="#todo-v003-001-20260325-md--3">已完成</a></li>
+      <li><a href="#todo-v003-001-20260325-md--4">待完成</a></li>
+  </ul>
+</nav>
+  <div class="markdown-body"><h1>项目待办</h1>
+<h2 id="todo-v003-001-20260325-md-">绑定信息</h2>
+<ul>
+<li>目标版本: goal_v003</li>
+<li>待办版本: v003_001</li>
+<li>创建日期: 2026-03-25</li>
+<li>状态: 当前生效</li>
+</ul>
+<h2 id="todo-v003-001-20260325-md--1">里程碑</h2>
+<ul>
+<li>[x] 建立 <code>labs/collector-compat</code> 隔离验证目录</li>
+<li>[x] 建立 Node / Python 依赖清单与冒烟脚本</li>
+<li>[x] 完成第一批采集工具安装与导入验证</li>
+<li>[x] 完成部分运行级 smoke test</li>
+<li>[x] 形成第一版兼容性验证文档与矩阵</li>
+</ul>
+<h2 id="todo-v003-001-20260325-md--2">进行中</h2>
+<ul>
+<li>准备第二批“真实抓取级”验证，重点围绕 <code>YouTube / Reddit / Hacker News / Amazon</code>。</li>
+</ul>
+<h2 id="todo-v003-001-20260325-md--3">已完成</h2>
+<ul>
+<li>修正 <code>yt-dlp-exec</code> 包名与 Windows 安装前置条件。</li>
+<li>定位并解决 <code>facebook-scraper</code> 对 <code>lxml<em>html</em>clean</code> 的额外依赖。</li>
+<li>完成 <code>Playwright</code> 浏览器安装与无头启动验证。</li>
+<li>完成 <code>Camoufox</code> 浏览器二进制下载安装，并验证本机真实启动与页面访问成功。</li>
+<li>完成 <code>pinchtab</code> 官方 Docker 镜像拉取与容器级健康检查、快照验证。</li>
+<li>完成 <code>MediaCrawler</code> 仓库级验证，确认 <code>uv sync</code>、<code>playwright install</code>、CLI 帮助、SQLite 初始化与 WebUI 健康检查均可运行。</li>
+<li>完成 <code>ddgs</code>、<code>gallery-dl</code>、<code>ddddocr</code>、<code>twscrape</code> 的运行级 smoke test。</li>
+<li>完成 <code>Hacker News</code>、<code>V2EX</code> 公开 API 的真实请求验证。</li>
+<li>完成 <code>amazon-review-scraper</code> 的真实评论摘要验证。</li>
+<li>验证 <code>python-amazon-simple-product-api</code> 可安装与导入，但需谨慎评估其主线价值。</li>
+<li>完成 <code>YouTube</code> 元数据与评论抓取验证。</li>
+<li>完成 <code>ytcog</code>、<code>PRAW</code>、<code>TikTokApi</code>、<code>twscrape</code>、<code>facebook-scraper</code> 的真实平台级可用性摸底。</li>
+</ul>
+<h2 id="todo-v003-001-20260325-md--4">待完成</h2>
+<ul>
+<li>补 <code>YouTube / Reddit / Hacker News / Amazon</code> 的真实抓取级 smoke test。</li>
+<li>评估国内新媒体平台链路是否采用自研 <code>CN social</code> adapter，并仅借鉴 <code>MediaCrawler</code> 的组织方式。</li>
+<li>为 <code>pinchtab</code> 设计 token、allowedDomains 与实例安全策略的受控配置方案。</li>
+<li>设计 <code>cookie / account / api key / proxy</code> 的受控配置方案。</li>
+<li>决定哪些工具进入主线依赖，哪些保留在实验室。</li>
 </ul></div>
 </div>
   </div>
