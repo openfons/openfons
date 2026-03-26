@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenFons 采集统计、修复与清洗看板 - 2026-03-26</title>
+    <style>
+      :root {
+        --bg: #f5efe6;
+        --panel: rgba(255, 250, 243, 0.92);
+        --panel-strong: #fffaf2;
+        --text: #1c222b;
+        --muted: #5d6776;
+        --line: #dccdb9;
+        --accent: #0d5f7c;
+        --accent-soft: rgba(13, 95, 124, 0.1);
+        --success: #17663f;
+        --success-soft: rgba(23, 102, 63, 0.12);
+        --warn: #9a5c17;
+        --warn-soft: rgba(154, 92, 23, 0.13);
+        --danger: #b42318;
+        --danger-soft: rgba(180, 35, 24, 0.12);
+        --shadow: 0 20px 48px rgba(72, 51, 28, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(13, 95, 124, 0.12), transparent 30%),
+          radial-gradient(circle at top right, rgba(180, 35, 24, 0.08), transparent 28%),
+          linear-gradient(180deg, #f3eadf 0%, #f5efe6 100%);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      code, pre {
+        font-family: Consolas, "SFMono-Regular", monospace;
+      }
+
+      .page {
+        width: min(1320px, calc(100% - 32px));
+        margin: 24px auto 48px;
+      }
+
+      .hero,
+      .panel {
+        border: 1px solid rgba(220, 205, 185, 0.9);
+        border-radius: 26px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 28px;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -60px;
+        bottom: -70px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(13, 95, 124, 0.12), transparent 70%);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      }
+
+      h1 {
+        font-size: clamp(34px, 5vw, 56px);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      h2 {
+        font-size: 28px;
+        margin-bottom: 14px;
+      }
+
+      h3 {
+        font-size: 20px;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.7;
+      }
+
+      .subtitle {
+        max-width: 960px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        border: 1px solid rgba(220, 205, 185, 0.95);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .card {
+        grid-column: span 3;
+        padding: 20px;
+        border-radius: 22px;
+        background: var(--panel-strong);
+        border: 1px solid rgba(220, 205, 185, 0.95);
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .value {
+        margin-top: 10px;
+        font-size: 38px;
+        font-weight: 700;
+      }
+
+      .note {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .panel {
+        margin-top: 18px;
+        padding: 24px;
+      }
+
+      .callout {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: var(--accent-soft);
+        color: var(--text);
+      }
+
+      .success {
+        color: var(--success);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+
+      .danger {
+        color: var(--danger);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(220, 205, 185, 0.9);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .tag.success {
+        background: var(--success-soft);
+      }
+
+      .tag.warn {
+        background: var(--warn-soft);
+      }
+
+      .tag.danger {
+        background: var(--danger-soft);
+      }
+
+      .cards-2,
+      .cards-3 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .cards-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .cards-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .mini-card {
+        padding: 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(220, 205, 185, 0.95);
+        background: var(--panel-strong);
+      }
+
+      .mini-card ul,
+      .panel ul,
+      .panel ol {
+        margin: 10px 0 0;
+        padding-left: 18px;
+        line-height: 1.7;
+      }
+
+      .inline-code {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 7px;
+        background: rgba(13, 95, 124, 0.09);
+      }
+
+      .schema {
+        margin-top: 14px;
+        padding: 16px;
+        border-radius: 18px;
+        background: #1d2430;
+        color: #e8eef6;
+        overflow-x: auto;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      @media (max-width: 1080px) {
+        .card {
+          grid-column: span 6;
+        }
+
+        .cards-2,
+        .cards-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 20px, 100%);
+          margin: 10px auto 28px;
+        }
+
+        .hero,
+        .panel {
+          padding: 18px;
+          border-radius: 18px;
+        }
+
+        .card {
+          grid-column: span 12;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <h1>OpenFons 采集统计、修复与清洗看板</h1>
+        <p class="subtitle">
+          这页专门回答你现在最关心的四件事：43 个产物里哪 18 个成功了、这些成功文件到底对应哪些开源项目、
+          剩下的问题该怎么修，以及后面怎么把这些原始产物清洗成可进入 Next.js 报告和视频生产链路的标准证据。
+        </p>
+        <div class="chip-row">
+          <span class="chip">批次：2026-03-26 重部署复测</span>
+          <span class="chip">查询词：openclaw 最合适的服务器虚拟主机</span>
+          <span class="chip">成功文件：18</span>
+          <span class="chip">限制文件：17</span>
+          <span class="chip">元信息：8</span>
+          <span class="chip">静态快照，不是实时面板</span>
+        </div>
+      </section>
+
+      <section class="grid" id="metric-grid"></section>
+
+      <section class="panel">
+        <h2>先看结论</h2>
+        <div class="callout">
+          <strong>43 个文件 != 43 个项目成功。</strong>
+          这批次里真正有成功产物的，是 <strong>18 个成功文件</strong>，它们归并后大约对应
+          <strong>11 条成功或基础成功的项目链路</strong>。总共纳入评估的开源项目/链路是
+          <strong>22 条</strong>。
+        </div>
+        <ul>
+          <li>最稳的成功链路是公开搜索与公开 API：<span class="inline-code">ddgs</span>、<span class="inline-code">crawlee</span>、<span class="inline-code">playwright</span>、<span class="inline-code">camoufox</span>、<span class="inline-code">HackerNews/API</span>、<span class="inline-code">V2EX API</span>。</li>
+          <li>最接近生产化的基础设施成功是 <span class="inline-code">pinchtab</span> Docker 健康检查与 <span class="inline-code">MediaCrawler</span> 基础运行链路。</li>
+          <li>最主要的失败类型不是“包装不上”，而是账号、cookie、API key、白名单和反爬策略没有补齐。</li>
+          <li>清洗这批产物时，第一原则不是删原始文件，而是给每个文件补 <span class="inline-code">manifest</span>、标签、来源、质量等级和用途。</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>18 个成功文件来自哪些项目</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>项目</th>
+                <th>部署方式</th>
+                <th>成功文件数</th>
+                <th>成功了什么</th>
+                <th>当前价值</th>
+                <th>主要产物</th>
+              </tr>
+            </thead>
+            <tbody id="success-project-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>我们这轮实际用了哪些开源项目</h2>
+        <div class="callout">
+          这里按“项目级”统计，不按文件算。你后面要做决策，应该看这一层，而不是只看 18 / 17 / 8。
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>项目</th>
+                <th>技术栈 / 部署</th>
+                <th>当前状态</th>
+                <th>本轮是否产生产物</th>
+                <th>主要卡点</th>
+                <th>下一步建议</th>
+              </tr>
+            </thead>
+            <tbody id="all-project-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>当前问题该怎么修</h2>
+        <div class="cards-3" id="repair-cards"></div>
+      </section>
+
+      <section class="panel">
+        <h2>这些产物该怎么清洗</h2>
+        <div class="cards-2" id="cleaning-cards"></div>
+        <div class="schema">
+<pre>{
+  "query": "openclaw 最合适的服务器虚拟主机",
+  "tool": "playwright",
+  "project": "playwright",
+  "platform": "web_search",
+  "status": "success | limitation | meta",
+  "artifact_type": "json | html | screenshot | comment_jsonl | health | log",
+  "is_fallback": false,
+  "is_public_source": true,
+  "collected_at": "2026-03-26T10:29:00+08:00",
+  "source_url": "https://duckduckgo.com/?q=...",
+  "title": "openclaw 最合适的服务器虚拟主机 at DuckDuckGo",
+  "payload_path": "artifacts/.../playwright_search.html",
+  "preview_path": "artifacts/.../playwright_search.png",
+  "diagnostic_path": null,
+  "quality": "content_ready | review_needed | blocked",
+  "note": "真实查询直出，不依赖 fallback"
+}</pre>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>建议的清洗目录</h2>
+        <ul>
+          <li><span class="inline-code">raw/</span>：保持现在的原始产物，不改写，不覆盖。</li>
+          <li><span class="inline-code">manifest/manifest.jsonl</span>：每个文件一行标准记录，补齐来源、用途和质量等级。</li>
+          <li><span class="inline-code">normalized/</span>：把 JSON、HTML、TXT、JSONL 清洗成统一结构，比如搜索结果、评论、帖子、健康检查、错误。</li>
+          <li><span class="inline-code">diagnostics/</span>：专门保存 401、403、session NOK、anti-bot、allowedDomains 等故障证据。</li>
+          <li><span class="inline-code">content-ready/</span>：只保留能给 Next.js 报告和视频脚本直接消费的结构化证据。</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>相关文件</h2>
+        <div class="footer-links">
+          <a href="redeploy-deployment-report-2026-03-26.md">重部署 Markdown 报告</a>
+          <a href="redeploy-dashboard-2026-03-26.html">上一版重部署仪表板</a>
+          <a href="artifacts/2026-03-26_redeploy_network_restored/meta/summary.json">summary.json</a>
+          <a href="artifacts/2026-03-26_redeploy_network_restored/success/">success/</a>
+          <a href="artifacts/2026-03-26_redeploy_network_restored/limitations/">limitations/</a>
+          <a href="artifacts/2026-03-26_redeploy_network_restored/meta/">meta/</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const metrics = [
+        { label: "Artifact Files", value: "43", note: "18 success + 17 limitations + 8 meta", tone: "success" },
+        { label: "Successful Files", value: "18", note: "是真实成功文件，不是项目总数", tone: "success" },
+        { label: "Successful Project Lines", value: "11", note: "18 个文件归并后约对应 11 条成功链路", tone: "success" },
+        { label: "OSS Projects Reviewed", value: "22", note: "这轮纳入评估的开源项目/链路总数", tone: "warn" },
+        { label: "Success Payload Size", value: "753 KB", note: "success/ 总体积约 771161 bytes", tone: "success" },
+        { label: "Limitation Payload Size", value: "286 KB", note: "limitations/ 总体积约 292601 bytes", tone: "warn" },
+        { label: "Primary Deployment Win", value: "pinchtab", note: "Docker 容器健康，适合继续服务化", tone: "success" },
+        { label: "Primary Bottleneck", value: "账号 / Cookie / Key", note: "真正卡住的不是安装，而是授权与反爬", tone: "danger" }
+      ];
+
+      const successProjects = [
+        {
+          name: "pinchtab",
+          deploy: "Docker",
+          count: 2,
+          success: "容器健康检查和 snapshot 成功",
+          value: "浏览器服务底座",
+          artifacts: [
+            ["success/pinchtab_health.json", "health"],
+            ["success/pinchtab_snapshot.json", "snapshot"]
+          ]
+        },
+        {
+          name: "playwright",
+          deploy: "本地 Node",
+          count: 3,
+          success: "真实打开 DuckDuckGo，保存截图、HTML、meta",
+          value: "默认浏览器 worker",
+          artifacts: [
+            ["success/playwright_search.png", "screenshot"],
+            ["success/playwright_search.html", "html"],
+            ["success/playwright_search_meta.json", "meta"]
+          ]
+        },
+        {
+          name: "crawlee",
+          deploy: "本地 Node",
+          count: 1,
+          success: "提取 8 条 DuckDuckGo 结构化结果",
+          value: "轻量 HTML worker",
+          artifacts: [
+            ["success/crawlee_ddg.json", "json"]
+          ]
+        },
+        {
+          name: "camoufox",
+          deploy: "本地 Python / 宿主机浏览器",
+          count: 3,
+          success: "真实打开页面并保存截图、HTML、meta",
+          value: "高阻力页面兜底 worker",
+          artifacts: [
+            ["success/camoufox_search.png", "screenshot"],
+            ["success/camoufox_search.html", "html"],
+            ["success/camoufox_search_meta.json", "meta"]
+          ]
+        },
+        {
+          name: "ddgs",
+          deploy: "本地 Python",
+          count: 1,
+          success: "返回 8 条 web 搜索结果",
+          value: "公开搜索发现",
+          artifacts: [
+            ["success/ddgs_search.json", "json"]
+          ]
+        },
+        {
+          name: "youtube-comment-downloader",
+          deploy: "本地 Python",
+          count: 1,
+          success: "保留了 5 条已知 openclaw 视频的 fallback 评论样例",
+          value: "公开视频评论采集",
+          artifacts: [
+            ["success/youtube_comments_known_openclaw.jsonl", "fallback comment"]
+          ]
+        },
+        {
+          name: "amazon-review-scraper",
+          deploy: "本地 Python",
+          count: 1,
+          success: "成功保存评论摘要，total_reviews=18",
+          value: "Amazon 公开评论证据",
+          artifacts: [
+            ["success/amazon_review_summary.json", "json"]
+          ]
+        },
+        {
+          name: "HackerNews/API",
+          deploy: "免部署 HTTP",
+          count: 1,
+          success: "成功抓到当前 top story 详情",
+          value: "北美 tech niche 稳定数据源",
+          artifacts: [
+            ["success/hackernews_topstory.json", "json"]
+          ]
+        },
+        {
+          name: "V2EX API",
+          deploy: "免部署 HTTP",
+          count: 1,
+          success: "成功抓到热榜和站点数据",
+          value: "中文技术社区补充源",
+          artifacts: [
+            ["success/v2ex_hot.json", "json"]
+          ]
+        },
+        {
+          name: "ddddocr",
+          deploy: "本地 Python",
+          count: 2,
+          success: "生成测试图并识别出 1234",
+          value: "验证码 / OCR 辅助件",
+          artifacts: [
+            ["success/ddddocr_input_digits.png", "input"],
+            ["success/ddddocr_output_digits.txt", "output"]
+          ]
+        },
+        {
+          name: "MediaCrawler",
+          deploy: "本地仓库 + uv",
+          count: 2,
+          success: "CLI help 与 /api/health 成功",
+          value: "国内平台采集底座已恢复",
+          artifacts: [
+            ["success/mediacrawler_help.txt", "help"],
+            ["success/mediacrawler_health.json", "health"]
+          ]
+        }
+      ];
+
+      const allProjects = [
+        ["pinchtab", "Docker", "基础成功", "有", "宿主机 401 + allowedDomains 白名单", "先补 token、allowedDomains、实例安全策略", "success"],
+        ["playwright", "本地 Node", "成功", "有", "无核心阻塞", "直接纳入主线浏览器 worker", "success"],
+        ["crawlee", "本地 Node", "成功", "有", "无核心阻塞", "直接纳入主线轻量抓取 worker", "success"],
+        ["camoufox", "本地 Python / 宿主机", "成功", "有", "尚未做 Docker 和授权态联调", "先作为高阻力页面兜底，再接 CDP / 账号", "success"],
+        ["ddgs", "本地 Python", "成功", "有", "无核心阻塞", "进入公开搜索发现主线", "success"],
+        ["youtube-comment-downloader", "本地 Python", "成功", "有", "本轮是 fallback 评论样例", "补 query 直出评论与视频 ID 绑定", "success"],
+        ["amazon-review-scraper", "本地 Python", "成功", "有", "无核心阻塞", "进入 Amazon 公开评论主线", "success"],
+        ["HackerNews/API", "免部署 HTTP", "成功", "有", "无核心阻塞", "进入北美 tech niche 主线", "success"],
+        ["V2EX API", "免部署 HTTP", "成功", "有", "无核心阻塞", "作为中文社区补充源保留", "success"],
+        ["ddddocr", "本地 Python", "成功", "有", "还没接到真实业务验证码流", "先做辅助能力，不单独成主线", "success"],
+        ["MediaCrawler", "本地仓库 + uv", "基础成功", "有", "真实抓取仍缺登录态与授权测试", "等账号后优先联调登录采集", "warn"],
+        ["yt-dlp", "本地 Node / CLI", "受限", "无", "YouTube 反机器人，需要 cookies", "先做浏览器 cookies 导出与授权态测试", "danger"],
+        ["ytcog", "本地 Node", "受限", "无", "session NOK", "只有在 cookie / session 条件补齐后再复测", "danger"],
+        ["twscrape", "本地 Python", "受限", "无", "No active accounts", "提供 X 账号池并补代理策略", "danger"],
+        ["TikTokApi", "本地 Python", "受限", "无", "最小会话创建超时", "补代理与会话策略，授权态再测", "danger"],
+        ["praw", "本地 Python", "受限", "无", "401，无 API 凭据", "创建 Reddit app 并注入 creds", "danger"],
+        ["Reddit public JSON", "免部署 HTTP", "受限", "无", "403 波动", "改成官方 API 或带授权的 fallback", "danger"],
+        ["facebook-scraper", "本地 Python", "弱成功 / 受限", "无", "匿名公共页仅返回空对象", "只保留研究线，不作为主线依赖", "warn"],
+        ["gallery-dl", "本地 Python / CLI", "工具可用", "无", "本轮没映射到内容 URL", "给它配目标 URL 路由，否则只算工具预备件", "warn"],
+        ["python-amazon-paapi", "本地 Python", "部分成功", "无", "无 Amazon API 凭据", "若要做商品目录，补官方凭据", "warn"],
+        ["python-amazon-simple-product-api", "临时 uv 环境", "部分成功", "无", "当前正式环境未安装", "决定要么正式纳入，要么直接放弃", "warn"],
+        ["firecrawl", "SDK + API key", "受限", "无", "无 FIRECRAWL_API_KEY", "作为增强件，凭据齐再测", "danger"]
+      ];
+
+      const repairTracks = [
+        {
+          title: "P0：先补账号 / Cookie / API Key",
+          tone: "danger",
+          summary: "这组问题占了大多数失败，不解决授权条件，很多平台级项目永远只能停在“能装、能导入、不能产出”。",
+          items: [
+            "yt-dlp：接浏览器 cookies 或人工登录态导出",
+            "ytcog：补 session / cookie，再看是否还有真实价值",
+            "twscrape：建立 X 账号池和代理池",
+            "TikTokApi：补授权态、代理与稳定会话",
+            "praw：创建 Reddit app，注入 client id / secret",
+            "python-amazon-paapi：补官方凭据",
+            "firecrawl：补 API key",
+            "MediaCrawler：等你们提供账号后做真实登录抓取"
+          ]
+        },
+        {
+          title: "P1：修浏览器策略与反爬",
+          tone: "warn",
+          summary: "这些不是“完全不能用”，而是配置和风控设计还没进入受控状态。",
+          items: [
+            "pinchtab：配置 token、allowedDomains、实例安全策略",
+            "yt-dlp：用 cookies + 频率控制绕开 YouTube anti-bot",
+            "Reddit public JSON：不要再把匿名 403 端点当稳定主源",
+            "facebook-scraper：限制在公开页面低频研究场景",
+            "camoufox：后续接 CDP / MediaCrawler，做更强反爬路径"
+          ]
+        },
+        {
+          title: "P2：做路线决策，不要把实验线误当主线",
+          tone: "success",
+          summary: "这组项目更像工具储备或实验件，先决定保留还是降级，不然会稀释主线精力。",
+          items: [
+            "gallery-dl：若没有明确媒体 URL 路由，就先留在实验室",
+            "python-amazon-simple-product-api：决定是否正式纳入环境",
+            "youtube-comment-downloader：补 query 直出评论链路，减少 fallback 依赖",
+            "ddddocr：保持为辅助件，而不是单独主线",
+            "MediaCrawler：保留为国内平台底座，不直接包装成已量产方案"
+          ]
+        }
+      ];
+
+      const cleaningSteps = [
+        {
+          title: "1. 先做 manifest，不要先删文件",
+          body: [
+            "给 43 个文件逐个补齐 query、tool、project、status、artifact_type、quality、is_fallback。",
+            "把 success / limitation / meta 从目录层再提升到数据层，避免后面脚本只靠文件名猜。",
+            "把 pinchtab、MediaCrawler、playwright 这种多文件项目，通过 project_id 绑定起来。"
+          ]
+        },
+        {
+          title: "2. 把内容证据和诊断证据拆开",
+          body: [
+            "内容证据：搜索结果、评论、帖子、商品评论、网页 HTML、截图。",
+            "诊断证据：401、403、session NOK、anti-bot、allowedDomains、缺 key。",
+            "这样 Next.js 报告只吃内容证据，内部运维看板才吃诊断证据。"
+          ]
+        },
+        {
+          title: "3. 为 HTML / PNG / TXT 补结构化索引",
+          body: [
+            "HTML：提取 title、url、query、关键段落、截图路径。",
+            "PNG：记录来源项目、用途、对应页面 URL，不把图片孤立保存。",
+            "TXT：区分 help、health、error、debug 四类，否则后续难以聚合。"
+          ]
+        },
+        {
+          title: "4. 加质量标签，避免脏证据混进内容生产",
+          body: [
+            "content_ready：可直接进报告或视频脚本。",
+            "review_needed：需要人工复核，比如 fallback 评论样例。",
+            "blocked：只是故障证据，不应进入内容生产链路。",
+            "对 YouTube fallback、Reddit 403、pinchtab 401 这种都要显式打标。"
+          ]
+        },
+        {
+          title: "5. 统一导出给 Next.js 和视频生产链路",
+          body: [
+            "最终只让前端消费 normalized JSON，不直接读原始目录。",
+            "每个 niche 主题至少聚合成：搜索发现、社区声音、商品 / 需求信号、页面截图、诊断备注。",
+            "这样你们后面生成投行式网页、脚本、讲解视频都会更稳。"
+          ]
+        },
+        {
+          title: "6. 建议的第一批清洗优先级",
+          body: [
+            "第一批先清洗 ddgs、crawlee、playwright、camoufox、HackerNews/API、V2EX API、amazon-review-scraper。",
+            "第二批再接 youtube-comment-downloader、pinchtab、MediaCrawler。",
+            "失败证据单独建 diagnostics，不要混入 content-ready。"
+          ]
+        }
+      ];
+
+      const successBase = "artifacts/2026-03-26_redeploy_network_restored/";
+
+      const metricGrid = document.getElementById("metric-grid");
+      metrics.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="label">${item.label}</div>
+          <div class="value ${item.tone}">${item.value}</div>
+          <div class="note">${item.note}</div>
+        `;
+        metricGrid.appendChild(card);
+      });
+
+      const successBody = document.getElementById("success-project-body");
+      successProjects.forEach((project) => {
+        const artifacts = project.artifacts.map(([path, label]) =>
+          `<a href="${successBase + path}">${label}</a>`
+        ).join(" / ");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${project.name}</strong></td>
+          <td>${project.deploy}</td>
+          <td>${project.count}</td>
+          <td>${project.success}</td>
+          <td>${project.value}</td>
+          <td>${artifacts}</td>
+        `;
+        successBody.appendChild(row);
+      });
+
+      const allProjectBody = document.getElementById("all-project-body");
+      allProjects.forEach(([name, stack, status, produced, blocker, next, tone]) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${name}</strong></td>
+          <td>${stack}</td>
+          <td><span class="tag ${tone}">${status}</span></td>
+          <td>${produced}</td>
+          <td>${blocker}</td>
+          <td>${next}</td>
+        `;
+        allProjectBody.appendChild(row);
+      });
+
+      const repairCards = document.getElementById("repair-cards");
+      repairTracks.forEach((track) => {
+        const card = document.createElement("div");
+        card.className = "mini-card";
+        card.innerHTML = `
+          <h3 class="${track.tone}">${track.title}</h3>
+          <p style="margin-top:10px;color:var(--muted)">${track.summary}</p>
+          <ul>${track.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+        `;
+        repairCards.appendChild(card);
+      });
+
+      const cleaningCards = document.getElementById("cleaning-cards");
+      cleaningSteps.forEach((step) => {
+        const card = document.createElement("div");
+        card.className = "mini-card";
+        card.innerHTML = `
+          <h3>${step.title}</h3>
+          <ul>${step.body.map((item) => `<li>${item}</li>`).join("")}</ul>
+        `;
+        cleaningCards.appendChild(card);
+      });
+    </script>
+  </body>
+</html>
