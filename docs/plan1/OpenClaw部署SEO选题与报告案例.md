@@ -453,46 +453,97 @@
 
 > 我理解你是想围绕 OpenClaw 的部署方式做一组可公开发布的研究内容。如果你没有特别限定，我不会直接把市场锁定到某一个国家或语言，而会先比较中文讨论和北美英文搜索信号，再判断这题更适合做中文页、英文页，还是中英文拆分的页面组合；随后再比较本地安装、Docker、VPS 和托管方案，并评估哪些方向更适合做成能获得搜索流量的 Next.js 报告页。
 
-### 8.3 推荐的前端 LLM 输出格式
+### 8.3 推荐的 OpportunitySpec 输出格式
 
 ```json
 {
+  "opportunitySpecVersion": "v1",
   "seed": "OpenClaw部署方案对比",
   "topic": "OpenClaw deployment",
-  "audienceCandidates": [
-    "beginners",
-    "developers",
-    "small teams"
+  "intent": {
+    "audienceCandidates": [
+      "beginners",
+      "developers",
+      "small teams"
+    ],
+    "geoCandidates": [
+      "US",
+      "CN"
+    ],
+    "languageCandidates": [
+      "en",
+      "zh-CN"
+    ],
+    "intentCandidates": [
+      "deployment_comparison",
+      "hosting_recommendation",
+      "installation_guide",
+      "security_setup"
+    ]
+  },
+  "demandResearch": {
+    "geoResolution": "pending_validation",
+    "languageResolution": "pending_validation",
+    "signalFamilies": [
+      "search",
+      "community",
+      "commercial",
+      "content",
+      "update"
+    ],
+    "status": "draft_pending_research"
+  },
+  "opportunityOptions": [
+    {
+      "keyword": "OpenClaw deployment options",
+      "angle": "compare local, Docker, VPS, and managed deployment paths"
+    },
+    {
+      "keyword": "best OpenClaw setup for beginners",
+      "angle": "recommend the simplest path for non-expert users"
+    },
+    {
+      "keyword": "OpenClaw install on macOS",
+      "angle": "platform-specific local setup for Apple users"
+    },
+    {
+      "keyword": "OpenClaw Windows install WSL2",
+      "angle": "Windows-first install path aligned with official guidance"
+    },
+    {
+      "keyword": "OpenClaw install on Ubuntu",
+      "angle": "clean Linux deployment path"
+    },
+    {
+      "keyword": "OpenClaw Docker setup",
+      "angle": "containerized deployment and isolation tradeoffs"
+    },
+    {
+      "keyword": "best VPS for OpenClaw",
+      "angle": "hosting selection and beginner-safe server buying"
+    },
+    {
+      "keyword": "OpenClaw self-hosted vs managed",
+      "angle": "long-term operations and convenience tradeoff"
+    },
+    {
+      "keyword": "OpenClaw system requirements",
+      "angle": "resource sizing and monthly cost"
+    },
+    {
+      "keyword": "OpenClaw safe deployment",
+      "angle": "permissions, isolation, and deployment safety"
+    }
   ],
-  "geoCandidates": [
-    "US",
-    "CN"
-  ],
-  "languageCandidates": [
-    "en",
-    "zh-CN"
-  ],
-  "geoResolution": "pending_demand_research",
-  "languageResolution": "pending_demand_research",
-  "intentCandidates": [
-    "deployment_comparison",
-    "hosting_recommendation",
-    "installation_guide",
-    "security_setup"
-  ],
-  "keywordDirections": [
-    "OpenClaw deployment options",
-    "best OpenClaw setup for beginners",
-    "OpenClaw install on macOS",
-    "OpenClaw Windows install WSL2",
-    "OpenClaw install on Ubuntu",
-    "OpenClaw Docker setup",
-    "best VPS for OpenClaw",
-    "OpenClaw self-hosted vs managed",
-    "OpenClaw system requirements",
-    "OpenClaw safe deployment"
-  ],
-  "nextAction": "demand_research"
+  "approval": {
+    "status": "pending_user_confirmation",
+    "nextAction": "user_confirmation"
+  },
+  "recommendedOpportunity": {
+    "primaryKeyword": "OpenClaw deployment options",
+    "angle": "launch a pillar comparison page first, then expand into platform and hosting subpages",
+    "status": "pending_user_confirmation"
+  }
 }
 ```
 
@@ -503,6 +554,7 @@
 ```json
 {
   "taskId": "task_openclaw_deploy_portfolio_001",
+  "opportunitySpecRef": "opp_openclaw_deploy_portfolio_v1",
   "intent": "seo_topic_portfolio_planning",
   "profile": "report_web",
   "topic": "OpenClaw deployment",
@@ -539,13 +591,18 @@
     "commercial_source_crosscheck"
   ],
   "goal": "discover and prioritize 10 SEO-worthy page directions",
-  "operations": [
-    "clarify_intent",
-    "demand_research",
-    "keyword_cluster",
-    "evidence_feasibility",
-    "priority_scoring",
-    "portfolio_report"
+  "planningStages": [
+    "structure_intent",
+    "run_demand_analysis",
+    "run_competition_analysis",
+    "run_monetization_analysis",
+    "judge_opportunity",
+    "confirm_user_scope"
+  ],
+  "deliveryStage": [
+    "validate_evidence_feasibility",
+    "score_confirmed_directions",
+    "build_portfolio_report"
   ]
 }
 ```
@@ -572,19 +629,33 @@
     "community_discussions": "corroboration",
     "vendor_pages": "discovery_or_secondary_only"
   },
-  "fetchPlan": [
+  "planningSteps": [
     {
-      "step": "clarify_intent",
+      "step": "structure_intent",
       "goal": "fix audience, geo, language, and monetization mode"
     },
     {
-      "step": "demand_research",
+      "step": "run_demand_analysis",
       "goal": "measure relative demand, recency, and discussion intensity"
     },
     {
-      "step": "keyword_cluster",
-      "goal": "derive 10 candidate keyword directions"
+      "step": "run_competition_analysis",
+      "goal": "check SERP saturation, official-doc dominance, and content gaps"
     },
+    {
+      "step": "run_monetization_analysis",
+      "goal": "evaluate hosting, affiliate, consulting, and template monetization value"
+    },
+    {
+      "step": "judge_opportunity",
+      "goal": "collapse planning outputs into a single OpportunitySpec"
+    },
+    {
+      "step": "confirm_user_scope",
+      "goal": "freeze the first launch direction after user confirmation"
+    }
+  ],
+  "executionSteps": [
     {
       "step": "collect_evidence",
       "goal": "gather official docs, community pain points, hosting offers, and security signals"
@@ -594,8 +665,8 @@
       "goal": "downgrade uncorroborated commercial claims and block vendor-only conclusions"
     },
     {
-      "step": "score_directions",
-      "goal": "rank by demand, evidence, business fit, difficulty, and updateability"
+      "step": "score_confirmed_directions",
+      "goal": "rank confirmed directions by demand, evidence, business fit, difficulty, and updateability"
     },
     {
       "step": "build_portfolio_brief",
