@@ -395,7 +395,7 @@
 
 | 编号 | 方向 | 主关键词建议 | 页面角度 | 为什么值得做 | 商业潜力 | 当前优先级 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 全局采购总对比 | `AI coding model pricing comparison` | 全球主流模型与购买方式总览 | 适合作为 pillar page | 高 | P0 |
+| 1 | 采购方案总对比 | `AI coding model procurement options` | 主流采购路径与购买方式总览 | 适合作为 pillar page | 高 | P0 |
 | 2 | 便宜但够用的 coding model | `best cheap model for coding agents` | 低成本但可用于 agent / coding 的模型选择 | 强决策意图 | 高 | P0 |
 | 3 | 直连 vs 中转 | `direct API vs OpenRouter` | 官方 API 与路由商如何选 | 高争议、高转化 | 高 | P0 |
 | 4 | 单供应商 vs 多供应商 | `single vs multi provider llm stack` | 团队是否应该同时买多家 | 很适合团队采购判断 | 高 | P0 |
@@ -429,7 +429,7 @@
 更建议搭成下面这种站点结构：
 
 1. `Pillar`
-   全局采购总对比页
+   采购方案总对比页
 2. `Decision Pages`
    直连 vs 中转、单家 vs 多家、便宜但够用
 3. `Provider / Routing Platform Pages`
@@ -460,7 +460,7 @@
 
 建议规则如下：
 
-1. `AI coding model pricing comparison`
+1. `AI coding model procurement options`
    只拥有 broad overview / all providers / compare all options 这类总览查询。
 2. `best cheap model for coding agents`
    只拥有 low-cost decision / cheapest usable / budget recommendation 这类预算决策查询。
@@ -676,7 +676,7 @@
   "keywordSeed": "全球大模型价格对比",
   "keywordCluster": {
     "primaryCandidates": [
-      "AI coding model pricing comparison",
+      "AI coding model procurement options",
       "best cheap model for coding agents",
       "direct API vs OpenRouter"
     ],
@@ -815,7 +815,7 @@
   "language": "pending_resolution",
   "primaryKeyword": "pending_validation",
   "supportingKeywords": [
-    "AI coding model pricing comparison",
+    "AI coding model procurement options",
     "best cheap model for coding agents",
     "direct API vs OpenRouter"
   ],
@@ -1017,7 +1017,7 @@
 
 如果前期 demand research 支持，建议先做这 3 个：
 
-1. `AI coding model pricing comparison`
+1. `AI coding model procurement options`
 2. `best cheap model for coding agents`
 3. `direct API vs OpenRouter`
 
