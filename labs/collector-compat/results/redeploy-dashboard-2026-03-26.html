@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OpenFons 重部署兼容性复测看板 - 2026-03-26</title>
+    <style>
+      :root {
+        --bg: #f6f0e7;
+        --bg-strong: #fffaf3;
+        --ink: #1b2430;
+        --muted: #5a6778;
+        --line: #d7c8b2;
+        --card: rgba(255, 250, 243, 0.9);
+        --success: #1c7c54;
+        --warn: #9a5b13;
+        --danger: #b42318;
+        --accent: #0f5d7a;
+        --shadow: 0 18px 50px rgba(65, 49, 26, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(15, 93, 122, 0.12), transparent 32%),
+          radial-gradient(circle at top right, rgba(180, 35, 24, 0.09), transparent 28%),
+          linear-gradient(180deg, #f4ecdf 0%, #f6f0e7 100%);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        width: min(1280px, calc(100% - 32px));
+        margin: 24px auto 48px;
+      }
+
+      .hero,
+      .panel {
+        background: var(--card);
+        border: 1px solid rgba(215, 200, 178, 0.8);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .hero {
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -60px -70px auto;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(15, 93, 122, 0.12), transparent 70%);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      }
+
+      h1 {
+        font-size: clamp(34px, 5vw, 54px);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      h2 {
+        font-size: 28px;
+        margin-bottom: 16px;
+      }
+
+      h3 {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.65;
+      }
+
+      .subtitle {
+        margin-top: 12px;
+        max-width: 920px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(215, 200, 178, 0.9);
+        color: var(--ink);
+        font-size: 14px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .card {
+        grid-column: span 3;
+        padding: 20px;
+        border-radius: 20px;
+        background: var(--bg-strong);
+        border: 1px solid rgba(215, 200, 178, 0.9);
+      }
+
+      .card .label {
+        font-size: 13px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .card .value {
+        margin-top: 10px;
+        font-size: 38px;
+        font-weight: 700;
+      }
+
+      .card .note {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .card.success .value {
+        color: var(--success);
+      }
+
+      .card.warn .value {
+        color: var(--warn);
+      }
+
+      .card.danger .value {
+        color: var(--danger);
+      }
+
+      .panel {
+        margin-top: 18px;
+        padding: 24px;
+      }
+
+      .bullet-list {
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.75;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(215, 200, 178, 0.85);
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .status.ok {
+        color: #0d5d38;
+        background: rgba(28, 124, 84, 0.12);
+      }
+
+      .status.partial {
+        color: #8a4f0f;
+        background: rgba(154, 91, 19, 0.14);
+      }
+
+      .status.blocked {
+        color: #8b1f17;
+        background: rgba(180, 35, 24, 0.12);
+      }
+
+      .artifacts {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+
+      .artifact-box {
+        padding: 18px;
+        border-radius: 20px;
+        background: var(--bg-strong);
+        border: 1px solid rgba(215, 200, 178, 0.9);
+      }
+
+      .artifact-box ul {
+        margin: 0;
+        padding-left: 18px;
+        line-height: 1.75;
+      }
+
+      code {
+        font-family: Consolas, "SFMono-Regular", monospace;
+        font-size: 0.95em;
+        background: rgba(15, 93, 122, 0.08);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      .footer-note {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 1080px) {
+        .card {
+          grid-column: span 6;
+        }
+
+        .artifacts {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          width: min(100% - 20px, 100%);
+          margin: 10px auto 28px;
+        }
+
+        .hero,
+        .panel {
+          padding: 18px;
+          border-radius: 18px;
+        }
+
+        .card {
+          grid-column: span 12;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <h1>OpenFons 重部署兼容性复测看板</h1>
+        <p class="subtitle">
+          这是在网络恢复、Docker 内容清空之后重新做的一轮权威复测批次。它覆盖部署方式判断、逐项运行状态、成功产物、限制证据以及环境元数据，
+          用来回答“哪些工具现在真的能用、能产出什么、哪些必须等账号或凭据”。
+        </p>
+        <div class="meta-row">
+          <span class="chip">批次日期：2026-03-26</span>
+          <span class="chip">查询词：openclaw 最合适的服务器虚拟主机</span>
+          <span class="chip">Docker 快照：pinchtab 在采样时为 healthy</span>
+          <span class="chip">Node / Python smoke：通过</span>
+          <span class="chip">静态快照时间：2026-03-26 10:29 Asia/Shanghai</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="card success">
+          <div class="label">Success Files</div>
+          <div class="value">18</div>
+          <div class="note">真实内容、截图、HTML、评论、健康检查等可直接查看的成功产物。</div>
+        </div>
+        <div class="card warn">
+          <div class="label">Limitation Files</div>
+          <div class="value">17</div>
+          <div class="note">账号缺失、API key 缺失、反爬命中、白名单拦截等限制证据。</div>
+        </div>
+        <div class="card">
+          <div class="label">Meta Files</div>
+          <div class="value">8</div>
+          <div class="note">Docker、版本、冒烟结果、摘要等环境元数据。</div>
+        </div>
+        <div class="card success">
+          <div class="label">Docker Snapshot</div>
+          <div class="value">OK</div>
+          <div class="note">静态采样结果显示 `openfons-pinchtab-official` 在 2026-03-26 10:29 Asia/Shanghai 这一时点为 healthy。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>结论</h2>
+        <ul class="bullet-list">
+          <li>第一阶段“采集能力优先验证”是可行的，但只能把已经有真实产物的链路作为主线，不适合把所有平台都当成同等成熟。</li>
+          <li><code>pinchtab</code> 是目前最适合 Docker 服务化部署的项目；本轮已经重新拉起并验证健康检查与快照。</li>
+          <li><code>playwright</code>、<code>crawlee</code>、<code>camoufox</code>、<code>ddgs</code>、<code>youtube-comment-downloader</code>、<code>amazon-review-scraper</code>、<code>HackerNews/API</code>、<code>V2EX API</code> 都已经产出真实证据，但 YouTube 评论样例是已知视频的 fallback 证据。</li>
+          <li><code>yt-dlp</code>、<code>twscrape</code>、<code>TikTokApi</code>、<code>praw</code>、<code>MediaCrawler</code> 登录态采集，仍然必须按账号、cookie、代理、凭据链路去设计。</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <h2>部署方式判断</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>分类</th>
+              <th>项目</th>
+              <th>当前建议</th>
+              <th>本轮状态</th>
+              <th>判断</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Docker 优先</td>
+              <td><code>pinchtab</code></td>
+              <td>官方镜像服务化部署</td>
+              <td><span class="status ok">Healthy</span></td>
+              <td>已重新部署成功，最适合继续沿 Docker 走，但需要 token 和 <code>allowedDomains</code> 策略。</td>
+            </tr>
+            <tr>
+              <td>宿主机优先</td>
+              <td><code>camoufox</code></td>
+              <td>本地 Python + 宿主机浏览器</td>
+              <td><span class="status ok">Live Page</span></td>
+              <td>本轮验证的是宿主机真实抓取与落盘，不应夸大成已验证的 Docker 能力。</td>
+            </tr>
+            <tr>
+              <td>本地 Node</td>
+              <td><code>crawlee</code>、<code>playwright</code>、<code>yt-dlp-exec</code></td>
+              <td><code>npm install</code> 后直接运行</td>
+              <td><span class="status ok">Smoke Pass</span></td>
+              <td>适合做通用 web worker 层，其中 <code>playwright</code> 和 <code>crawlee</code> 已有真实产物。</td>
+            </tr>
+            <tr>
+              <td>本地 Python</td>
+              <td><code>ddgs</code>、<code>youtube-comment-downloader</code>、<code>ddddocr</code>、Amazon 工具链等</td>
+              <td>虚拟环境或 <code>uv</code></td>
+              <td><span class="status ok">Smoke Pass</span></td>
+              <td>适合拆成不同平台 worker；要不要进主线，取决于是否已有真实产物和长期稳定性。</td>
+            </tr>
+            <tr>
+              <td>仓库级环境</td>
+              <td><code>MediaCrawler</code></td>
+              <td>仓库内 <code>uv sync</code> + 本机浏览器</td>
+              <td><span class="status partial">Base Ready</span></td>
+              <td>基础链路恢复完成，真实登录抓取仍要等账号与授权测试。</td>
+            </tr>
+            <tr>
+              <td>免部署 API</td>
+              <td><code>HackerNews/API</code>、<code>V2EX API</code>、<code>Reddit public JSON</code></td>
+              <td>直接 HTTP 调用</td>
+              <td><span class="status partial">Mixed</span></td>
+              <td>HN 和 V2EX 很稳，Reddit 公共 JSON 这轮返回 403，不宜高估。</td>
+            </tr>
+            <tr>
+              <td>SaaS</td>
+              <td><code>firecrawl</code></td>
+              <td>SDK + API key</td>
+              <td><span class="status blocked">No Key</span></td>
+              <td>适合做增强件，不适合作为当前主采集底座。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>逐项复测矩阵</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>项目</th>
+              <th>结果</th>
+              <th>主要产物</th>
+              <th>复用判断</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>pinchtab</code></td><td><span class="status ok">成功 + 有限制</span></td><td>health、snapshot、容器日志、镜像摘要</td><td>可复用，但必须补 token 和白名单配置。</td></tr>
+            <tr><td><code>playwright</code></td><td><span class="status ok">成功</span></td><td>截图、HTML、meta</td><td>直接进入主线。</td></tr>
+            <tr><td><code>crawlee</code></td><td><span class="status ok">成功</span></td><td>8 条搜索结果 JSON</td><td>直接进入主线。</td></tr>
+            <tr><td><code>camoufox</code></td><td><span class="status ok">成功</span></td><td>截图、HTML、meta</td><td>适合作为高阻力页面兜底。</td></tr>
+            <tr><td><code>ddgs</code></td><td><span class="status ok">成功</span></td><td>8 条搜索结果 JSON</td><td>适合公开搜索发现。</td></tr>
+            <tr><td><code>yt-dlp</code></td><td><span class="status blocked">受限</span></td><td>反机器人报错、状态 JSON</td><td>保留，但默认按“需要 cookie”设计。</td></tr>
+            <tr><td><code>youtube-comment-downloader</code></td><td><span class="status ok">成功</span></td><td>已知 <code>openclaw</code> 视频的 5 条 fallback 评论 JSONL</td><td>非常适合公开视频评论采集，但这轮保留的是 fallback 样例，不是当前 query 直出评论。</td></tr>
+            <tr><td><code>ytcog</code></td><td><span class="status blocked">受限</span></td><td><code>sessionStatus=NOK</code></td><td>无 cookie 条件下不建议当主线。</td></tr>
+            <tr><td><code>twscrape</code></td><td><span class="status blocked">受限</span></td><td><code>No active accounts</code> 日志</td><td>等账号后再测。</td></tr>
+            <tr><td><code>TikTokApi</code></td><td><span class="status blocked">受限</span></td><td>会话超时日志</td><td>暂时只算实验线。</td></tr>
+            <tr><td><code>praw</code></td><td><span class="status blocked">受限</span></td><td><code>401</code> 文本</td><td>必须补 API 凭据。</td></tr>
+            <tr><td><code>Reddit public JSON</code></td><td><span class="status blocked">受限</span></td><td><code>403</code> 返回片段</td><td>不能当稳定主源。</td></tr>
+            <tr><td><code>facebook-scraper</code></td><td><span class="status partial">弱成功</span></td><td><code>{}</code> JSON</td><td>只适合继续研究公共页。</td></tr>
+            <tr><td><code>gallery-dl</code></td><td><span class="status partial">自检成功</span></td><td>版本、extractors 清单</td><td>保留，但本轮没有内容级样例。</td></tr>
+            <tr><td><code>ddddocr</code></td><td><span class="status ok">成功</span></td><td>OCR 测试图和结果</td><td>适合作为辅助件。</td></tr>
+            <tr><td><code>amazon-review-scraper</code></td><td><span class="status ok">成功</span></td><td>评论摘要 JSON</td><td>当前最实用的 Amazon 公开评论线。</td></tr>
+            <tr><td><code>python-amazon-paapi</code></td><td><span class="status partial">部分成功</span></td><td>导入成功、无凭据</td><td>等凭据后再升格。</td></tr>
+            <tr><td><code>python-amazon-simple-product-api</code></td><td><span class="status partial">部分成功</span></td><td>当前环境缺失、临时环境可导入</td><td>暂不建议纳主线。</td></tr>
+            <tr><td><code>HackerNews/API</code></td><td><span class="status ok">成功</span></td><td>top story JSON</td><td>很稳，优先级高。</td></tr>
+            <tr><td><code>V2EX API</code></td><td><span class="status ok">成功</span></td><td>热榜 JSON</td><td>适合作为中文技术社区补充源。</td></tr>
+            <tr><td><code>MediaCrawler</code></td><td><span class="status partial">基础成功</span></td><td>CLI help、health JSON</td><td>底座可用，真实抓取还要等账号测试。</td></tr>
+            <tr><td><code>firecrawl</code></td><td><span class="status blocked">受限</span></td><td>导入成功、无 key</td><td>做增强件即可。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>产物分类</h2>
+        <div class="artifacts">
+          <div class="artifact-box">
+            <h3>成功产物</h3>
+            <ul>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/ddgs_search.json">ddgs_search.json</a> - 8 条 web 搜索结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/crawlee_ddg.json">crawlee_ddg.json</a> - 8 条结构化提取结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.png">playwright_search.png</a> - 浏览器截图。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.html">playwright_search.html</a> - 浏览器页面 HTML。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/playwright_search_meta.json">playwright_search_meta.json</a> - 页面元数据。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.png">camoufox_search.png</a> - 伪装浏览器截图。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.html">camoufox_search.html</a> - 伪装浏览器页面 HTML。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search_meta.json">camoufox_search_meta.json</a> - 伪装浏览器元数据。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/youtube_comments_known_openclaw.jsonl">youtube_comments_known_openclaw.jsonl</a> - 已知 openclaw 视频的 fallback 评论样例，不是本轮 query 直出评论。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/hackernews_topstory.json">hackernews_topstory.json</a> - Hacker News 话题详情。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/v2ex_hot.json">v2ex_hot.json</a> - V2EX 热榜数据。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/amazon_review_summary.json">amazon_review_summary.json</a> - Amazon 评论摘要。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_health.json">pinchtab_health.json</a> - Docker 服务健康结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_snapshot.json">pinchtab_snapshot.json</a> - Docker 快照结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_help.txt">mediacrawler_help.txt</a> - MediaCrawler CLI 帮助。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_health.json">mediacrawler_health.json</a> - MediaCrawler WebUI 健康检查。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_input_digits.png">ddddocr_input_digits.png</a> - OCR 输入图。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_output_digits.txt">ddddocr_output_digits.txt</a> - OCR 输出结果。</li>
+            </ul>
+          </div>
+
+          <div class="artifact-box">
+            <h3>限制与失败证据</h3>
+            <ul>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_raw.txt">yt_dlp_search_raw.txt</a> - YouTube 反机器人报错。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_status.json">yt_dlp_search_status.json</a> - yt-dlp 状态记录。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/ytcog_search.json">ytcog_search.json</a> - <code>sessionStatus=NOK</code>。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/twscrape_search.txt">twscrape_search.txt</a> - 无可用账号。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/tiktokapi_status.txt">tiktokapi_status.txt</a> - 会话建立失败。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/praw_without_creds.txt">praw_without_creds.txt</a> - Reddit 凭据缺失。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/reddit_public_json.txt">reddit_public_json.txt</a> - 公共 JSON 返回 403。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/facebook_page_info.json">facebook_page_info.json</a> - 匿名公共页只有空对象。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_status.json">firecrawl_status.json</a> - 无 API key。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_import.txt">firecrawl_import.txt</a> - SDK 可导入。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_host_health.txt">pinchtab_host_health.txt</a> - 宿主机访问 401。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_nav.txt">pinchtab_nav.txt</a> - 域名白名单拦截。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_version.txt">gallery_dl_version.txt</a> - 版本信息。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_extractors.txt">gallery_dl_extractors.txt</a> - 支持站点清单。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_paapi_import.json">amazon_paapi_import.json</a> - 包可导入但无凭据。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_import.json">amazon_simple_product_api_import.json</a> - 当前环境未安装。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_ephemeral.json">amazon_simple_product_api_ephemeral.json</a> - 临时环境可导入。</li>
+            </ul>
+          </div>
+
+          <div class="artifact-box">
+            <h3>元信息</h3>
+            <ul>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/summary.json">summary.json</a> - 批次计数与汇总结论。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/docker_ps.txt">docker_ps.txt</a> - Docker 容器状态快照。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_image_digest.json">pinchtab_image_digest.json</a> - 镜像摘要。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_container_health.json">pinchtab_container_health.json</a> - 容器健康详情。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_docker_logs_initial.txt">pinchtab_docker_logs_initial.txt</a> - 初始启动日志。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/smoke_node.txt">smoke_node.txt</a> - Node 冒烟结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/smoke_python.txt">smoke_python.txt</a> - Python 冒烟结果。</li>
+              <li><a href="artifacts/2026-03-26_redeploy_network_restored/meta/tool_versions.txt">tool_versions.txt</a> - 工具版本。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>建议动作</h2>
+        <ul class="bullet-list">
+          <li>把第一阶段主线限定在已经有真实产物的链路上，不要让账号依赖平台拖慢整体节奏。</li>
+          <li>优先配置 <code>pinchtab</code> 的 token、实例安全策略和 <code>allowedDomains</code>，让 Docker 浏览器服务进入可控状态。</li>
+          <li>等你们提供账号或扫码登录后，再集中打一轮授权态验证：<code>twscrape</code>、<code>TikTokApi</code>、<code>MediaCrawler</code>、可能的 <code>camoufox + CDP</code>。</li>
+          <li>现在就可以开始抽象标准证据模型，把搜索结果、评论、截图、HTML、错误日志统一成可喂给 Next.js 报告页和视频脚本链路的输入。</li>
+        </ul>
+        <p class="footer-note">
+          相关 Markdown 报告：
+          <a href="redeploy-deployment-report-2026-03-26.md">redeploy-deployment-report-2026-03-26.md</a>
+          <br>
+          产物根目录：
+          <code>D:\demo1\openfons\labs\collector-compat\results\artifacts\2026-03-26_redeploy_network_restored</code>
+        </p>
+      </section>
+    </main>
+  </body>
+  </html>

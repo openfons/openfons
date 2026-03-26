@@ -1,0 +1,59 @@
+{
+  "batch_date": "2026-03-26",
+  "query": "openclaw 最合适的服务器虚拟主机",
+  "base_dir": "D:\\demo1\\openfons\\labs\\collector-compat\\results\\artifacts\\2026-03-26_redeploy_network_restored",
+  "counts": {
+    "success_files": 18,
+    "limitations_files": 17,
+    "meta_files": 8,
+    "total_files": 43
+  },
+  "docker": {
+    "pinchtab_container_status": "NAMES                        IMAGE                      STATUS                   PORTS\r\nopenfons-pinchtab-official   pinchtab/pinchtab:latest   Up 4 minutes (healthy)   0.0.0.0:29867->9867/tcp, [::]:29867->9867/tcp",
+    "pinchtab_image_digest": "[\"pinchtab/pinchtab@sha256:078bfe924c7968694d8f92be03ca3fc1418ffe495ca4227082dc8b4f3f4c71d5\"]",
+    "pinchtab_container_health": "{\"Status\":\"healthy\",\"FailingStreak\":0,\"Log\":[{\"Start\":\"2026-03-26T02:12:56.576110968Z\",\"End\":\"2026-03-26T02:12:56.677297228Z\",\"ExitCode\":0,\"Output\":\"\"},{\"Start\":\"2026-03-26T02:13:26.675953102Z\",\"End\":\"2026-03-26T02:13:26.742683959Z\",\"ExitCode\":0,\"Output\":\"\"},{\"Start\":\"2026-03-26T02:13:56.741952305Z\",\"End\":\"2026-03-26T02:13:56.811518577Z\",\"ExitCode\":0,\"Output\":\"\"},{\"Start\":\"2026-03-26T02:14:26.811369839Z\",\"End\":\"2026-03-26T02:14:26.888521838Z\",\"ExitCode\":0,\"Output\":\"\"},{\"Start\":\"2026-03-26T02:14:56.887748252Z\",\"End\":\"2026-03-26T02:14:57.017241925Z\",\"ExitCode\":0,\"Output\":\"\"}]}"
+  },
+  "env_checks": {
+    "tool_versions": "uv=uv 0.10.7 (08ab1a344 2026-02-27)\r\nnode=v24.12.0\r\ndocker=Docker version 29.2.1, build a5c7197",
+    "smoke_node": "> @openfons/collector-compat@0.1.0 smoke:node\r\n> node scripts/smoke-node.mjs\r\n\r\nPASS crawlee: CheerioCrawler and PlaywrightCrawler exported\r\nPASS playwright: chromium launcher exported\r\nPASS yt-dlp-exec: default export is callable\r\nPASS ytcog: package imported\r\nPASS firecrawl: SDK imported\r\nPASS pinchtab: D:\\demo1\\openfons\\labs\\collector-compat\\node_modules\\pinchtab\\dist\\src\\index.js",
+    "smoke_python": "PASS camoufox: imported camoufox\r\nPASS twscrape: imported twscrape\r\nPASS TikTokApi: imported TikTokApi\r\nPASS praw: imported praw\r\nPASS facebook-scraper: imported facebook_scraper\r\nPASS youtube-comment-downloader: imported youtube_comment_downloader\r\nPASS gallery-dl: imported gallery_dl\r\nPASS ddgs: imported ddgs\r\nPASS ddddocr: imported ddddocr\r\nPASS python-amazon-paapi: imported amazon_paapi"
+  },
+  "results": {
+    "ddgs_count": 8,
+    "crawlee_count": 8,
+    "playwright_meta": {
+      "query": "openclaw 最合适的服务器虚拟主机",
+      "url": "https://duckduckgo.com/?q=openclaw+%E6%9C%80%E5%90%88%E9%80%82%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA",
+      "title": "openclaw 最合适的服务器虚拟主机 at DuckDuckGo"
+    },
+    "camoufox_meta": {
+      "query": "openclaw 最合适的服务器虚拟主机",
+      "url": "https://duckduckgo.com/?q=openclaw+%E6%9C%80%E5%90%88%E9%80%82%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA",
+      "title": "openclaw 最合适的服务器虚拟主机 at DuckDuckGo"
+    },
+    "youtube_comments_known_openclaw_count": 5,
+    "hackernews_title": "Running Tesla Model 3's computer on my desk using parts from crashed cars",
+    "v2ex_title": "四年前听张雪峰报考计算机的现在会后悔吗",
+    "amazon_review_total": 18,
+    "ddddocr_text": "1234",
+    "pinchtab_health_status": "ok",
+    "mediacrawler_health_status": "ok"
+  },
+  "limitations": {
+    "yt_dlp_blocked": true,
+    "yt_dlp_head": "ERROR: [youtube] dpFSzPiYwac: Sign in to confirm you��re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies\r\nERROR: [youtube] masJoPqT-6A: Sign in to confirm you��re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies\r\nERROR: [youtube] TlTBNGioJIk: Sign in to confirm you��re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies\r\nERROR: [youtube] TDgqNfA6wrU: Sign in to confirm you��re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also ",
+    "ytcog_head": "{\n  \"query\": \"openclaw 最合适的服务器虚拟主机\",\n  \"sessionStatus\": \"NOK\",\n  \"count\": 0,\n  \"videos\": []\n}",
+    "twscrape_head": "2026-03-26 10:13:51.001 | INFO     | twscrape.db:migrate:96 - Running migration to v1\r\n2026-03-26 10:13:51.008 | INFO     | twscrape.db:migrate:96 - Running migration to v2\r\n2026-03-26 10:13:51.014 | INFO     | twscrape.db:migrate:96 - Running migration to v3\r\n2026-03-26 10:13:51.019 | INFO     | tw",
+    "tiktok_head": "Exception: Failed to create minimum required sessions. Created 0/1, needed at least 1.\r\nErrors: ['Timeout 30000ms exceeded.']",
+    "praw_head": "ResponseException: received 401 HTTP response",
+    "reddit_public_head": "status=403\r\n<body class=theme-beta><div><style>.theme-light,:root{--rem360:22.5rem;--rem320:20rem;--rem192:12rem;--rem144:9rem;--rem128:8rem;--rem96:6rem;--rem90:5.625rem;--rem88:5.5rem;--rem64:4rem;--rem56:3.5rem;--rem48:3rem;--rem40:2.5rem;--rem36:2.25rem;--rem32:2rem;--rem28:1.75rem;--rem26:1.625",
+    "facebook_head": "{}",
+    "firecrawl_head": "{\r\n  \"nodeImport\": true,\r\n  \"apiKeyPresent\": false\r\n}",
+    "gallery_version": "1.31.10",
+    "pinchtab_host_head": "远程服务器返回错误: (401) 未经授权。\r\n",
+    "pinchtab_nav_head": "Error 403: {\"code\":\"error\",\"error\":\"navigation blocked by IDPI: domain \\\"duckduckgo.com\\\" is not in the allowed list (security.idpi.allowedDomains)\"}\r\nSystem.Management.Automation.RemoteException\r\n",
+    "amazon_paapi_head": "{\r\n  \"imported\": true,\r\n  \"module\": \"D:\\\\demo1\\\\openfons\\\\labs\\\\collector-compat\\\\.venv\\\\Lib\\\\site-packages\\\\amazon_paapi\\\\__init__.py\",\r\n  \"creds_present\": false\r\n}",
+    "amazon_simple_current_head": "{\r\n  \"pip_show_exit\": 1,\r\n  \"installed_in_current_env\": false,\r\n  \"stdout\": \"\",\r\n  \"stderr\": \"D:\\\\demo1\\\\openfons\\\\labs\\\\collector-compat\\\\.venv\\\\Scripts\\\\python.exe: No module nam",
+    "amazon_simple_ephemeral_head": "{\r\n  \"imported\": true,\r\n  \"module\": \"C:\\\\Users\\\\ai\\\\AppData\\\\Local\\\\uv\\\\cache\\\\archive-v0\\\\6l6xD_J2LogIHkg_JBjIj\\\\Lib\\\\site-packages\\\\amazon\\\\__init__.py\"\r\n}"
+  }
+}

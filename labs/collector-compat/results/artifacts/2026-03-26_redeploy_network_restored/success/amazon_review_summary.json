@@ -1,0 +1,82 @@
+{
+  "asin": "B0BLCBRBVZ",
+  "mode": "basic",
+  "total_reviews": 18,
+  "scraped_at": "2026-03-26 10:11:42",
+  "star_distribution": {
+    "5": 12,
+    "4": 1,
+    "3": 3,
+    "2": 1,
+    "1": 1
+  },
+  "verified_purchases": 17,
+  "with_images": 1,
+  "with_video": 0,
+  "monthly_distribution": [
+    {
+      "month": "2026-02",
+      "count": 2,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2026-01",
+      "count": 1,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2025-09",
+      "count": 1,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2025-07",
+      "count": 1,
+      "avg_rating": 3.0
+    },
+    {
+      "month": "2025-06",
+      "count": 1,
+      "avg_rating": 3.0
+    },
+    {
+      "month": "2024-10",
+      "count": 1,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2024-09",
+      "count": 1,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2024-07",
+      "count": 1,
+      "avg_rating": 5.0
+    },
+    {
+      "month": "2024-04",
+      "count": 1,
+      "avg_rating": 1.0
+    },
+    {
+      "month": "2023-10",
+      "count": 2,
+      "avg_rating": 3.5
+    },
+    {
+      "month": "2023-09",
+      "count": 2,
+      "avg_rating": 3.5
+    },
+    {
+      "month": "2023-08",
+      "count": 4,
+      "avg_rating": 5.0
+    }
+  ],
+  "date_range": {
+    "earliest": "2023-08-03",
+    "latest": "2026-02-21"
+  }
+}
