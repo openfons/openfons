@@ -1785,7 +1785,9 @@ pre.mermaid {
 </ul>
 <h2 id="todo-v003-001-20260325-md--2">进行中</h2>
 <ul>
-<li>准备第二批“真实抓取级”验证，重点围绕 <code>YouTube / Reddit / Hacker News / Amazon</code>。</li>
+<li>等待账号、cookie 或扫码登录后，继续做 <code>twscrape / TikTokApi / MediaCrawler / yt-dlp</code> 的授权态验证。</li>
+<li>为 <code>pinchtab</code> 设计 token、<code>allowedDomains</code> 与实例安全策略的受控配置方案。</li>
+<li>基于已落盘的搜索、截图、评论、HTML、健康检查与错误日志，定义标准化 evidence 模型。</li>
 </ul>
 <h2 id="todo-v003-001-20260325-md--3">已完成</h2>
 <ul>
@@ -1796,20 +1798,19 @@ pre.mermaid {
 <li>完成 <code>pinchtab</code> 官方 Docker 镜像拉取与容器级健康检查、快照验证。</li>
 <li>完成 <code>MediaCrawler</code> 仓库级验证，确认 <code>uv sync</code>、<code>playwright install</code>、CLI 帮助、SQLite 初始化与 WebUI 健康检查均可运行。</li>
 <li>完成以 <code>openclaw 最合适的服务器虚拟主机</code> 为关键词的产物化复跑，并将 39 个实际产物写入 <code>labs/collector-compat/results/artifacts/2026-03-25<em>openclaw</em>hosting</code>。</li>
+<li>完成网络恢复后的重部署复测，将 43 个实际产物写入 <code>labs/collector-compat/results/artifacts/2026-03-26<em>redeploy</em>network_restored</code>，并生成新的 Markdown 报告与 HTML 统计页。</li>
 <li>完成 <code>ddgs</code>、<code>gallery-dl</code>、<code>ddddocr</code>、<code>twscrape</code> 的运行级 smoke test。</li>
 <li>完成 <code>Hacker News</code>、<code>V2EX</code> 公开 API 的真实请求验证。</li>
 <li>完成 <code>amazon-review-scraper</code> 的真实评论摘要验证。</li>
 <li>验证 <code>python-amazon-simple-product-api</code> 可安装与导入，但需谨慎评估其主线价值。</li>
 <li>完成 <code>YouTube</code> 元数据与评论抓取验证。</li>
 <li>完成 <code>ytcog</code>、<code>PRAW</code>、<code>TikTokApi</code>、<code>twscrape</code>、<code>facebook-scraper</code> 的真实平台级可用性摸底。</li>
+<li>完成 <code>YouTube / Reddit / Hacker News / Amazon</code> 的新一轮真实抓取级复测，并保留成功产物与限制证据。</li>
 </ul>
 <h2 id="todo-v003-001-20260325-md--4">待完成</h2>
 <ul>
-<li>补 <code>YouTube / Reddit / Hacker News / Amazon</code> 的真实抓取级 smoke test。</li>
 <li>评估国内新媒体平台链路是否采用自研 <code>CN social</code> adapter，并仅借鉴 <code>MediaCrawler</code> 的组织方式。</li>
-<li>为 <code>pinchtab</code> 设计 token、allowedDomains 与实例安全策略的受控配置方案。</li>
 <li>设计 <code>cookie / account / api key / proxy</code> 的受控配置方案。</li>
-<li>基于已落盘的搜索、截图、视频、评论产物定义标准化 evidence 模型。</li>
 <li>决定哪些工具进入主线依赖，哪些保留在实验室。</li>
 </ul></div>
 </div>
