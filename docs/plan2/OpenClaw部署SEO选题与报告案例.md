@@ -1,7 +1,7 @@
 # OpenClaw 部署 SEO 选题与报告案例
 
 > 项目名：OpenFons
-> 文档定位：`docs/plan1` 的案例型补充文档
+> 文档定位：`docs/plan2` 的案例型规划文档
 > 文档目的：把“用户一句自然语言问题 -> Intent Structuring -> Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> 受控采集 -> EvidenceSet -> ReportSpec -> Next.js 投行式报告页”落成一份可执行样例
 > 案例日期：2026-03-26
 

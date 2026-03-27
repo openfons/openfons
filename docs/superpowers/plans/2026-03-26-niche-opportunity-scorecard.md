@@ -2,21 +2,21 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the formal `docs/plan1/利基选题标准表-v1.md` document from the approved scorecard design so the team can score topics, split content vs product opportunity, and map outcomes to Phase 1 actions.
+**Goal:** Build the formal `docs/plan2/利基选题标准表-v1.md` document from the approved scorecard design so the team can score topics, split content vs product opportunity, and map outcomes to Phase 1 actions.
 
-**Architecture:** Keep the implementation as a single primary plan1 document aligned with the existing `v1 opportunity gate` and `OpportunitySpec` boundary. The document should combine handbook-style explanation, score tables, decision mapping, and two worked examples without introducing new external contracts.
+**Architecture:** Keep the implementation as a single primary plan2 document aligned with the existing `v1 opportunity gate` and `OpportunitySpec` boundary. The document should combine handbook-style explanation, score tables, decision mapping, and two worked examples without introducing new external contracts.
 
-**Tech Stack:** Markdown documentation, existing `docs/plan1` planning docs, Git
+**Tech Stack:** Markdown documentation, existing `docs/plan2` and `docs/sot` planning docs, Git
 
 ---
 
 ### Task 1: Create the formal scorecard document
 
 **Files:**
-- Create: `docs/plan1/利基选题标准表-v1.md`
+- Create: `docs/plan2/利基选题标准表-v1.md`
 - Reference: `docs/superpowers/specs/2026-03-26-niche-opportunity-scorecard-design.md`
-- Reference: `docs/plan1/利基选题门禁与产品机会框架讨论.md`
-- Reference: `docs/plan1/开放源平台技术团队说明.md`
+- Reference: `docs/plan2/利基选题门禁与产品机会框架讨论.md`
+- Reference: `docs/sot/开放源平台技术团队说明.md`
 
 - [ ] **Step 1: Draft the document skeleton**
 
@@ -146,7 +146,7 @@ Each example must show:
 Run:
 
 ```bash
-rg -n "TODO|TBD|待补|未定" "d:\demo1\openfons\docs\plan1\利基选题标准表-v1.md"
+rg -n "TODO|TBD|待补|未定" "d:\demo1\openfons\docs\plan2\利基选题标准表-v1.md"
 ```
 
 Expected: no output
@@ -154,8 +154,8 @@ Expected: no output
 - [ ] **Step 8: Commit**
 
 ```bash
-git add "docs/plan1/利基选题标准表-v1.md"
-git commit -m "docs(plan1): add niche opportunity scorecard v1"
+git add "docs/plan2/利基选题标准表-v1.md"
+git commit -m "docs(plan2): add niche opportunity scorecard v1"
 ```
 
 ### Task 2: Record the session summary in Memory
@@ -173,7 +173,7 @@ Use this structure:
 ---
 时间: ...
 用户: 确认利基选题标准表设计稿，并要求先修复后落正式文档。
-助手: 基于已确认的设计稿，完成两轮 review 收口，补入上限规则、判定优先级、决策映射矩阵、评分锚点要求，随后将正式版 `docs/plan1/利基选题标准表-v1.md` 落地为可执行的内部评审表 + 说明书文档。
+助手: 基于已确认的设计稿，完成两轮 review 收口，补入上限规则、判定优先级、决策映射矩阵、评分锚点要求，随后将正式版 `docs/plan2/利基选题标准表-v1.md` 落地为可执行的内部评审表 + 说明书文档。
 ```
 
 - [ ] **Step 2: Verify the file exists**

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OpenFons 最佳实践架构图，使用四平面解耦架构与 8 步主链说明用户问题如何被编译为可交付资产。">
+  <meta name="color-scheme" content="light">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23152127'/%3E%3Cpath d='M18 19h28v7H26v8h17v7H26v12h-8V19z' fill='%23fffaf2'/%3E%3C/svg%3E">
+  <title>OpenFons 最佳实践架构图</title>
+  <style>
+    @font-face {
+      font-family: "OpenFons Sans";
+      src:
+        local("IBM Plex Sans"),
+        local("Noto Sans SC"),
+        local("PingFang SC"),
+        local("Microsoft YaHei UI"),
+        local("Microsoft YaHei"),
+        local("Segoe UI");
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffdf9;
+      --ink: #152127;
+      --muted: #4d5a60;
+      --line: rgba(21, 33, 39, 0.12);
+      --shadow: 0 18px 45px rgba(21, 33, 39, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(217, 107, 43, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(47, 95, 227, 0.08), transparent 25%),
+        linear-gradient(180deg, #f7f2eb 0%, var(--bg) 100%);
+      color: var(--ink);
+      font-family: "OpenFons Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    .page {
+      width: min(1320px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .intro {
+      padding: 22px 24px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background:
+        radial-gradient(circle at top right, rgba(47, 95, 227, 0.10), transparent 28%),
+        linear-gradient(180deg, #fffaf2 0%, #fff4e8 100%);
+    }
+
+    .intro h1 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 4vw, 50px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 920px;
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .key-line {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(21, 33, 39, 0.05);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .plane-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .plane {
+      display: grid;
+      grid-template-columns: 240px 1fr 260px;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background: var(--panel);
+    }
+
+    .plane.access {
+      background: linear-gradient(180deg, #fffaf3 0%, #fff1dd 100%);
+    }
+
+    .plane.control {
+      background: linear-gradient(180deg, #f7f9ff 0%, #e9efff 100%);
+    }
+
+    .plane.execution {
+      background: linear-gradient(180deg, #f2fbf8 0%, #e3f4ef 100%);
+    }
+
+    .plane.data {
+      background: linear-gradient(180deg, #fcfbf3 0%, #f4efd8 100%);
+    }
+
+    .plane-tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(21, 33, 39, 0.08);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .plane h2 {
+      margin: 10px 0 6px;
+      font-size: 21px;
+    }
+
+    .plane p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .step-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      align-content: start;
+    }
+
+    .step-card {
+      min-height: 102px;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(21, 33, 39, 0.10);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .step-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .step-card p {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .borrow-box {
+      padding: 12px 13px;
+      border-radius: 18px;
+      border: 1px dashed rgba(21, 33, 39, 0.16);
+      background: rgba(255, 255, 255, 0.62);
+      font-size: 13px;
+      color: #536167;
+    }
+
+    .borrow-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .footer-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .footer-note {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background: #fff;
+    }
+
+    .footer-note h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .footer-note p {
+      margin: 0;
+      color: #56656b;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    @media (max-width: 1100px) {
+      .plane {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: min(100vw - 18px, 100%);
+        padding-top: 16px;
+      }
+
+      .intro,
+      .plane,
+      .footer-note {
+        border-radius: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="intro">
+      <h1>OpenFons 最佳实践架构图</h1>
+      <p class="subtitle">
+        OpenFons 采用四平面解耦架构，让用户问题沿着 8 个受控步骤穿过系统，最终沉淀成可审计、可回放、可交付的长期资产。
+      </p>
+      <div class="key-line">
+        <strong>四平面 = 架构分层</strong>
+        <span>Access / Control / Execution / Data &amp; Delivery</span>
+        <strong>8步 = 主链步骤</strong>
+        <span>用户问题如何穿过这 4 层并变成可交付资产</span>
+      </div>
+    </section>
+
+    <section class="plane-stack" aria-label="四平面与 8 步主链">
+      <article class="plane access">
+        <div>
+          <span class="plane-tag">Plane 01</span>
+          <h2>Access Plane</h2>
+          <p>只负责承接输入与启动编译，不在入口层偷偷做业务判断。</p>
+        </div>
+        <div class="step-row">
+          <div class="step-card">
+            <strong>Step 1. User Input</strong>
+            <p>自然语言、模板、界面化操作、API 请求统一进入系统。</p>
+          </div>
+        </div>
+        <div class="borrow-box">
+          <strong>借鉴边界</strong>
+          借 MiroFish 的地方是“让用户看懂过程和结果”，不是把它的模拟主链搬过来。
+        </div>
+      </article>
+
+      <article class="plane control">
+        <div>
+          <span class="plane-tag">Plane 02</span>
+          <h2>Control Plane</h2>
+          <p>这是 OpenFons 的核心大脑，负责机会判断、确认门禁、任务编译与执行放行。</p>
+        </div>
+        <div class="step-row">
+          <div class="step-card">
+            <strong>Step 2. Intent Structuring</strong>
+            <p>把模糊需求整理成结构化意图、边界和候选方向。</p>
+          </div>
+          <div class="step-card">
+            <strong>Step 3. Planning Swarm</strong>
+            <p>需求、竞争、变现、流量、证据要求并行分析。</p>
+          </div>
+          <div class="step-card">
+            <strong>Step 4. Opportunity Judge</strong>
+            <p>统一裁决，输出唯一前置真源 <code>OpportunitySpec</code>。</p>
+          </div>
+          <div class="step-card">
+            <strong>Step 5. User Confirmation</strong>
+            <p>确认通过后，机会判断才能进入执行编译层。</p>
+          </div>
+          <div class="step-card">
+            <strong>Step 6. Compile and Release</strong>
+            <p>编译出 <code>TaskSpec / WorkflowSpec / ReportSpec</code>，并经过 <code>Execution Budget / Policy Gate / Scheduler</code> 放行。</p>
+          </div>
+        </div>
+        <div class="borrow-box">
+          <strong>必须保留</strong>
+          不要把 DeerFlow 风格的 lead agent 升格成这层主脑。执行层只能消费这里产出的契约与放行结果。
+        </div>
+      </article>
+
+      <article class="plane execution">
+        <div>
+          <span class="plane-tag">Plane 03</span>
+          <h2>Execution Plane</h2>
+          <p>这一层最适合借 DeerFlow，但借的是组织方式，不是业务控制权。</p>
+        </div>
+        <div class="step-row">
+          <div class="step-card">
+            <strong>Step 7. Worker Execution</strong>
+            <p>受控执行采集、分析、回传。可引入 harness、skills、sandbox、sub-agents。</p>
+          </div>
+        </div>
+        <div class="borrow-box">
+          <strong>借鉴边界</strong>
+          借 DeerFlow 的 <code>Runtime Harness / Skills Loader / Tools Registry / Sandbox / Sub-Agent</code>。
+          但 <code>memory / thread</code> 不能当长期真源。
+        </div>
+      </article>
+
+      <article class="plane data">
+        <div>
+          <span class="plane-tag">Plane 04</span>
+          <h2>Data &amp; Delivery Plane</h2>
+          <p>这里决定 OpenFons 为什么不是普通 agent 平台，而是证据驱动的研究与交付系统。</p>
+        </div>
+        <div class="step-row">
+          <div class="step-card">
+            <strong>Step 8. Evidence to Artifact</strong>
+            <p><code>Topic / TopicRun / Evidence / EvidenceSet</code> 沉淀后，按控制面生成的 <code>ReportSpec</code> 进入 <code>Renderer / Portal</code>，最终形成 <code>Artifact</code>。</p>
+          </div>
+        </div>
+        <div class="borrow-box">
+          <strong>借鉴边界</strong>
+          借 MiroFish 的是“报告型产品表达”和“过程可见性”，但事实与结论仍然要由证据真源驱动。
+        </div>
+      </article>
+    </section>
+
+    <section class="footer-strip" aria-label="架构总结">
+      <article class="footer-note">
+        <h2>架构定义</h2>
+        <p>四平面负责解耦系统边界，8 步主链负责把用户问题编译成可执行、可审计、可交付的资产链路。</p>
+      </article>
+      <article class="footer-note">
+        <h2>最佳实践</h2>
+        <p>上游像 OpenFons，中游像 DeerFlow，下游像 MiroFish，但真源始终还是 OpenFons 自己的契约与证据层。</p>
+      </article>
+      <article class="footer-note">
+        <h2>执行顺序</h2>
+        <p>先稳 Control Plane，再补 Execution Plane，最后强化 Data &amp; Delivery 的产品表达与交付体验。</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
