@@ -4,6 +4,7 @@ import { createId, nowIso, slugify } from '@openfons/shared';
 describe('@openfons/shared', () => {
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('slugify normalizes human-readable titles', () => {
@@ -12,8 +13,10 @@ describe('@openfons/shared', () => {
     );
   });
 
-  it('createId prefixes generated ids', () => {
-    expect(createId('opp')).toMatch(/^opp_[a-z0-9]{8}$/);
+  it('createId returns deterministic 8-char suffix output', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
+
+    expect(createId('opp')).toBe('opp_i0000000');
   });
 
   it('nowIso returns an ISO timestamp', () => {
