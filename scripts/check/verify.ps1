@@ -5,4 +5,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 docker compose -f infra/docker/compose.yaml config | Out-Null
+if ($LASTEXITCODE -ne 0) {
+  exit $LASTEXITCODE
+}
+
 Write-Host "verification complete"
