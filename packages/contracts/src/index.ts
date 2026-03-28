@@ -57,12 +57,76 @@ export const ReportSpecSchema = z.object({
   createdAt: z.string().datetime()
 });
 
-export const CompilationResultSchema = z.object({
-  opportunity: OpportunitySpecSchema,
-  tasks: z.array(TaskSpecSchema).length(3),
-  workflow: WorkflowSpecSchema,
-  report: ReportSpecSchema
-});
+const REQUIRED_TASK_KINDS = [
+  'collect-evidence',
+  'score-opportunity',
+  'render-report'
+] as const;
+
+export const CompilationResultSchema = z
+  .object({
+    opportunity: OpportunitySpecSchema,
+    tasks: z.array(TaskSpecSchema).length(3),
+    workflow: WorkflowSpecSchema,
+    report: ReportSpecSchema
+  })
+  .superRefine((value, ctx) => {
+    const opportunityId = value.opportunity.id;
+
+    value.tasks.forEach((task, index) => {
+      if (task.opportunityId !== opportunityId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['tasks', index, 'opportunityId'],
+          message: 'Task opportunityId must match opportunity.id'
+        });
+      }
+    });
+
+    if (value.workflow.opportunityId !== opportunityId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['workflow', 'opportunityId'],
+        message: 'Workflow opportunityId must match opportunity.id'
+      });
+    }
+
+    if (value.report.opportunityId !== opportunityId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['report', 'opportunityId'],
+        message: 'Report opportunityId must match opportunity.id'
+      });
+    }
+
+    const taskIdSet = new Set(value.tasks.map((task) => task.id));
+    const workflowTaskIdSet = new Set(value.workflow.taskIds);
+    const workflowTaskIdsMatch =
+      taskIdSet.size === workflowTaskIdSet.size &&
+      [...taskIdSet].every((taskId) => workflowTaskIdSet.has(taskId));
+
+    if (!workflowTaskIdsMatch) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['workflow', 'taskIds'],
+        message: 'Workflow taskIds must match task ids'
+      });
+    }
+
+    const taskKindSet = new Set(value.tasks.map((task) => task.kind));
+    const hasRequiredTaskKinds =
+      taskKindSet.size === REQUIRED_TASK_KINDS.length &&
+      REQUIRED_TASK_KINDS.every((kind) => taskKindSet.has(kind));
+
+    if (!hasRequiredTaskKinds) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['tasks'],
+        message:
+          'Tasks must include each required kind exactly once: collect-evidence, score-opportunity, render-report'
+      });
+    }
+  });
 
 export type OpportunityInput = z.infer<typeof OpportunityInputSchema>;
 export type OpportunitySpec = z.infer<typeof OpportunitySpecSchema>;
