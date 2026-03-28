@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { ReportPage } from '../../apps/report-web/src/pages/report-page';
 
 describe('report-web', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders a report loaded from the API', async () => {
     render(
       <ReportPage
@@ -30,5 +34,20 @@ describe('report-web', () => {
       })
     ).toBeInTheDocument();
     expect(screen.getByText('Demand is rising.')).toBeInTheDocument();
+  });
+
+  it('renders an error when the report request fails', async () => {
+    render(
+      <ReportPage
+        reportId="report_404"
+        loadReport={async () => {
+          throw new Error('Failed to load report');
+        }}
+      />
+    );
+
+    expect(
+      await screen.findByText('Failed to load report')
+    ).toBeInTheDocument();
   });
 });
