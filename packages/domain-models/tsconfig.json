@@ -5,10 +5,7 @@
     "moduleResolution": "NodeNext",
     "declaration": true,
     "rootDir": "src",
-    "outDir": "dist",
-    "paths": {
-      "@openfons/shared": ["../shared/dist/index.d.ts"]
-    }
+    "outDir": "dist"
   },
   "include": ["src/**/*"]
 }
