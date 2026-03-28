@@ -8,15 +8,27 @@ import type {
 } from '@openfons/contracts';
 import { createId, nowIso, slugify } from '@openfons/shared';
 
-export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => ({
-  id: createId('opp'),
-  slug: slugify(input.title),
-  title: input.title,
-  market: input.market,
-  input,
-  status: 'draft',
-  createdAt: nowIso()
-});
+export class InvalidOpportunityInputError extends Error {}
+
+export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
+  const slug = slugify(input.title);
+
+  if (!slug) {
+    throw new InvalidOpportunityInputError(
+      'Title must contain at least one alphanumeric character'
+    );
+  }
+
+  return {
+    id: createId('opp'),
+    slug,
+    title: input.title,
+    market: input.market,
+    input,
+    status: 'draft',
+    createdAt: nowIso()
+  };
+};
 
 export const buildCompilation = (
   opportunity: OpportunitySpec

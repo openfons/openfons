@@ -2,7 +2,11 @@ import { OpportunityInputSchema } from '@openfons/contracts';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 
-import { buildCompilation, buildOpportunity } from './compiler.js';
+import {
+  buildCompilation,
+  buildOpportunity,
+  InvalidOpportunityInputError
+} from './compiler.js';
 import { createMemoryStore, type MemoryStore } from './store.js';
 
 export const createApp = (store: MemoryStore = createMemoryStore()) => {
@@ -11,7 +15,16 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
   app.post('/api/v1/opportunities', async (c) => {
-    const payload = await c.req.json();
+    let payload: unknown;
+
+    try {
+      payload = await c.req.json();
+    } catch {
+      throw new HTTPException(400, {
+        message: 'Invalid JSON payload'
+      });
+    }
+
     const parsed = OpportunityInputSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -20,7 +33,20 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
       });
     }
 
-    const opportunity = buildOpportunity(parsed.data);
+    let opportunity;
+
+    try {
+      opportunity = buildOpportunity(parsed.data);
+    } catch (error) {
+      if (error instanceof InvalidOpportunityInputError) {
+        throw new HTTPException(400, {
+          message: error.message
+        });
+      }
+
+      throw error;
+    }
+
     store.saveOpportunity(opportunity);
 
     return c.json({ opportunity }, 201);

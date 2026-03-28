@@ -82,4 +82,43 @@ describe('control-api', () => {
     expect(response.status).toBe(404);
     await expect(response.text()).resolves.toBe('Report not found');
   });
+
+  it('rejects malformed json payloads', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: '{bad json'
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe('Invalid JSON payload');
+  });
+
+  it('rejects titles that cannot produce a slug', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: '!!!',
+        query: 'best ai coding models',
+        market: 'global',
+        audience: 'engineering leads',
+        problem: 'Teams need to compare price and routing options',
+        outcome: 'Produce a minimal report shell'
+      })
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe(
+      'Title must contain at least one alphanumeric character'
+    );
+  });
 });
