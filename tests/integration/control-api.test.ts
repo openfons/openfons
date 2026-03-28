@@ -45,4 +45,41 @@ describe('control-api', () => {
     const report = await reportResponse.json();
     expect(report.title).toContain('AI Coding Model');
   });
+
+  it('rejects invalid opportunity payloads', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: ''
+      })
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toContain('Required');
+  });
+
+  it('returns 404 when compiling an unknown opportunity', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/opportunities/opp_missing/compile', {
+      method: 'POST'
+    });
+
+    expect(response.status).toBe(404);
+    await expect(response.text()).resolves.toBe('Opportunity not found');
+  });
+
+  it('returns 404 for unknown reports', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/reports/report_missing');
+
+    expect(response.status).toBe(404);
+    await expect(response.text()).resolves.toBe('Report not found');
+  });
 });
