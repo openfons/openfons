@@ -4,7 +4,7 @@
   "session_id": "019d2e04-a501-7351-af1d-bfb0c1500864",
   "title": "rollout-2026-03-27T14-39-09-019d2e04-a501-7351-af1d-bfb0c1500864",
   "started_at": "2026-03-27T06:39:09Z",
-  "imported_at": "2026-03-28T01:35:25Z",
+  "imported_at": "2026-03-28T01:40:27Z",
   "cwd": "d:\\demo1\\openfons",
   "branch": "main",
   "raw_source_path": "C:/Users/ai/.codex/sessions/2026/03/27/rollout-2026-03-27T14-39-09-019d2e04-a501-7351-af1d-bfb0c1500864.jsonl",
@@ -18,9 +18,9 @@
   "global_clean_path": "C:/Users/ai/.memorytree/transcripts/clean/codex/openfons/2026/03/019d2e04-a501-7351-af1d-bfb0c1500864__b0aec967.md",
   "global_manifest_path": "C:/Users/ai/.memorytree/transcripts/index/manifests/codex/openfons/2026/03/019d2e04-a501-7351-af1d-bfb0c1500864__b0aec967.json",
   "global_full_path": "C:/Users/ai/.memorytree/transcripts/full/codex/openfons/2026/03/019d2e04-a501-7351-af1d-bfb0c1500864__b0aec967.json",
-  "message_count": 233,
-  "tool_event_count": 769,
-  "event_count": 1838,
+  "message_count": 234,
+  "tool_event_count": 773,
+  "event_count": 1853,
   "cleaning_mode": "deterministic-code",
   "repo_mirror_enabled": true
 }
