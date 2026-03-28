@@ -2,11 +2,11 @@ import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   test: {
     passWithNoTests: true,
     projects: [
       {
+        plugins: [tsconfigPaths({ projects: ['./tsconfig.base.json'] })],
         test: {
           name: 'node',
           setupFiles: ['./tests/setup.ts'],
@@ -16,6 +16,7 @@ export default defineConfig({
         }
       },
       {
+        plugins: [tsconfigPaths({ projects: ['./tsconfig.base.json'] })],
         test: {
           name: 'jsdom',
           setupFiles: ['./tests/setup.ts'],
