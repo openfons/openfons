@@ -13,6 +13,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
+    "@openfons/contracts": "workspace:*",
     "@openfons/domain-models": "workspace:*",
     "@openfons/shared": "workspace:*",
     "@testing-library/jest-dom": "^6.6.3",

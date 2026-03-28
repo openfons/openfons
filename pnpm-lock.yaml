@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@openfons/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
       '@openfons/domain-models':
         specifier: workspace:*
         version: link:packages/domain-models
@@ -41,6 +44,12 @@ importers:
       vitest:
         specifier: ^3.0.9
         version: 3.2.4(@types/node@22.19.15)(jsdom@26.1.0)(tsx@4.21.0)
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
 
   packages/domain-models:
     dependencies:
@@ -1062,6 +1071,9 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
 snapshots:
 
   '@adobe/css-tools@4.4.4': {}
@@ -1888,3 +1900,5 @@ snapshots:
   xml-name-validator@5.0.0: {}
 
   xmlchars@2.2.0: {}
+
+  zod@3.25.76: {}
