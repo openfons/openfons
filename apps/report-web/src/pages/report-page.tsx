@@ -10,7 +10,11 @@ type Props = {
 export const ReportPage = ({
   reportId,
   loadReport = createReportLoader(
-    import.meta.env.VITE_CONTROL_API_BASE_URL ?? 'http://localhost:3001'
+    (
+      import.meta as ImportMeta & {
+        env: Record<string, string | undefined>;
+      }
+    ).env.VITE_CONTROL_API_BASE_URL ?? 'http://localhost:3001'
   )
 }: Props) => {
   const [report, setReport] = useState<ReportSpec | null>(null);
