@@ -172,4 +172,25 @@ describe('@openfons/contracts', () => {
     const result = CompilationResultSchema.safeParse(input);
     expect(result.success).toBe(false);
   });
+
+  it('rejects a compilation result when task ids contain duplicates', () => {
+    const input = createValidCompilationResult();
+    input.tasks = [
+      { ...input.tasks[0], id: 'task_001' },
+      { ...input.tasks[1], id: 'task_002' },
+      { ...input.tasks[2], id: 'task_002' }
+    ];
+    input.workflow.taskIds = ['task_001', 'task_002', 'task_002'];
+
+    const result = CompilationResultSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a compilation result when workflow task ids contain duplicates', () => {
+    const input = createValidCompilationResult();
+    input.workflow.taskIds = ['task_001', 'task_002', 'task_002'];
+
+    const result = CompilationResultSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
 });

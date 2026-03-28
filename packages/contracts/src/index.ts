@@ -99,11 +99,32 @@ export const CompilationResultSchema = z
       });
     }
 
-    const taskIdSet = new Set(value.tasks.map((task) => task.id));
-    const workflowTaskIdSet = new Set(value.workflow.taskIds);
-    const workflowTaskIdsMatch =
-      taskIdSet.size === workflowTaskIdSet.size &&
-      [...taskIdSet].every((taskId) => workflowTaskIdSet.has(taskId));
+    const taskIds = value.tasks.map((task) => task.id);
+    const workflowTaskIds = value.workflow.taskIds;
+    const taskIdSet = new Set(taskIds);
+    const workflowTaskIdSet = new Set(workflowTaskIds);
+
+    if (taskIdSet.size !== taskIds.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['tasks'],
+        message: 'Task ids must be unique'
+      });
+    }
+
+    if (workflowTaskIdSet.size !== workflowTaskIds.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['workflow', 'taskIds'],
+        message: 'Workflow taskIds must be unique'
+      });
+    }
+
+    const sameCardinality = taskIds.length === workflowTaskIds.length;
+    const sameMembers =
+      [...taskIdSet].every((taskId) => workflowTaskIdSet.has(taskId)) &&
+      [...workflowTaskIdSet].every((taskId) => taskIdSet.has(taskId));
+    const workflowTaskIdsMatch = sameCardinality && sameMembers;
 
     if (!workflowTaskIdsMatch) {
       ctx.addIssue({
