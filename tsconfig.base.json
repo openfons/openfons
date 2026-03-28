@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@openfons/shared": ["packages/shared/src/index.ts"],
+      "@openfons/domain-models": ["packages/domain-models/src/index.ts"],
+      "@openfons/contracts": ["packages/contracts/src/index.ts"]
+    }
+  }
+}

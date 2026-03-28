@@ -1,0 +1,9 @@
+services:
+  control-api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/control-api.Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"

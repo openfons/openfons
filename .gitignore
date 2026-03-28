@@ -2,6 +2,14 @@ AGENTS.md
 Memory/**
 memory/**
 node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
 __pycache__/
 *.pyc
 .DS_Store
+data/temp/

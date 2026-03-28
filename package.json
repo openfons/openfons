@@ -1,0 +1,29 @@
+{
+  "name": "openfons",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.7.1",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @openfons/control-api --filter @openfons/control-web --filter @openfons/report-web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@openfons/contracts": "workspace:*",
+    "@openfons/domain-models": "workspace:*",
+    "@openfons/shared": "workspace:*",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.13.11",
+    "jsdom": "^26.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.9"
+  }
+}

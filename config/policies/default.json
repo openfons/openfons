@@ -1,0 +1,7 @@
+{
+  "compilePolicy": {
+    "requireEvidenceCount": 2,
+    "allowBrowserFallback": false,
+    "maxTasksPerWorkflow": 3
+  }
+}

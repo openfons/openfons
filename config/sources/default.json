@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {
+      "id": "search",
+      "kind": "seed",
+      "enabled": true
+    },
+    {
+      "id": "community",
+      "kind": "signal",
+      "enabled": true
+    }
+  ]
+}
