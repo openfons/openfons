@@ -52,6 +52,26 @@
       gap: 18px;
     }
 
+    .governance-banner {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, rgba(21, 33, 39, 0.07), rgba(47, 95, 227, 0.08));
+    }
+
+    .governance-banner strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+    }
+
+    .governance-banner p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
     .intro {
       padding: 22px 24px;
       border-radius: 24px;
@@ -238,7 +258,10 @@
 </head>
 <body>
   <main class="page">
-    <section class="intro">
+    <section class="governance-banner">
+      <strong>2026-03-28 实验治理说明</strong>
+      <p>本图保留为历史 best-practice 架构视图，不直接代表当前 dual experiment 的页面排期或旧评分继续有效。若与当前执行冲突，以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与对应 todo 为准，并先过 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
+    </section>    <section class="intro">
       <h1>OpenFons 最佳实践架构图</h1>
       <p class="subtitle">
         OpenFons 采用四平面解耦架构，让用户问题沿着 8 个受控步骤穿过系统，最终沉淀成可审计、可回放、可交付的长期资产。

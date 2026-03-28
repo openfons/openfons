@@ -4,6 +4,8 @@
 > 适用范围：`docs/plan2/利基选题标准表-v1.md` 的正式落地前设计
 > 状态：待用户审阅
 
+> 2026-03-28 实验治理说明：本文保留为旧评分体系的设计稿，用于回看 v1 scorecard 的演化背景，不再作为当前 dual experiment 的执行契约。当前实验以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-todo.md 为准，并先过 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates，再决定是否进入次级排序。
+
 ## 1. 目标
 
 为 OpenFons 第一阶段建立一套可执行、可复盘、可迭代的 `利基选题标准表 v1`，用于把用户问题统一判断为：

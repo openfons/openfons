@@ -385,6 +385,8 @@
 
 ## 6. 这个主题的 10 个流量方向
 
+> 2026-03-28 实验治理说明：本节的候选方向、`P0/P1` 优先级和关键词建议仅保留为历史探索性的 `planning hypothesis / pending validation`，不再作为当前执行实验的直接排名结果。当前实验流程必须先过 `Authority / Distribution / Compliance / Maintenance Cost` 四个 hard gates，只有通过 hard gates 的方向才可进入后续次级排序与 winner 选择。
+
 下面这 10 个方向不是都要立刻上线，而是“候选页面池”。
 
 这里的方向、优先级和关键词都只是：

@@ -344,6 +344,8 @@
 
 ## 6. 10 个方向应该如何打分
 
+> 2026-03-28 实验治理说明：本节 5 维度与 `Priority Score` 仅保留为历史探索记录，不再作为当前执行实验的唯一评分契约。当前实验流程必须先过 `Authority / Distribution / Compliance / Maintenance Cost` 四个 hard gates，只有通过 hard gates 的方向才可再用 `Demand / Evidence / Difficulty / Business / Updateability` 做次级排序。
+
 建议对每个方向用 5 维度打分，每项 1 到 5 分：
 
 1. `Demand`

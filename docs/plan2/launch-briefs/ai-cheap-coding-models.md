@@ -5,6 +5,8 @@
 > 页面角色：`强商业决策页`
 > 优先级：`P0`
 
+> 2026-03-28 实验治理说明：这里的 第一批 / P0 仅表示历史 launch-batch hypothesis，不等于当前 dual experiment 已确认优先发布。当前执行必须先过 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates，并与现行 case plan / todo 的制品绑定要求保持一致。
+
 ## 1. 页面定位
 
 这页是预算敏感型决策页。

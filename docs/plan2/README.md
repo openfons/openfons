@@ -9,10 +9,16 @@
 - 案例型规划文档
 - 面向页面或交付物的 brief
 
+## 2026-03-28 实验治理说明
+
+- 利基选题门禁与产品机会框架讨论.md、利基选题标准表-v1*.md、launch-briefs/ 中的旧评分、P0 / P1、第一批上线等表述，当前仅保留为历史规划基线与演化记录。
+- 当前 dual experiment 以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-todo.md 为准。
+- 若旧文档与当前执行冲突，统一按 hard-gate-first 处理：先过 Authority / Distribution / Compliance / Maintenance Cost，再做次级排序与制品绑定验证。
+
 ## 推荐阅读顺序
 
 1. 先看 `openfons-best-practice-architecture-2026-03-27.html`，快速建立整体架构印象。
 2. 再看 `MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md`，理解为什么要这样分层，以及分别借鉴什么。
-3. 然后看 `利基选题门禁与产品机会框架讨论.md` 与 `利基选题标准表-v1.md`，理解前置机会判断与评分方法。
+3. 然后看 `利基选题门禁与产品机会框架讨论.md` 与 `利基选题标准表-v1.md`，理解前置机会判断与早期评分方法，并注意其治理说明。
 4. 再看 `OpenClaw部署SEO选题与报告案例.md` 和 `AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md`，把抽象架构对到真实案例。
-5. 最后按需看 `launch-briefs/`、`利基选题标准表-v1-案例评分.md`、`利基选题标准表-v1-页面级优先级评分.md` 与 `openfons-architecture-fusion-map-2026-03-27.html`，用于页面规划、评分演示和补充对照。
+5. 最后按需看 `launch-briefs/`、`利基选题标准表-v1-案例评分.md`、`利基选题标准表-v1-页面级优先级评分.md` 与 `openfons-architecture-fusion-map-2026-03-27.html`，用于页面规划、历史评分演示和补充对照。
