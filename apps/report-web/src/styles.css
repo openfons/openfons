@@ -28,3 +28,22 @@ body {
   letter-spacing: 0.12em;
   color: #76583b;
 }
+
+.meta-line {
+  color: #76583b;
+  font-size: 0.95rem;
+}
+
+.thesis {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.detail-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.detail-list li + li {
+  margin-top: 8px;
+}

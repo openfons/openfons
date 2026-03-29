@@ -6,7 +6,9 @@ export const OpportunityInputSchema = z.object({
   market: z.string().min(1),
   audience: z.string().min(1),
   problem: z.string().min(1),
-  outcome: z.string().min(1)
+  outcome: z.string().min(1),
+  geo: z.string().min(1),
+  language: z.string().min(1)
 });
 
 export const OpportunityStatusSchema = z.enum(['draft', 'compiled']);
@@ -17,6 +19,29 @@ export const TaskKindSchema = z.enum([
 ]);
 export const TaskStatusSchema = z.enum(['queued', 'ready']);
 export const WorkflowStatusSchema = z.enum(['draft', 'ready']);
+export const DeliverySurfaceSchema = z.enum(['report-web']);
+export const SearchIntentSchema = z.enum(['decision', 'comparison', 'evaluation']);
+
+export const PageCandidateSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  query: z.string().min(1)
+});
+
+export const EvidenceRequirementSchema = z.object({
+  kind: z.enum([
+    'official-docs',
+    'official-pricing',
+    'official-availability',
+    'community-corroboration'
+  ]),
+  note: z.string().min(1)
+});
+
+export const ProductOpportunityHintSchema = z.object({
+  kind: z.enum(['tracker', 'calculator', 'advisor', 'subscription']),
+  note: z.string().min(1)
+});
 
 export const OpportunitySpecSchema = z.object({
   id: z.string().min(1),
@@ -25,7 +50,16 @@ export const OpportunitySpecSchema = z.object({
   market: z.string().min(1),
   input: OpportunityInputSchema,
   status: OpportunityStatusSchema,
-  createdAt: z.string().datetime()
+  createdAt: z.string().datetime(),
+  audience: z.string().min(1),
+  geo: z.string().min(1),
+  language: z.string().min(1),
+  searchIntent: SearchIntentSchema,
+  angle: z.string().min(1),
+  firstDeliverySurface: DeliverySurfaceSchema,
+  pageCandidates: z.array(PageCandidateSchema).min(1),
+  evidenceRequirements: z.array(EvidenceRequirementSchema).min(1),
+  productOpportunityHints: z.array(ProductOpportunityHintSchema)
 });
 
 export const TaskSpecSchema = z.object({
@@ -48,12 +82,25 @@ export const ReportSectionSchema = z.object({
   body: z.string().min(1)
 });
 
+export const UpdateLogEntrySchema = z.object({
+  at: z.string().datetime(),
+  note: z.string().min(1)
+});
+
 export const ReportSpecSchema = z.object({
   id: z.string().min(1),
   opportunityId: z.string().min(1),
+  slug: z.string().min(1),
   title: z.string().min(1),
   summary: z.string().min(1),
+  audience: z.string().min(1),
+  geo: z.string().min(1),
+  language: z.string().min(1),
+  thesis: z.string().min(1),
   sections: z.array(ReportSectionSchema).min(1),
+  evidenceBoundaries: z.array(z.string().min(1)).min(1),
+  risks: z.array(z.string().min(1)).min(1),
+  updateLog: z.array(UpdateLogEntrySchema).min(1),
   createdAt: z.string().datetime()
 });
 
