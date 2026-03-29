@@ -1662,7 +1662,7 @@ pre.mermaid {
 <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem"><button class="reader-toggle-btn" id="reader-toggle" type="button" title="Toggle reader mode">📖</button></div>
 <div class="page-header">
   <h1>Todos</h1>
-  <p class="subtitle">3 todo file(s)</p>
+  <p class="subtitle">4 todo file(s)</p>
 </div>
 <div class="card" id="todo-v001-001-20260324-md">
   <h2>项目待办</h2>
@@ -1820,6 +1820,61 @@ pre.mermaid {
 <li>评估国内新媒体平台链路是否采用自研 <code>CN social</code> adapter，并仅借鉴 <code>MediaCrawler</code> 的组织方式。</li>
 <li>设计 <code>cookie / account / api key / proxy</code> 的受控配置方案。</li>
 <li>决定哪些工具进入主线依赖，哪些保留在实验室。</li>
+</ul></div>
+</div>
+<div class="card" id="todo-v004-001-20260329-md">
+  <h2>项目待办</h2>
+  <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">todo_v004_001_20260329.md</p>
+  <nav class="toc" id="toc">
+  <button class="toc-toggle" id="toc-toggle" type="button" aria-expanded="true">
+    Contents <span class="toc-arrow">▾</span>
+  </button>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#todo-v004-001-20260329-md-">绑定信息</a></li>
+      <li><a href="#todo-v004-001-20260329-md--1">里程碑</a></li>
+      <li><a href="#todo-v004-001-20260329-md--2">进行中</a></li>
+      <li><a href="#todo-v004-001-20260329-md--3">已完成</a></li>
+      <li><a href="#todo-v004-001-20260329-md--4">待完成</a></li>
+  </ul>
+</nav>
+  <div class="markdown-body"><h1>项目待办</h1>
+<h2 id="todo-v004-001-20260329-md-">绑定信息</h2>
+<ul>
+<li>目标版本: goal_v004</li>
+<li>待办版本: v004_001</li>
+<li>创建日期: 2026-03-29</li>
+<li>状态: 当前生效</li>
+</ul>
+<h2 id="todo-v004-001-20260329-md--1">里程碑</h2>
+<ul>
+<li>[ ] 固化 v1 北极星与 6 层真源产物视图到 SoT 和记忆文档</li>
+<li>[ ] 用一个真实用户问题跑通从 <code>OpportunitySpec</code> 到 <code>Artifact</code> 的逐层示例</li>
+<li>[ ] 定义 <code>TopicRun / Source Captures / Collection Logs -&gt; EvidenceSet</code> 的标准化规则</li>
+<li>[ ] 明确 <code>ReportSpec -&gt; 页面 / 视频 / 文章 / newsletter</code> 的派生链</li>
+<li>[ ] 明确 <code>ProductOpportunityHints</code> 的判断边界与后续产品化入口</li>
+</ul>
+<h2 id="todo-v004-001-20260329-md--2">进行中</h2>
+<ul>
+<li>将 v1 唯一北极星写入当前目标文件，并把待办改为围绕统一真源产物树组织。</li>
+<li>已写出 <code>docs/superpowers/specs/2026-03-29-openfons-v1-north-star-and-artifact-tree-design.md</code>，作为 v1 北极星与 6 层产物树的正式设计稿，待继续与 SoT 文档对齐。</li>
+<li>使用“AI 编程 / Agent 模型采购与路由决策”这个真实问题，逐层模拟 <code>OpportunitySpec / TopicRun / Source Captures / Collection Logs / EvidenceSet / ReportSpec / Derived Content / ProductOpportunityHints</code>。</li>
+<li>梳理“网页报告是 v1 默认盈利交付，但不是唯一产物面”的正式表述，避免后续再次把系统误解成单一页面站。</li>
+</ul>
+<h2 id="todo-v004-001-20260329-md--3">已完成</h2>
+<ul>
+<li>完成 <code>labs/collector-compat</code> 隔离验证目录、依赖清单、冒烟脚本与第一批工具安装验证。</li>
+<li>完成多批真实 artifact 落盘与 <code>collector-ops-dashboard-2026-03-26.html</code> 看板。</li>
+<li>完成 <code>OpenClaw</code> 与 <code>AI procurement</code> 两类案例文档，沉淀 <code>OpportunitySpec / TaskSpec / WorkflowSpec / ReportSpec</code> 主链表达。</li>
+<li>完成控制面契约统一，明确 <code>OpportunitySpec</code> 是前置规划层对下游暴露的唯一外部契约。</li>
+<li>完成 <code>YouTube / Reddit / Hacker News / Amazon</code> 等平台的真实抓取级复测，为后续 <code>TopicRun / Source Captures / Collection Logs</code> 标准化提供基础样本。</li>
+</ul>
+<h2 id="todo-v004-001-20260329-md--4">待完成</h2>
+<ul>
+<li>用统一 schema 定义 <code>OpportunitySpec</code> 的 v1 字段级结构。</li>
+<li>用统一 schema 定义 <code>Evidence</code>、<code>EvidenceSet</code> 与 <code>Artifact</code> 的映射关系。</li>
+<li>设计 <code>cookie / account / api key / proxy</code> 的受控配置方案，使授权态采集可进入统一真源链。</li>
+<li>决定哪些采集工具进入主线依赖，哪些继续保留在实验室。</li>
+<li>评估国内平台链路是否采用自研 <code>CN social</code> adapter，并仅借鉴 <code>MediaCrawler</code> 的组织方式。</li>
 </ul></div>
 </div>
   </div>

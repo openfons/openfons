@@ -1662,7 +1662,7 @@ pre.mermaid {
 <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem"><button class="reader-toggle-btn" id="reader-toggle" type="button" title="Toggle reader mode">📖</button></div>
 <div class="page-header">
   <h1>Goals</h1>
-  <p class="subtitle">3 goal file(s)</p>
+  <p class="subtitle">4 goal file(s)</p>
 </div>
 <div class="card" id="goal-v001-20260324-md">
   <h2>项目目标 v001</h2>
@@ -1795,6 +1795,87 @@ pre.mermaid {
 <h2 id="goal-v003-20260325-md--5">变更记录</h2>
 <ul>
 <li>2026-03-25: 用户确认第一阶段优先把采集功能和相关开源工具验证清楚，据此创建 v003。</li>
+</ul></div>
+</div>
+<div class="card" id="goal-v004-20260329-md">
+  <h2>项目目标 v004</h2>
+  <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">goal_v004_20260329.md</p>
+  <nav class="toc" id="toc">
+  <button class="toc-toggle" id="toc-toggle" type="button" aria-expanded="true">
+    Contents <span class="toc-arrow">▾</span>
+  </button>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#goal-v004-20260329-md-">元信息</a></li>
+      <li><a href="#goal-v004-20260329-md--1">北极星目标</a></li>
+      <li><a href="#goal-v004-20260329-md-v1">v1 真源产物视图</a></li>
+      <li><a href="#goal-v004-20260329-md--2">范围</a></li>
+      <li><a href="#goal-v004-20260329-md--3">非目标</a></li>
+      <li><a href="#goal-v004-20260329-md--4">验收信号</a></li>
+      <li><a href="#goal-v004-20260329-md--5">变更记录</a></li>
+  </ul>
+</nav>
+  <div class="markdown-body"><h1>项目目标 v004</h1>
+<h2 id="goal-v004-20260329-md-">元信息</h2>
+<ul>
+<li>版本: v004</li>
+<li>创建日期: 2026-03-29</li>
+<li>上一版本: goal_v003</li>
+</ul>
+<h2 id="goal-v004-20260329-md--1">北极星目标</h2>
+<p>OpenFons v1 的唯一北极星：把真实用户问题稳定编译成可验证的 <code>OpportunitySpec</code>、<code>EvidenceSet</code> 和 <code>ReportSpec</code>，先交付可盈利的网页报告，并为视频、文章与工具/订阅机会保留统一真源。</p>
+<h2 id="goal-v004-20260329-md-v1">v1 真源产物视图</h2>
+<ol>
+<li><code>OpportunitySpec</code></li>
+</ol>
+<p>   原始用户问题的最终判定内容。它回答用户真正要什么、值不值得做、适合哪种页面或内容方向，以及是否存在工具站、数据产品或订阅机会。</p>
+<ol>
+<li><code>TopicRun / Source Captures / Collection Logs</code></li>
+</ol>
+<p>   原始采集层。这里保留搜索结果、HTML、截图、评论、价格页 capture、运行日志和失败记录，负责保真，不负责结论，不等于最终交付 Artifact。</p>
+<ol>
+<li><code>EvidenceSet</code></li>
+</ol>
+<p>   结构化证据层。它把原始采集整理成可引用、可复核、可支持 claim 的证据对象，供页面、视频、文章等交付共用。</p>
+<ol>
+<li><code>ReportSpec</code></li>
+</ol>
+<p>   第一阶段主交付编译层。它定义标题、slug、受众、地区、语言、section、必须保留的风险边界和更新日志，是网页报告的直接上游真源。</p>
+<ol>
+<li><code>Derived Content Specs</code></li>
+</ol>
+<p>   派生内容层。它从 <code>ReportSpec</code> 和 <code>EvidenceSet</code> 继续派生 <code>VideoOutline</code>、<code>Script</code>、<code>ArticleBrief</code>、<code>NewsletterBrief</code> 以及未来类似 <code>NotebookLM</code> 的多形态内容。</p>
+<ol>
+<li><code>ProductOpportunityHints</code></li>
+</ol>
+<p>   产品机会逻辑层。它先作为 <code>OpportunitySpec</code> 的内部字段保留，用于判断比较器、追踪页、工具站、会员或订阅产品的后续潜力，而不是新的平级外部契约。</p>
+<h2 id="goal-v004-20260329-md--2">范围</h2>
+<ul>
+<li>固定 v1 北极星和 6 层真源产物视图，避免系统目标在“采集验证 / 页面盈利 / 内容工厂 / 工具站”之间反复摇摆。</li>
+<li>先以 <code>report-web / Next.js</code> 网页报告作为第一阶段默认盈利交付，但不把它误写成系统唯一产物。</li>
+<li>保持从同一套真源派生视频、文章、博客、newsletter 和未来多形态内容。</li>
+<li>在 <code>OpportunitySpec</code> 中保留工具站、数据产品和订阅机会 hint，供后续产品化评估使用。</li>
+<li>将现有采集能力验证成果视为 <code>TopicRun / Source Captures / Collection Logs</code> 的基础设施，而不是独立终点。</li>
+<li>将现有采集能力验证成果视为 <code>TopicRun / Source Captures / Collection Logs</code> 的基础设施，而不是独立终点。</li>
+<li>明确 6 层视图是对真源与产物的表达，不替代正式执行链中的 <code>TaskSpec / WorkflowSpec</code>。</li>
+</ul>
+<h2 id="goal-v004-20260329-md--3">非目标</h2>
+<ul>
+<li>本轮不同时把视频、博客、newsletter、工具站和订阅产品全部产品化上线。</li>
+<li>本轮不让页面、视频、文章或工具各自维护独立事实源。</li>
+<li>本轮不跳过 <code>Opportunity Judge</code> 和 <code>User Confirmation</code> 直接进入批量采集或内容生成。</li>
+<li>本轮不在没有单独 ADR / RFC 的情况下新增与 <code>ReportSpec</code> 平级的正式工具交付契约。</li>
+</ul>
+<h2 id="goal-v004-20260329-md--4">验收信号</h2>
+<ul>
+<li>当前项目活跃目标与待办都以同一条北极星描述系统目标，不再反复切换目标表达。</li>
+<li>至少一个真实用户问题可以完整映射为 6 层产物树。</li>
+<li><code>ReportSpec</code> 可以作为网页报告、视频、文章、newsletter 的共享上游真源。</li>
+<li><code>OpportunitySpec</code> 明确保留产品机会 hint，用于后续判断比较器、追踪页、会员或订阅方向。</li>
+<li>现有采集产物能够进入标准化 evidence 流程，而不是停留在孤立 artifact。</li>
+</ul>
+<h2 id="goal-v004-20260329-md--5">变更记录</h2>
+<ul>
+<li>2026-03-29: 用户确认第一阶段 v1 唯一北极星应统一为“真实用户问题 -&gt; OpportunitySpec / EvidenceSet / ReportSpec -&gt; 可盈利网页报告，并保留视频、文章与工具/订阅扩展位”，据此创建 v004。</li>
 </ul></div>
 </div>
   </div>
