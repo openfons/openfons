@@ -4,28 +4,28 @@
 
 **Goal:** Create page-level launch brief and ReportSpec docs for the 6 first-batch pages across the OpenClaw and AI procurement themes.
 
-**Architecture:** Use one folder under `docs/plan2/launch-briefs/` and create one Markdown file per page so each page has a focused launch brief, clear query ownership, evidence requirements, and a reusable ReportSpec JSON block. Keep the structure consistent across all 6 files so they can later feed content production, Next.js rendering, or worker handoff.
+**Architecture:** Use one folder under `docs/workbench/launch-briefs/` and create one Markdown file per page so each page has a focused launch brief, clear query ownership, evidence requirements, and a reusable ReportSpec JSON block. Keep the structure consistent across all 6 files so they can later feed content production, Next.js rendering, or worker handoff.
 
-**Tech Stack:** Markdown documentation, existing `docs/plan2` case docs, Git
+**Tech Stack:** Markdown documentation, existing `docs/workbench` case docs, Git
 
 ---
 
 ### Task 1: Create launch brief folder and file set
 
 **Files:**
-- Create: `docs/plan2/launch-briefs/openclaw-deployment-options.md`
-- Create: `docs/plan2/launch-briefs/openclaw-best-for-beginners.md`
-- Create: `docs/plan2/launch-briefs/openclaw-windows-wsl2.md`
-- Create: `docs/plan2/launch-briefs/ai-procurement-options.md`
-- Create: `docs/plan2/launch-briefs/ai-cheap-coding-models.md`
-- Create: `docs/plan2/launch-briefs/direct-api-vs-openrouter.md`
+- Create: `docs/workbench/launch-briefs/openclaw-deployment-options.md`
+- Create: `docs/workbench/launch-briefs/openclaw-best-for-beginners.md`
+- Create: `docs/workbench/launch-briefs/openclaw-windows-wsl2.md`
+- Create: `docs/workbench/launch-briefs/ai-procurement-options.md`
+- Create: `docs/workbench/launch-briefs/ai-cheap-coding-models.md`
+- Create: `docs/workbench/launch-briefs/direct-api-vs-openrouter.md`
 
 - [ ] **Step 1: Create the directory**
 
 Run:
 
 ```bash
-New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\plan2\launch-briefs"
+New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\workbench\launch-briefs"
 ```
 
 Expected: directory exists
@@ -58,9 +58,9 @@ Each file should include these sections:
 ### Task 2: Write the 3 OpenClaw page briefs
 
 **Files:**
-- Create: `docs/plan2/launch-briefs/openclaw-deployment-options.md`
-- Create: `docs/plan2/launch-briefs/openclaw-best-for-beginners.md`
-- Create: `docs/plan2/launch-briefs/openclaw-windows-wsl2.md`
+- Create: `docs/workbench/launch-briefs/openclaw-deployment-options.md`
+- Create: `docs/workbench/launch-briefs/openclaw-best-for-beginners.md`
+- Create: `docs/workbench/launch-briefs/openclaw-windows-wsl2.md`
 
 - [ ] **Step 1: Write `openclaw-deployment-options.md`**
 
@@ -98,9 +98,9 @@ Must capture:
 ### Task 3: Write the 3 AI procurement page briefs
 
 **Files:**
-- Create: `docs/plan2/launch-briefs/ai-procurement-options.md`
-- Create: `docs/plan2/launch-briefs/ai-cheap-coding-models.md`
-- Create: `docs/plan2/launch-briefs/direct-api-vs-openrouter.md`
+- Create: `docs/workbench/launch-briefs/ai-procurement-options.md`
+- Create: `docs/workbench/launch-briefs/ai-cheap-coding-models.md`
+- Create: `docs/workbench/launch-briefs/direct-api-vs-openrouter.md`
 
 - [ ] **Step 1: Write `ai-procurement-options.md`**
 
@@ -145,7 +145,7 @@ Must capture:
 Run:
 
 ```bash
-rg -n "TODO|TBD|待补|未定" "d:\demo1\openfons\docs\plan2\launch-briefs"
+rg -n "TODO|TBD|待补|未定" "d:\demo1\openfons\docs\workbench\launch-briefs"
 ```
 
 Expected: no output
@@ -155,7 +155,7 @@ Expected: no output
 Run:
 
 ```bash
-git -C "d:\demo1\openfons" diff --check -- "docs/plan2/launch-briefs"
+git -C "d:\demo1\openfons" diff --check -- "docs/workbench/launch-briefs"
 ```
 
 Expected: no output
@@ -167,6 +167,6 @@ Write a summary describing that the 6 first-batch page briefs and ReportSpec doc
 - [ ] **Step 4: Commit**
 
 ```bash
-git add "docs/plan2/launch-briefs" "Memory/03_chat_logs/2026-03-27_*.md"
-git commit -m "docs(plan2): add first-batch launch briefs"
+git add "docs/workbench/launch-briefs" "Memory/03_chat_logs/2026-03-27_*.md"
+git commit -m "docs(workbench): add first-batch launch briefs"
 ```

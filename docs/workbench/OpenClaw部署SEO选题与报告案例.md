@@ -1,8 +1,8 @@
 # OpenClaw 部署 SEO 选题与报告案例
 
 > 项目名：OpenFons
-> 文档定位：`docs/plan2` 的案例型规划文档
-> 文档目的：把“用户一句自然语言问题 -> Intent Structuring -> Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> 受控采集 -> EvidenceSet -> ReportSpec -> Next.js 投行式报告页”落成一份可执行样例
+> 文档定位：`docs/workbench` 的案例型规划文档
+> 文档目的：把“用户一句自然语言问题 -> Deep Planning Research / Planning Swarm -> OpportunitySpec -> 用户确认 -> 任务边界编译 -> 受控采集与留痕 -> EvidenceSet -> ReportSpec -> Next.js 投行式报告页”落成一份可执行样例
 > 案例日期：2026-03-26
 
 ## 1. 用户输入
@@ -27,7 +27,7 @@
 
 更准确的逻辑应该是：
 
-`用户原始问题 -> 判断是否适合做公开 SEO 页面 -> 找到最值得切入的搜索意图和页面角度 -> 形成关键词簇 -> 多源采集 -> EvidenceSet -> ReportSpec -> Next.js 页面 -> Search Console 验证 -> 持续更新`
+`用户原始问题 -> 深度研究 / 判断是否适合做公开 SEO 页面 -> OpportunitySpec -> 用户确认 -> 任务边界编译 -> 多源采集与留痕 -> EvidenceSet -> ReportSpec -> Next.js 页面 -> Search Console 验证 -> 持续更新`
 
 不应简化成：
 

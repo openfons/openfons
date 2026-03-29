@@ -1,12 +1,14 @@
 # OpenClaw + AI Procurement Dual Experiment Implementation Plan
 
+> **Governance note (2026-03-29):** This file is retained as historical process evidence only. The current mainline has already converged to the single-case, evidence-first execution path defined by `docs/sot/**` and `docs/workbench/**`; do not treat this dual-experiment plan as the current source of truth or active schedule.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Run two controlled case experiments that prove whether OpenFons can take a natural-language topic seed and reliably produce `OpportunitySpec -> Evidence Index -> EvidenceSet -> TaskSpec -> WorkflowSpec -> ReportSpec` outputs before we invest in a runnable TypeScript demo.
 
-**Architecture:** Treat the two existing `docs/plan2` case documents as experiment seeds, not final deliverables. Execute each case once through the same manual pipeline, store the artifacts under `docs/plan2/experiments/`, then write one cross-case findings document that decides whether the current planning chain is stable enough for the next implementation step.
+**Architecture:** Treat the two existing `docs/workbench` case documents as experiment seeds, not final deliverables. Execute each case once through the same manual pipeline, store the artifacts under `docs/workbench/experiments/`, then write one cross-case findings document that decides whether the current planning chain is stable enough for the next implementation step.
 
-**Tech Stack:** Markdown, PowerShell, existing `docs/plan2` case docs, structured JSON-in-Markdown outputs, manual source verification
+**Tech Stack:** Markdown, PowerShell, existing `docs/workbench` case docs, structured JSON-in-Markdown outputs, manual source verification
 
 ---
 
@@ -29,34 +31,34 @@ The experiment is successful only if all of the following become true:
 ### Task 1: Establish the experiment workspace and artifact contract
 
 **Files:**
-- Create: `docs/plan2/experiments/README.md`
-- Create: `docs/plan2/experiments/2026-03-28-openclaw-runthrough.md`
-- Create: `docs/plan2/experiments/2026-03-28-openclaw-evidence-index.md`
-- Create: `docs/plan2/experiments/2026-03-28-openclaw-evidence-set.md`
-- Create: `docs/plan2/experiments/2026-03-28-ai-procurement-runthrough.md`
-- Create: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-index.md`
-- Create: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-set.md`
-- Create: `docs/plan2/experiments/2026-03-28-cross-case-findings.md`
+- Create: `docs/workbench/experiments/README.md`
+- Create: `docs/workbench/experiments/2026-03-28-openclaw-runthrough.md`
+- Create: `docs/workbench/experiments/2026-03-28-openclaw-evidence-index.md`
+- Create: `docs/workbench/experiments/2026-03-28-openclaw-evidence-set.md`
+- Create: `docs/workbench/experiments/2026-03-28-ai-procurement-runthrough.md`
+- Create: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-index.md`
+- Create: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-set.md`
+- Create: `docs/workbench/experiments/2026-03-28-cross-case-findings.md`
 
 - [ ] **Step 1: Create the experiment directory and empty artifact files**
 
 Run:
 
 ```powershell
-New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\plan2\experiments"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\README.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-openclaw-runthrough.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-openclaw-evidence-index.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-openclaw-evidence-set.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-ai-procurement-runthrough.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-ai-procurement-evidence-index.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-ai-procurement-evidence-set.md"
-New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\plan2\experiments\2026-03-28-cross-case-findings.md"
+New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\workbench\experiments"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\README.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-openclaw-runthrough.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-openclaw-evidence-index.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-openclaw-evidence-set.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-ai-procurement-runthrough.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-ai-procurement-evidence-index.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-ai-procurement-evidence-set.md"
+New-Item -ItemType File -Force -Path "d:\demo1\openfons\docs\workbench\experiments\2026-03-28-cross-case-findings.md"
 ```
 
 Expected: the `experiments` directory exists and contains exactly eight first-batch files.
 
-- [ ] **Step 2: Write the workspace contract into `docs/plan2/experiments/README.md`**
+- [ ] **Step 2: Write the workspace contract into `docs/workbench/experiments/README.md`**
 
 The README must state these rules explicitly:
 
@@ -72,7 +74,7 @@ The README must state these rules explicitly:
 Run:
 
 ```powershell
-Get-ChildItem "d:\demo1\openfons\docs\plan2\experiments" | Select-Object Name
+Get-ChildItem "d:\demo1\openfons\docs\workbench\experiments" | Select-Object Name
 ```
 
 Expected: the listing shows the eight files named in this task.
@@ -80,10 +82,10 @@ Expected: the listing shows the eight files named in this task.
 ### Task 2: Run the OpenClaw case from portfolio hypothesis to one selected page
 
 **Files:**
-- Read: `docs/plan2/OpenClaw部署SEO选题与报告案例.md`
-- Modify: `docs/plan2/experiments/2026-03-28-openclaw-runthrough.md`
-- Modify: `docs/plan2/experiments/2026-03-28-openclaw-evidence-index.md`
-- Modify: `docs/plan2/experiments/2026-03-28-openclaw-evidence-set.md`
+- Read: `docs/workbench/OpenClaw部署SEO选题与报告案例.md`
+- Modify: `docs/workbench/experiments/2026-03-28-openclaw-runthrough.md`
+- Modify: `docs/workbench/experiments/2026-03-28-openclaw-evidence-index.md`
+- Modify: `docs/workbench/experiments/2026-03-28-openclaw-evidence-set.md`
 
 - [ ] **Step 1: Freeze the experiment input and initial assumptions**
 
@@ -182,10 +184,10 @@ Expected: one finished runthrough file, one finished evidence index, and one fin
 ### Task 3: Run the AI procurement case from portfolio hypothesis to one selected page
 
 **Files:**
-- Read: `docs/plan2/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md`
-- Modify: `docs/plan2/experiments/2026-03-28-ai-procurement-runthrough.md`
-- Modify: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-index.md`
-- Modify: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-set.md`
+- Read: `docs/workbench/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md`
+- Modify: `docs/workbench/experiments/2026-03-28-ai-procurement-runthrough.md`
+- Modify: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-index.md`
+- Modify: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-set.md`
 
 - [ ] **Step 1: Freeze the experiment input and initial assumptions**
 
@@ -276,13 +278,13 @@ Expected: one finished runthrough file, one finished evidence index, and one fin
 ### Task 4: Write the cross-case findings and reusable pipeline summary
 
 **Files:**
-- Read: `docs/plan2/experiments/2026-03-28-openclaw-runthrough.md`
-- Read: `docs/plan2/experiments/2026-03-28-ai-procurement-runthrough.md`
-- Read: `docs/plan2/experiments/2026-03-28-openclaw-evidence-index.md`
-- Read: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-index.md`
-- Read: `docs/plan2/experiments/2026-03-28-openclaw-evidence-set.md`
-- Read: `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-set.md`
-- Modify: `docs/plan2/experiments/2026-03-28-cross-case-findings.md`
+- Read: `docs/workbench/experiments/2026-03-28-openclaw-runthrough.md`
+- Read: `docs/workbench/experiments/2026-03-28-ai-procurement-runthrough.md`
+- Read: `docs/workbench/experiments/2026-03-28-openclaw-evidence-index.md`
+- Read: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-index.md`
+- Read: `docs/workbench/experiments/2026-03-28-openclaw-evidence-set.md`
+- Read: `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-set.md`
+- Modify: `docs/workbench/experiments/2026-03-28-cross-case-findings.md`
 
 - [ ] **Step 1: Compare the two tracks against the same pipeline**
 
@@ -335,7 +337,7 @@ At the bottom of the TODO document, add a one-line handoff rule:
 Run:
 
 ```powershell
-Get-ChildItem "d:\demo1\openfons\docs\plan2\experiments" | Select-Object Name
+Get-ChildItem "d:\demo1\openfons\docs\workbench\experiments" | Select-Object Name
 ```
 
 Expected: README, two runthrough files, two evidence-index files, two `EvidenceSet` files, and one cross-case findings file all exist before the next planning cycle starts.

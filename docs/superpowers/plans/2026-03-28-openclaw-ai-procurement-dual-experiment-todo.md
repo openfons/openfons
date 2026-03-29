@@ -1,5 +1,7 @@
 # OpenClaw + AI Procurement Dual Experiment Execution TODO
 
+> **Governance note (2026-03-29):** This TODO list is preserved as historical execution context only. The current active path is the single-case, evidence-first chain governed by `docs/sot/**` and the live materials under `docs/workbench/**`, so this file should not be read as the current delivery queue.
+
 ## Goal
 
 用两条受控案例链路，验证 OpenFons 现阶段的人工规划管线是否已经足够稳定，能够把自然语言问题收口成：
@@ -12,28 +14,28 @@
 2. 本轮只做两个案例，不额外扩第三个题目。
 3. 每个案例都必须同时完成“portfolio 级方向判断”和“单页级落地判断”。
 4. 任何结论都必须能回到 `official / community / commercial / discovery-only` 这四类来源权重。
-5. 所有实验输出统一落在 `docs/plan2/experiments/`。
+5. 所有实验输出统一落在 `docs/workbench/experiments/`。
 
 ## Planned Deliverables
 
-- [ ] `docs/plan2/experiments/README.md`
-- [ ] `docs/plan2/experiments/2026-03-28-openclaw-runthrough.md`
-- [ ] `docs/plan2/experiments/2026-03-28-openclaw-evidence-index.md`
-- [ ] `docs/plan2/experiments/2026-03-28-openclaw-evidence-set.md`
-- [ ] `docs/plan2/experiments/2026-03-28-ai-procurement-runthrough.md`
-- [ ] `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-index.md`
-- [ ] `docs/plan2/experiments/2026-03-28-ai-procurement-evidence-set.md`
-- [ ] `docs/plan2/experiments/2026-03-28-cross-case-findings.md`
+- [ ] `docs/workbench/experiments/README.md`
+- [ ] `docs/workbench/experiments/2026-03-28-openclaw-runthrough.md`
+- [ ] `docs/workbench/experiments/2026-03-28-openclaw-evidence-index.md`
+- [ ] `docs/workbench/experiments/2026-03-28-openclaw-evidence-set.md`
+- [ ] `docs/workbench/experiments/2026-03-28-ai-procurement-runthrough.md`
+- [ ] `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-index.md`
+- [ ] `docs/workbench/experiments/2026-03-28-ai-procurement-evidence-set.md`
+- [ ] `docs/workbench/experiments/2026-03-28-cross-case-findings.md`
 
 ## Phase 0: Workspace Setup
 
-- [ ] 建立 `docs/plan2/experiments/` 目录
+- [ ] 建立 `docs/workbench/experiments/` 目录
 - [ ] 写 `README.md`，明确 runthrough、evidence-index、cross-case findings 的用途
 - [ ] 确认本轮不写生产代码，只产出决策文档
 
 ## Phase 1: OpenClaw Case
 
-- [ ] 重读 [OpenClaw部署SEO选题与报告案例.md](D:\demo1\openfons\docs\plan2\OpenClaw部署SEO选题与报告案例.md)
+- [ ] 重读 [OpenClaw部署SEO选题与报告案例.md](D:\demo1\openfons\docs\workbench\OpenClaw部署SEO选题与报告案例.md)
 - [ ] 把 10 个方向先按 `planning_hypothesis` 落入 runthrough 文档
 - [ ] 建立 OpenClaw evidence index，并给每条来源打 `use_as` 标签
 - [ ] 从 evidence index 中抽出当前所选单页的 OpenClaw `EvidenceSet`
@@ -48,7 +50,7 @@
 
 ## Phase 2: AI Procurement Case
 
-- [ ] 重读 [AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md](D:\demo1\openfons\docs\plan2\AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md)
+- [ ] 重读 [AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md](D:\demo1\openfons\docs\workbench\AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md)
 - [ ] 把 10 个方向先按 `planning_hypothesis` 落入 runthrough 文档
 - [ ] 建立 procurement evidence index，并给每条来源打 `use_as` 标签
 - [ ] 从 evidence index 中抽出当前所选单页的 procurement `EvidenceSet`
@@ -95,4 +97,4 @@
 
 ## Handoff Rule
 
-- [ ] 只有当 `docs/plan2/experiments/2026-03-28-cross-case-findings.md` 给出 `Go` 或 `Conditional Go` 结论后，才开始下一轮最小 TypeScript demo 计划
+- [ ] 只有当 `docs/workbench/experiments/2026-03-28-cross-case-findings.md` 给出 `Go` 或 `Conditional Go` 结论后，才开始下一轮最小 TypeScript demo 计划

@@ -577,8 +577,8 @@
 <body>
   <main class="page">
     <section class="governance-banner">
-      <strong>2026-03-28 实验治理说明</strong>
-      <p>本图保留为历史架构与规划视图，不直接代表当前 dual experiment 的 winner 选择或页面排期。若与当前执行冲突，以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与对应 todo 为准，并先过 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
+      <strong>2026-03-29 治理说明</strong>
+      <p>本图保留为历史架构与规划视图，不直接代表当前单案例执行顺序，也不代表 2026-03-28 dual experiment 的 winner 选择或页面排期继续有效。若与当前执行冲突，以 docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md 与 docs/sot/开放源平台当前正式架构说明.md 为准，并继续遵守 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
     </section>    <section class="hero">
       <div class="hero-main">
         <div class="eyebrow">Architecture Fusion Map / 2026-03-27</div>
@@ -598,7 +598,7 @@
         <div class="signal-list">
           <div class="signal">
             <strong>保留</strong>
-            <p>OpenFons 必须保留 `OpportunitySpec -> User Confirmation -> TaskSpec / WorkflowSpec -> EvidenceSet -> ReportSpec -> Artifact` 这条受控主链。</p>
+            <p>OpenFons 必须保留 `OpportunitySpec -> User Confirmation -> TaskSpec / WorkflowSpec -> TopicRun / SourceCapture / CollectionLog -> EvidenceSet -> ReportSpec -> Artifact` 这条受控主链。</p>
           </div>
           <div class="signal">
             <strong>借 DeerFlow</strong>
@@ -643,10 +643,10 @@
         <article class="project-card openfons">
           <span class="role">Control + Evidence Core</span>
           <h3>OpenFons</h3>
-          <p>目标不是单纯做一个 agent 平台，而是把用户问题先编译成值得做的机会，再以受控采集和证据沉淀驱动报告交付。</p>
+          <p>目标不是单纯做一个 agent 平台，而是把用户问题先编译成值得研究的机会与可执行边界，再以受控采集、证据沉淀和 findings 驱动交付。</p>
           <ul class="bullet-list">
-            <li>强项：`Intent Structuring -> Planning Swarm -> Opportunity Judge`。</li>
-            <li>本质：以 `OpportunitySpec` 和 `EvidenceSet` 为真源的研究与交付系统。</li>
+            <li>强项：`Intent Structuring -> Deep Planning Research / Planning Swarm -> Opportunity Judge`。</li>
+            <li>本质：以 `OpportunitySpec`、`EvidenceSet` 和可审计 discovery captures 为真源的研究与交付系统。</li>
             <li>边界：v1 不应把模拟世界作为默认主链，而应把它视为可选高级分析模块。</li>
           </ul>
         </article>
@@ -695,12 +695,12 @@
           <div class="flow">
             <div class="step"><strong>User Input</strong>自然语言问题、主题、目标受众、市场与上下文。</div>
             <div class="step"><strong>Intent Structuring</strong>把原始提问整理成结构化意图与候选方向。</div>
-            <div class="step"><strong>Planning Swarm</strong>多角色受控分析：需求、竞争、变现、机会评分。</div>
-            <div class="step"><strong>Opportunity Judge</strong>形成唯一外部前置契约 `OpportunitySpec`。</div>
+            <div class="step"><strong>Planning Swarm</strong>多角色受控深度研究：需求、竞争、变现、地区/语言、证据要求与反证问题。</div>
+            <div class="step"><strong>Opportunity Judge</strong>形成唯一外部前置契约 `OpportunitySpec`，并明确未知项与证据要求。</div>
             <div class="step"><strong>User Confirmation</strong>只有确认通过后，才允许把机会判断推进到任务编译层。</div>
-            <div class="step"><strong>Task Compiler</strong>把 `OpportunitySpec` 编译成 `TaskSpec / WorkflowSpec`，明确执行边界与交付要求。</div>
-            <div class="step"><strong>Controlled Collection / Worker Execution</strong>只允许在受控 workflow 中采集、分析和回传结果。</div>
-            <div class="step"><strong>EvidenceSet -> ReportSpec -> Artifact</strong>沉淀证据资产，再交付页面、报告、长期 watch 主题。</div>
+            <div class="step"><strong>Task Compiler</strong>把 `OpportunitySpec` 在用户确认后编译成 `TaskSpec / WorkflowSpec`，明确执行边界与采集要求。</div>
+            <div class="step"><strong>Controlled Collection / Worker Execution</strong>只允许在受控 workflow 中完成 `TopicRun / SourceCapture / CollectionLog` 级留痕采集、分析和回传。</div>
+            <div class="step"><strong>Evidence Qualification -> ReportSpec -> Artifact</strong>把采集结果资格化为 `EvidenceSet`，归纳 findings，再生成 `ReportSpec` 和最终 `Artifact`。</div>
           </div>
           <div class="callout">这条链真正的护城河不是“能跑 agent”，而是“能把机会判断、证据门禁、资产沉淀做成可追溯主线”。</div>
         </article>

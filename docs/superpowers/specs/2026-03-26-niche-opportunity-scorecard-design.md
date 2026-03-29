@@ -1,7 +1,7 @@
 # OpenFons 利基选题标准表 v1 设计稿
 
 > 日期：2026-03-26
-> 适用范围：`docs/plan2/利基选题标准表-v1.md` 的正式落地前设计
+> 适用范围：`docs/workbench/利基选题标准表-v1.md` 的正式落地前设计
 > 状态：待用户审阅
 
 > 2026-03-28 实验治理说明：本文保留为旧评分体系的设计稿，用于回看 v1 scorecard 的演化背景，不再作为当前 dual experiment 的执行契约。当前实验以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-todo.md 为准，并先过 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates，再决定是否进入次级排序。
@@ -63,7 +63,7 @@
 
 正式文档建议落成一个主文档：
 
-`docs/plan2/利基选题标准表-v1.md`
+`docs/workbench/利基选题标准表-v1.md`
 
 该主文档内部由 3 个部分构成：
 
@@ -363,7 +363,7 @@
 
 ## 13. 正式文档建议结构
 
-`docs/plan2/利基选题标准表-v1.md` 建议采用下面顺序：
+`docs/workbench/利基选题标准表-v1.md` 建议采用下面顺序：
 
 1. 文档目的与状态说明
 2. 为什么采用三层结构
@@ -383,7 +383,7 @@
 1. 团队可以拿一条用户问题直接评分
 2. 团队能明确区分内容机会和产品机会
 3. 团队能把分数映射到 Phase 1 动作
-4. 文档与现有 `plan2` 主线不打架
+4. 文档与现有 `workbench` 主线不打架
 5. 后续可以基于真实案例继续调分、调权和增删维度
 6. 同一题由两位评审基于同一批证据独立评分时，结论通常不会相差超过一档
 
@@ -405,7 +405,7 @@
 
 ## 16. 本设计的推荐结论
 
-推荐按本设计直接落成 `docs/plan2/利基选题标准表-v1.md`，不再继续抽象扩展。
+推荐按本设计直接落成 `docs/workbench/利基选题标准表-v1.md`，不再继续抽象扩展。
 
 原因如下：
 

@@ -1,6 +1,9 @@
-# Plan 2
+# Workbench
 
-`docs/plan2` 用于承载第二阶段的产品架构、机会判断、案例落地与页面规划材料。
+`docs/workbench` 是 OpenFons 当前活跃工作台，用于承载正在推进的架构辅助视图、机会判断、案例落地与页面规划材料。
+
+这里不是正式 SoT。
+如果本目录中的文档与 `docs/sot/**` 冲突，一律以 `docs/sot/**` 为准，再回头修工作台文档。
 
 当前目录适合存放：
 - 架构图与融合方案
@@ -9,10 +12,11 @@
 - 案例型规划文档
 - 面向页面或交付物的 brief
 
-## 2026-03-28 实验治理说明
+## 2026-03-29 工作台治理说明
 
 - 利基选题门禁与产品机会框架讨论.md、利基选题标准表-v1*.md、launch-briefs/ 中的旧评分、P0 / P1、第一批上线等表述，当前仅保留为历史规划基线与演化记录。
-- 当前 dual experiment 以 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-plan.md 与 docs/superpowers/plans/2026-03-28-openclaw-ai-procurement-dual-experiment-todo.md 为准。
+- 当前主线已从 2026-03-28 dual experiment 收口到单案例、证据优先的执行方式；若旧文档仍出现 dual experiment、winner、P0 / P1 或旧评分口径，默认视为历史记录，不视为当前排期。
+- 当前执行若与本目录文档冲突，一律以 `docs/sot/**` 为准；若需要回看设计演化，再辅助参考 `docs/superpowers/**` 或 `docs/history/**`。
 - 若旧文档与当前执行冲突，统一按 hard-gate-first 处理：先过 Authority / Distribution / Compliance / Maintenance Cost，再做次级排序与制品绑定验证。
 
 ## 推荐阅读顺序

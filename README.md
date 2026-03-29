@@ -40,9 +40,9 @@ openfons/
   tests/
 ```
 
-## Imported Planning Docs
+## Historical Planning Docs
 
-The first planning set has been copied into [`docs/plan/`](./docs/plan/):
+The first planning set is now preserved under [`docs/history/plan/`](./docs/history/plan/):
 
 - `独立仓库Greenfield重启与命名方案.md`
 - `统一风控对抗平台架构方案.md`

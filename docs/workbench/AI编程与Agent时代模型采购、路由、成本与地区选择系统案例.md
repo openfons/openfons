@@ -1,8 +1,8 @@
 # AI 编程与 Agent 时代模型采购、路由、成本与地区选择系统案例
 
 > 项目名：OpenFons
-> 文档定位：`docs/plan2` 的案例型规划文档
-> 文档目的：把“用户一句自然语言问题 -> 意图结构化 -> 流量判断 -> 选题机会图 -> 多源采集 -> EvidenceSet -> Next.js 投行式报告页”落成一份可执行样例
+> 文档定位：`docs/workbench` 的案例型规划文档
+> 文档目的：把“用户一句自然语言问题 -> 深度研究 / OpportunitySpec -> 用户确认 -> 任务边界编译 -> 多源采集与留痕 -> EvidenceSet -> ReportSpec -> Next.js 投行式报告页”落成一份可执行样例
 > 案例日期：2026-03-26
 
 ## 1. 用户输入
@@ -72,7 +72,7 @@
 
 更准确的形态应该是：
 
-`用户输入 -> Intent Structuring -> Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> Task Compiler -> Worker`
+`用户输入 -> Intent Structuring -> Deep Planning Research / Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> Task Compiler -> TaskSpec / WorkflowSpec -> Worker`
 
 也就是说，真正优先级最高的不是“会搜索的 agent”，而是：
 
@@ -108,7 +108,7 @@
 
 建议固定成下面这条链：
 
-`用户输入 -> Intent Structuring -> Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> TaskSpec -> WorkflowSpec -> 受控采集 -> EvidenceSet -> AnalysisBrief -> Human Review -> ReportSpec -> Next.js Renderer`
+`用户输入 -> Intent Structuring -> Deep Planning Research / Planning Swarm -> Opportunity Judge -> OpportunitySpec -> 用户确认 -> TaskSpec -> WorkflowSpec -> TopicRun / SourceCapture / CollectionLog -> EvidenceSet -> AnalysisBrief -> Human Review -> ReportSpec -> Next.js Renderer`
 
 这里最关键的是，前端 LLM 不应直接输出文章，而应输出稳定中间态。
 
@@ -140,7 +140,7 @@
 但对 `Task Compiler`、调度层、审计回放和 UI 来说，更稳妥的外部接口应该只有一个：
 
 5. `OpportunitySpec`
-   由 `Opportunity Judge` 汇总上面 4 类信息后输出，作为后续 `TaskSpec / WorkflowSpec / ReportSpec` 的唯一输入契约。
+   由 `Opportunity Judge` 汇总上面 4 类信息后输出，作为后续 `TaskSpec / WorkflowSpec` 的唯一前置输入契约，并为基于 `EvidenceSet` 的 `ReportSpec` 提供上游规划边界。
 
 推荐把 `OpportunitySpec` 设计成下面这些子对象：
 
@@ -1074,7 +1074,7 @@
 
 而是：
 
-`用户一句话 -> Intent-to-Opportunity Agent -> 用户确认 -> 受控采集 -> EvidenceSet -> AI + 人工复核 -> ReportSpec -> Next.js 页面`
+`用户一句话 -> Intent-to-Opportunity Agent -> 用户确认 -> TaskSpec / WorkflowSpec -> TopicRun / SourceCapture / CollectionLog -> EvidenceSet -> AI + 人工复核 -> ReportSpec -> Next.js 页面`
 
 ### 18.3 最重要的公允判断
 

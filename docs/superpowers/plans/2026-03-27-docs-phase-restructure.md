@@ -1,10 +1,10 @@
 # Docs Phase Restructure Implementation Plan
 
-> **History note:** This plan intentionally preserves the pre-restructure `docs/plan1 -> docs/plan2/docs/sot/docs/references` move map as execution evidence. These old paths describe the migration source at that time, not the current official filing locations.
+> **History note:** This plan intentionally preserves the original four-layer migration map as execution evidence. Those paths describe the directory layout at that time only; the current active workbench layer now lives at `docs/workbench`, and the formal truth layer remains `docs/sot`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reorganize planning documents so `docs/plan1` keeps Phase 1 execution material, `docs/plan2` holds Phase 2 architecture and case materials, `docs/sot` holds cross-phase source-of-truth docs, and raw input material is separated into references.
+**Goal:** Reorganize planning documents so `docs/plan1` keeps Phase 1 execution material, `docs/workbench` holds Phase 2 architecture and case materials, `docs/sot` holds cross-phase source-of-truth docs, and raw input material is separated into references.
 
 **Architecture:** Treat the docs tree as four layers: phase-specific execution, phase-specific product planning, cross-phase source of truth, and raw/reference inputs. Move files without changing their substantive content, then add lightweight index files and update any path wording that would become misleading after the move.
 
@@ -16,7 +16,7 @@
 
 **Files:**
 - Create: `docs/plan1/README.md`
-- Create: `docs/plan2/README.md`
+- Create: `docs/workbench/README.md`
 - Create: `docs/sot/README.md`
 - Create: `docs/references/README.md`
 - Create: `docs/references/raw-inputs/README.md`
@@ -26,7 +26,7 @@
 Run:
 
 ```powershell
-New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\plan2"
+New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\workbench"
 New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\sot"
 New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\references"
 New-Item -ItemType Directory -Force -Path "d:\demo1\openfons\docs\references\raw-inputs"
@@ -38,7 +38,7 @@ Expected: all four directories exist after the command.
 
 Write short index files that explain:
 - `docs/plan1` is Phase 1 execution and validation only.
-- `docs/plan2` is Phase 2 architecture, opportunity, and case planning.
+- `docs/workbench` is Phase 2 architecture, opportunity, and case planning.
 - `docs/sot` is cross-phase source-of-truth.
 - `docs/references/raw-inputs` stores raw imported context, not formal plan docs.
 
@@ -50,22 +50,22 @@ Run:
 Get-ChildItem "d:\demo1\openfons\docs" | Select-Object Name, Mode
 ```
 
-Expected: `plan1`, `plan2`, `sot`, and `references` appear in the listing.
+Expected: `plan1`, `workbench`, `sot`, and `references` appear in the listing.
 
 ### Task 2: Move Phase 2 planning files
 
 **Files:**
-- Move: `docs/plan1/MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md` -> `docs/plan2/MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md`
-- Move: `docs/plan1/openfons-best-practice-architecture-2026-03-27.html` -> `docs/plan2/openfons-best-practice-architecture-2026-03-27.html`
-- Move: `docs/plan1/openfons-architecture-fusion-map-2026-03-27.html` -> `docs/plan2/openfons-architecture-fusion-map-2026-03-27.html`
-- Move: `docs/plan1/北美利基内容采集、分析与内容变现路线.md` -> `docs/plan2/北美利基内容采集、分析与内容变现路线.md`
-- Move: `docs/plan1/利基选题门禁与产品机会框架讨论.md` -> `docs/plan2/利基选题门禁与产品机会框架讨论.md`
-- Move: `docs/plan1/利基选题标准表-v1.md` -> `docs/plan2/利基选题标准表-v1.md`
-- Move: `docs/plan1/利基选题标准表-v1-案例评分.md` -> `docs/plan2/利基选题标准表-v1-案例评分.md`
-- Move: `docs/plan1/利基选题标准表-v1-页面级优先级评分.md` -> `docs/plan2/利基选题标准表-v1-页面级优先级评分.md`
-- Move: `docs/plan1/OpenClaw部署SEO选题与报告案例.md` -> `docs/plan2/OpenClaw部署SEO选题与报告案例.md`
-- Move: `docs/plan1/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md` -> `docs/plan2/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md`
-- Move: `docs/plan1/launch-briefs` -> `docs/plan2/launch-briefs`
+- Move: `docs/plan1/MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md` -> `docs/workbench/MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md`
+- Move: `docs/plan1/openfons-best-practice-architecture-2026-03-27.html` -> `docs/workbench/openfons-best-practice-architecture-2026-03-27.html`
+- Move: `docs/plan1/openfons-architecture-fusion-map-2026-03-27.html` -> `docs/workbench/openfons-architecture-fusion-map-2026-03-27.html`
+- Move: `docs/plan1/北美利基内容采集、分析与内容变现路线.md` -> `docs/workbench/北美利基内容采集、分析与内容变现路线.md`
+- Move: `docs/plan1/利基选题门禁与产品机会框架讨论.md` -> `docs/workbench/利基选题门禁与产品机会框架讨论.md`
+- Move: `docs/plan1/利基选题标准表-v1.md` -> `docs/workbench/利基选题标准表-v1.md`
+- Move: `docs/plan1/利基选题标准表-v1-案例评分.md` -> `docs/workbench/利基选题标准表-v1-案例评分.md`
+- Move: `docs/plan1/利基选题标准表-v1-页面级优先级评分.md` -> `docs/workbench/利基选题标准表-v1-页面级优先级评分.md`
+- Move: `docs/plan1/OpenClaw部署SEO选题与报告案例.md` -> `docs/workbench/OpenClaw部署SEO选题与报告案例.md`
+- Move: `docs/plan1/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md` -> `docs/workbench/AI编程与Agent时代模型采购、路由、成本与地区选择系统案例.md`
+- Move: `docs/plan1/launch-briefs` -> `docs/workbench/launch-briefs`
 
 - [ ] **Step 1: Move the approved Phase 2 files**
 
@@ -73,17 +73,17 @@ Use `Move-Item` for each file and move the entire `launch-briefs` directory in o
 
 - [ ] **Step 2: Update path wording inside moved Markdown docs**
 
-Change stale wording such as ``文档定位：`docs/plan1` `` to reflect `docs/plan2`, and keep the meaning aligned with the new directory layout.
+Change stale wording such as ``文档定位：`docs/plan1` `` to reflect `docs/workbench`, and keep the meaning aligned with the new directory layout.
 
 - [ ] **Step 3: Verify the Phase 2 directory contents**
 
 Run:
 
 ```powershell
-Get-ChildItem "d:\demo1\openfons\docs\plan2" -Recurse | Select-Object FullName
+Get-ChildItem "d:\demo1\openfons\docs\workbench" -Recurse | Select-Object FullName
 ```
 
-Expected: all moved planning files appear under `docs/plan2`.
+Expected: all moved planning files appear under `docs/workbench`.
 
 ### Task 3: Move cross-phase source-of-truth and raw inputs
 
