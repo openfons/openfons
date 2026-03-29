@@ -10,6 +10,61 @@ import { createId, nowIso, slugify } from '@openfons/shared';
 
 export class InvalidOpportunityInputError extends Error {}
 
+const DEFAULT_EVIDENCE_REQUIREMENTS: OpportunitySpec['evidenceRequirements'] = [
+  {
+    kind: 'official-docs',
+    note: 'Capture the official provider or platform documentation page.'
+  },
+  {
+    kind: 'official-pricing',
+    note: 'Capture the official pricing page.'
+  },
+  {
+    kind: 'official-availability',
+    note: 'Capture the official regional availability page.'
+  },
+  {
+    kind: 'community-corroboration',
+    note: 'Capture one independent community source to corroborate workflow pain points.'
+  }
+];
+
+const DEFAULT_PRODUCT_HINTS: OpportunitySpec['productOpportunityHints'] = [
+  {
+    kind: 'tracker',
+    note: 'Track price and routing policy changes over time.'
+  },
+  {
+    kind: 'calculator',
+    note: 'Estimate monthly spend across direct and routed usage.'
+  },
+  {
+    kind: 'advisor',
+    note: 'Recommend the first decision path for the selected audience.'
+  },
+  {
+    kind: 'subscription',
+    note: 'Package recurring updates as member-only intelligence.'
+  }
+];
+
+const buildPageCandidates = (input: OpportunityInput) => {
+  const primarySlug = slugify(input.title);
+
+  return [
+    {
+      slug: primarySlug,
+      title: input.title,
+      query: input.query
+    },
+    {
+      slug: `${primarySlug}-decision-guide`,
+      title: `${input.title} Decision Guide`,
+      query: `${input.query} decision guide`
+    }
+  ];
+};
+
 export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
   const slug = slugify(input.title);
 
@@ -26,7 +81,16 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
     market: input.market,
     input,
     status: 'draft',
-    createdAt: nowIso()
+    createdAt: nowIso(),
+    audience: input.audience,
+    geo: input.geo,
+    language: input.language,
+    searchIntent: 'decision',
+    angle: `${input.problem} -> ${input.outcome}`,
+    firstDeliverySurface: 'report-web',
+    pageCandidates: buildPageCandidates(input),
+    evidenceRequirements: DEFAULT_EVIDENCE_REQUIREMENTS,
+    productOpportunityHints: DEFAULT_PRODUCT_HINTS
   };
 };
 
@@ -61,29 +125,46 @@ export const buildCompilation = (
     status: 'ready'
   };
 
+  const reportCreatedAt = nowIso();
   const report: ReportSpec = {
     id: createId('report'),
     opportunityId: opportunity.id,
-    title: opportunity.title,
-    summary: `Minimal report shell for ${opportunity.title}`,
+    slug: opportunity.pageCandidates[0].slug,
+    title: opportunity.pageCandidates[0].title,
+    summary: `Decision report for ${opportunity.title}`,
+    audience: opportunity.audience,
+    geo: opportunity.geo,
+    language: opportunity.language,
+    thesis: opportunity.angle,
     sections: [
       {
         id: createId('sec'),
-        title: 'Why this topic now',
-        body: `${opportunity.input.problem} -> ${opportunity.input.outcome}`
+        title: 'Quick Answer',
+        body: `Start with a ${opportunity.searchIntent} report for ${opportunity.audience} in ${opportunity.geo}.`
       },
       {
         id: createId('sec'),
-        title: 'Target audience',
-        body: `${opportunity.input.audience} in ${opportunity.market}`
+        title: 'Evidence Boundary',
+        body: opportunity.evidenceRequirements.map((item) => item.note).join(' ')
       },
       {
         id: createId('sec'),
-        title: 'Next execution slice',
-        body: 'Replace in-memory shell generation with real evidence ingestion in the next plan.'
+        title: 'First Delivery Surface',
+        body: 'Publish the report-web artifact before expanding to derivative content or product surfaces.'
       }
     ],
-    createdAt: nowIso()
+    evidenceBoundaries: opportunity.evidenceRequirements.map((item) => item.note),
+    risks: [
+      'Do not publish price or availability claims without official source captures.',
+      'Do not split tool or subscription contracts out of OpportunitySpec in v1.'
+    ],
+    updateLog: [
+      {
+        at: reportCreatedAt,
+        note: 'Initial deterministic report shell generated from OpportunitySpec.'
+      }
+    ],
+    createdAt: reportCreatedAt
   };
 
   return {

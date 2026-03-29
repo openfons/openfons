@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createApp } from '../../services/control-api/src/app';
 
 describe('control-api', () => {
@@ -13,16 +13,21 @@ describe('control-api', () => {
       body: JSON.stringify({
         title: 'AI Coding Model Procurement Options',
         query: 'best ai coding models',
-        market: 'global',
+        market: 'north-america',
         audience: 'engineering leads',
         problem: 'Teams need to compare price and routing options',
-        outcome: 'Produce a minimal report shell'
+        outcome: 'Produce a decision report shell',
+        geo: 'US',
+        language: 'English'
       })
     });
 
     expect(createResponse.status).toBe(201);
     const created = await createResponse.json();
     expect(created.opportunity.status).toBe('draft');
+    expect(created.opportunity.geo).toBe('US');
+    expect(created.opportunity.language).toBe('English');
+    expect(created.opportunity.firstDeliverySurface).toBe('report-web');
 
     const compileResponse = await app.request(
       `/api/v1/opportunities/${created.opportunity.id}/compile`,
@@ -35,6 +40,19 @@ describe('control-api', () => {
     const compiled = await compileResponse.json();
     expect(compiled.opportunity.status).toBe('compiled');
     expect(compiled.workflow.taskIds).toHaveLength(3);
+    expect(compiled.opportunity.pageCandidates[0].slug).toBe(
+      'ai-coding-model-procurement-options'
+    );
+    expect(compiled.report.slug).toBe('ai-coding-model-procurement-options');
+    expect(compiled.report.evidenceBoundaries).toContain(
+      'Capture the official pricing page.'
+    );
+    expect(compiled.report.risks).toContain(
+      'Do not publish price or availability claims without official source captures.'
+    );
+    expect(compiled.report.updateLog[0].note).toBe(
+      'Initial deterministic report shell generated from OpportunitySpec.'
+    );
     expect(compiled.report.id).toMatch(/^report_[a-z0-9]{8}$/);
 
     const reportResponse = await app.request(
@@ -109,10 +127,12 @@ describe('control-api', () => {
       body: JSON.stringify({
         title: '!!!',
         query: 'best ai coding models',
-        market: 'global',
+        market: 'north-america',
         audience: 'engineering leads',
         problem: 'Teams need to compare price and routing options',
-        outcome: 'Produce a minimal report shell'
+        outcome: 'Produce a decision report shell',
+        geo: 'US',
+        language: 'English'
       })
     });
 
