@@ -1848,18 +1848,19 @@ pre.mermaid {
 <h2 id="todo-v004-001-20260329-md--1">里程碑</h2>
 <ul>
 <li>[ ] 固化 v1 北极星与 6 层真源产物视图到 SoT 和记忆文档</li>
-<li>[ ] 执行 <code>docs/superpowers/plans/2026-03-29-openfons-v1-opportunity-report-alignment.md</code>，完成 SoT 同步与 <code>OpportunitySpec / ReportSpec</code> 最小闭环对齐</li>
-<li>[ ] 用一个真实用户问题跑通从 <code>OpportunitySpec</code> 到 <code>Artifact</code> 的逐层示例</li>
-<li>[ ] 定义 <code>TopicRun / Source Captures / Collection Logs -&gt; EvidenceSet</code> 的标准化规则</li>
-<li>[ ] 明确 <code>ReportSpec -&gt; 页面 / 视频 / 文章 / newsletter</code> 的派生链</li>
-<li>[ ] 明确 <code>ProductOpportunityHints</code> 的判断边界与后续产品化入口</li>
+<li>[ ] 执行 <code>docs/superpowers/plans/2026-03-30-openfons-evidence-chain-v1-ai-procurement-first.md</code>，完成首条 <code>AI procurement</code> 单案例证据链</li>
+<li>[ ] 用 <code>AI procurement</code> 单案例跑通从 <code>OpportunitySpec / TaskSpec / WorkflowSpec</code> 到 <code>Artifact</code> 的逐层示例</li>
+<li>[ ] 定义 <code>TopicRun / SourceCapture / CollectionLog / Evidence / EvidenceSet / Artifact</code> 的 v1 标准化 schema</li>
+<li>[ ] 让 <code>report-web</code> 真正显示更新时间、证据来源、风险边界、结论与证据回指</li>
+<li>[ ] 在首条链跑顺后，再评估 <code>persistence</code> 与 <code>OpenClaw</code> 复用</li>
 </ul>
 <h2 id="todo-v004-001-20260329-md--2">进行中</h2>
 <ul>
 <li>将 v1 唯一北极星写入当前目标文件，并把待办改为围绕统一真源产物树组织。</li>
 <li>已写出 <code>docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md</code>，作为“前置深度研究 + 可解耦证据链”设计稿，并已开始反向同步 SoT 与架构图文档。</li>
-<li>已按最新 review 结论同步 <code>docs/sot/<em>.md</code>、<code>docs/plan2/openfons-</em>-architecture-2026-03-27.html</code> 以及 AI procurement / OpenClaw 案例文档，收口“深度研究留痕、<code>ReportSpec</code> 下游生成、<code>TopicRun / SourceCapture / CollectionLog</code> 进入正式链路”三项口径。</li>
-<li>已写出 <code>docs/superpowers/plans/2026-03-29-openfons-v1-opportunity-report-alignment.md</code>，作为当前第一张执行计划，范围限定在 SoT 同步与 <code>OpportunitySpec / ReportSpec</code> 最小闭环对齐。</li>
+<li>已按最新 review 结论同步 <code>docs/sot/<em>.md</code>、<code>docs/workbench/openfons-</em>-architecture-2026-03-27.html</code> 以及 AI procurement / OpenClaw 案例文档，收口“深度研究留痕、<code>ReportSpec</code> 下游生成、<code>TopicRun / SourceCapture / CollectionLog</code> 进入正式链路”三项口径。</li>
+<li>已确认 <code>docs/superpowers/plans/2026-03-29-openfons-v1-opportunity-report-alignment.md</code> 并不存在于当前仓库与 Git 历史中，改由新的 evidence-chain 计划接替。</li>
+<li>已写出 <code>docs/superpowers/plans/2026-03-30-openfons-evidence-chain-v1-ai-procurement-first.md</code>，作为当前第一张正式实施计划，冻结“AI procurement 单案例优先、先证据链后持久化”的执行顺序。</li>
 <li>使用“AI 编程 / Agent 模型采购与路由决策”这个真实问题，逐层模拟 <code>OpportunitySpec / TopicRun / Source Captures / Collection Logs / EvidenceSet / ReportSpec / Derived Content / ProductOpportunityHints</code>。</li>
 <li>梳理“网页报告是 v1 默认盈利交付，但不是唯一产物面”的正式表述，避免后续再次把系统误解成单一页面站。</li>
 </ul>
@@ -1873,11 +1874,12 @@ pre.mermaid {
 </ul>
 <h2 id="todo-v004-001-20260329-md--4">待完成</h2>
 <ul>
-<li>用统一 schema 定义 <code>OpportunitySpec</code> 的 v1 字段级结构。</li>
-<li>用统一 schema 定义 <code>Evidence</code>、<code>EvidenceSet</code> 与 <code>Artifact</code> 的映射关系。</li>
-<li>设计 <code>cookie / account / api key / proxy</code> 的受控配置方案，使授权态采集可进入统一真源链。</li>
-<li>决定哪些采集工具进入主线依赖，哪些继续保留在实验室。</li>
-<li>评估国内平台链路是否采用自研 <code>CN social</code> adapter，并仅借鉴 <code>MediaCrawler</code> 的组织方式。</li>
+<li>在 <code>packages/contracts/src/index.ts</code> 中落下 evidence-chain v1 契约。</li>
+<li>在 <code>packages/domain-models/src/index.ts</code> 中落下 <code>TopicRun / SourceCapture / CollectionLog / EvidenceSet / Artifact</code> 工厂与辅助函数。</li>
+<li>在 <code>services/control-api</code> 中把 <code>OpportunitySpec -&gt; ReportSpec</code> 壳替换为 <code>OpportunitySpec -&gt; TaskSpec / WorkflowSpec -&gt; TopicRun -&gt; SourceCapture / CollectionLog -&gt; EvidenceSet -&gt; ReportView</code>。</li>
+<li>用 <code>AI procurement</code> 官方价格页、地区可用性页、relay 页面与社区/推断条目产出第一份真实 <code>EvidenceSet</code>。</li>
+<li>升级 <code>apps/report-web/src/pages/report-page.tsx</code>，让页面按证据链渲染。</li>
+<li>在首条链验证稳定后，再决定 <code>cookie / account / api key / proxy</code> 受控采集、持久化与第二案例复用顺序。</li>
 </ul></div>
 </div>
   </div>
