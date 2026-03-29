@@ -13,7 +13,9 @@ const initialForm: OpportunityInput = {
   market: '',
   audience: '',
   problem: '',
-  outcome: ''
+  outcome: '',
+  geo: '',
+  language: ''
 };
 
 export const OpportunityPage = ({
@@ -74,6 +76,14 @@ export const OpportunityPage = ({
             <input value={form.audience} onChange={(event) => updateField('audience', event.target.value)} />
           </label>
           <label>
+            Geo
+            <input value={form.geo} onChange={(event) => updateField('geo', event.target.value)} />
+          </label>
+          <label>
+            Language
+            <input value={form.language} onChange={(event) => updateField('language', event.target.value)} />
+          </label>
+          <label>
             Problem
             <textarea value={form.problem} onChange={(event) => updateField('problem', event.target.value)} />
           </label>
@@ -92,7 +102,12 @@ export const OpportunityPage = ({
         <section className="panel result-card">
           <h2>Compilation ready</h2>
           <p>{result.report.summary}</p>
-          <p>Workflow tasks: {result.workflow.taskIds.length}</p>
+          <ul className="summary-list">
+            <li>Search intent: {result.opportunity.searchIntent}</li>
+            <li>Angle: {result.opportunity.angle}</li>
+            <li>Primary page: {result.report.slug}</li>
+            <li>Product hints: {result.opportunity.productOpportunityHints.length}</li>
+          </ul>
           <a href={`${reportBaseUrl}/reports/${result.report.id}`}>Open report shell</a>
         </section>
       ) : null}

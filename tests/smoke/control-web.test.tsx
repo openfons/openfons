@@ -13,34 +13,88 @@ describe('control-web', () => {
         id: 'opp_001',
         slug: 'ai-coding-model-procurement-options',
         title: 'AI Coding Model Procurement Options',
-        market: 'global',
+        market: 'north-america',
         input: {
           title: 'AI Coding Model Procurement Options',
           query: 'best ai coding models',
-          market: 'global',
+          market: 'north-america',
           audience: 'engineering leads',
           problem: 'Teams need to compare price and routing options',
-          outcome: 'Produce a minimal report shell'
+          outcome: 'Produce a decision report shell',
+          geo: 'US',
+          language: 'English'
         },
         status: 'draft' as const,
-        createdAt: '2026-03-27T12:00:00.000Z'
+        createdAt: '2026-03-27T12:00:00.000Z',
+        audience: 'engineering leads',
+        geo: 'US',
+        language: 'English',
+        searchIntent: 'decision' as const,
+        angle: 'Direct API vs router guidance for small AI teams',
+        firstDeliverySurface: 'report-web' as const,
+        pageCandidates: [
+          {
+            slug: 'ai-coding-model-procurement-options',
+            title: 'AI Coding Model Procurement Options',
+            query: 'ai coding model procurement options'
+          }
+        ],
+        evidenceRequirements: [
+          {
+            kind: 'official-pricing' as const,
+            note: 'Capture the official pricing page.'
+          }
+        ],
+        productOpportunityHints: [
+          {
+            kind: 'tracker' as const,
+            note: 'Track provider pricing changes over time.'
+          }
+        ]
       }),
       compileOpportunity: async () => ({
         opportunity: {
           id: 'opp_001',
           slug: 'ai-coding-model-procurement-options',
           title: 'AI Coding Model Procurement Options',
-          market: 'global',
+          market: 'north-america',
           input: {
             title: 'AI Coding Model Procurement Options',
             query: 'best ai coding models',
-            market: 'global',
+            market: 'north-america',
             audience: 'engineering leads',
             problem: 'Teams need to compare price and routing options',
-            outcome: 'Produce a minimal report shell'
+            outcome: 'Produce a decision report shell',
+            geo: 'US',
+            language: 'English'
           },
           status: 'compiled' as const,
-          createdAt: '2026-03-27T12:00:00.000Z'
+          createdAt: '2026-03-27T12:00:00.000Z',
+          audience: 'engineering leads',
+          geo: 'US',
+          language: 'English',
+          searchIntent: 'decision' as const,
+          angle: 'Direct API vs router guidance for small AI teams',
+          firstDeliverySurface: 'report-web' as const,
+          pageCandidates: [
+            {
+              slug: 'ai-coding-model-procurement-options',
+              title: 'AI Coding Model Procurement Options',
+              query: 'ai coding model procurement options'
+            }
+          ],
+          evidenceRequirements: [
+            {
+              kind: 'official-pricing' as const,
+              note: 'Capture the official pricing page.'
+            }
+          ],
+          productOpportunityHints: [
+            {
+              kind: 'tracker' as const,
+              note: 'Track provider pricing changes over time.'
+            }
+          ]
         },
         tasks: [
           {
@@ -71,13 +125,26 @@ describe('control-web', () => {
         report: {
           id: 'report_001',
           opportunityId: 'opp_001',
+          slug: 'ai-coding-model-procurement-options',
           title: 'AI Coding Model Procurement Options',
-          summary: 'Minimal report shell',
+          summary: 'Decision report shell',
+          audience: 'engineering leads',
+          geo: 'US',
+          language: 'English',
+          thesis: 'Start with a decision report before building a tool.',
           sections: [
             {
               id: 'sec_001',
-              title: 'Why this topic now',
-              body: 'Demand is rising.'
+              title: 'Quick Answer',
+              body: 'Start with a report-web decision page.'
+            }
+          ],
+          evidenceBoundaries: ['Capture official pricing and availability sources.'],
+          risks: ['Do not publish unsupported cost claims.'],
+          updateLog: [
+            {
+              at: '2026-03-27T12:00:00.000Z',
+              note: 'Initial shell created.'
             }
           ],
           createdAt: '2026-03-27T12:00:00.000Z'
@@ -85,12 +152,7 @@ describe('control-web', () => {
       })
     };
 
-    render(
-      <OpportunityPage
-        api={api}
-        reportBaseUrl="http://localhost:3002"
-      />
-    );
+    render(<OpportunityPage api={api} reportBaseUrl="http://localhost:3002" />);
 
     fireEvent.change(screen.getByLabelText(/title/i), {
       target: { value: 'AI Coding Model Procurement Options' }
@@ -99,21 +161,32 @@ describe('control-web', () => {
       target: { value: 'best ai coding models' }
     });
     fireEvent.change(screen.getByLabelText(/market/i), {
-      target: { value: 'global' }
+      target: { value: 'north-america' }
     });
     fireEvent.change(screen.getByLabelText(/audience/i), {
       target: { value: 'engineering leads' }
+    });
+    fireEvent.change(screen.getByLabelText(/geo/i), {
+      target: { value: 'US' }
+    });
+    fireEvent.change(screen.getByLabelText(/language/i), {
+      target: { value: 'English' }
     });
     fireEvent.change(screen.getByLabelText(/problem/i), {
       target: { value: 'Teams need to compare price and routing options' }
     });
     fireEvent.change(screen.getByLabelText(/outcome/i), {
-      target: { value: 'Produce a minimal report shell' }
+      target: { value: 'Produce a decision report shell' }
     });
     fireEvent.click(screen.getByRole('button', { name: /compile report shell/i }));
 
+    expect(await screen.findByText(/Search intent: decision/i)).toBeInTheDocument();
     expect(
-      await screen.findByRole('link', { name: /open report shell/i })
+      screen.getByText(/Primary page: ai-coding-model-procurement-options/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Product hints: 1/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /open report shell/i })
     ).toHaveAttribute('href', 'http://localhost:3002/reports/report_001');
   });
 
@@ -123,17 +196,44 @@ describe('control-web', () => {
         id: 'opp_001',
         slug: 'ai-coding-model-procurement-options',
         title: 'AI Coding Model Procurement Options',
-        market: 'global',
+        market: 'north-america',
         input: {
           title: 'AI Coding Model Procurement Options',
           query: 'best ai coding models',
-          market: 'global',
+          market: 'north-america',
           audience: 'engineering leads',
           problem: 'Teams need to compare price and routing options',
-          outcome: 'Produce a minimal report shell'
+          outcome: 'Produce a decision report shell',
+          geo: 'US',
+          language: 'English'
         },
         status: 'draft' as const,
-        createdAt: '2026-03-27T12:00:00.000Z'
+        createdAt: '2026-03-27T12:00:00.000Z',
+        audience: 'engineering leads',
+        geo: 'US',
+        language: 'English',
+        searchIntent: 'decision' as const,
+        angle: 'Direct API vs router guidance for small AI teams',
+        firstDeliverySurface: 'report-web' as const,
+        pageCandidates: [
+          {
+            slug: 'ai-coding-model-procurement-options',
+            title: 'AI Coding Model Procurement Options',
+            query: 'ai coding model procurement options'
+          }
+        ],
+        evidenceRequirements: [
+          {
+            kind: 'official-pricing' as const,
+            note: 'Capture the official pricing page.'
+          }
+        ],
+        productOpportunityHints: [
+          {
+            kind: 'tracker' as const,
+            note: 'Track provider pricing changes over time.'
+          }
+        ]
       }),
       compileOpportunity: async () => {
         throw new Error('Failed to compile opportunity');
@@ -149,21 +249,25 @@ describe('control-web', () => {
       target: { value: 'best ai coding models' }
     });
     fireEvent.change(screen.getByLabelText(/market/i), {
-      target: { value: 'global' }
+      target: { value: 'north-america' }
     });
     fireEvent.change(screen.getByLabelText(/audience/i), {
       target: { value: 'engineering leads' }
+    });
+    fireEvent.change(screen.getByLabelText(/geo/i), {
+      target: { value: 'US' }
+    });
+    fireEvent.change(screen.getByLabelText(/language/i), {
+      target: { value: 'English' }
     });
     fireEvent.change(screen.getByLabelText(/problem/i), {
       target: { value: 'Teams need to compare price and routing options' }
     });
     fireEvent.change(screen.getByLabelText(/outcome/i), {
-      target: { value: 'Produce a minimal report shell' }
+      target: { value: 'Produce a decision report shell' }
     });
     fireEvent.click(screen.getByRole('button', { name: /compile report shell/i }));
 
-    expect(
-      await screen.findByText('Failed to compile opportunity')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Failed to compile opportunity')).toBeInTheDocument();
   });
 });

@@ -59,3 +59,18 @@ button {
 .error {
   color: #4c5d70;
 }
+
+.result-card {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #304356;
+}
+
+.summary-list li + li {
+  margin-top: 6px;
+}
