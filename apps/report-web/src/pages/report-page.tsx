@@ -53,14 +53,46 @@ export const ReportPage = ({
       <section className="hero-card">
         <p className="eyebrow">OpenFons Report Delivery</p>
         <h1>{report.title}</h1>
+        <p className="meta-line">
+          {report.audience} / {report.geo} / {report.language}
+        </p>
         <p>{report.summary}</p>
+        <p className="thesis">{report.thesis}</p>
       </section>
+
       {report.sections.map((section) => (
         <article className="section-card" key={section.id}>
           <h2>{section.title}</h2>
           <p>{section.body}</p>
         </article>
       ))}
+
+      <section className="section-card">
+        <h2>Evidence Boundaries</h2>
+        <ul className="detail-list">
+          {report.evidenceBoundaries.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section-card">
+        <h2>Risks</h2>
+        <ul className="detail-list">
+          {report.risks.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section-card">
+        <h2>Update Log</h2>
+        <ul className="detail-list">
+          {report.updateLog.map((item) => (
+            <li key={`${item.at}-${item.note}`}>{item.note}</li>
+          ))}
+        </ul>
+      </section>
     </main>
   );
 };

@@ -14,13 +14,26 @@ describe('report-web', () => {
         loadReport={async () => ({
           id: 'report_001',
           opportunityId: 'opp_001',
-          title: 'AI Coding Model Procurement Options',
-          summary: 'Minimal report shell',
+          slug: 'direct-api-vs-openrouter-ai-coding',
+          title: 'Direct API vs OpenRouter for AI Coding Teams',
+          summary: 'Decision report shell',
+          audience: 'engineering leads',
+          geo: 'US',
+          language: 'English',
+          thesis: 'Start with a decision report before building a tool.',
           sections: [
             {
               id: 'sec_001',
-              title: 'Why this topic now',
-              body: 'Demand is rising.'
+              title: 'Quick Answer',
+              body: 'Start with a report-web decision page.'
+            }
+          ],
+          evidenceBoundaries: ['Capture official pricing and availability sources.'],
+          risks: ['Do not publish unsupported cost claims.'],
+          updateLog: [
+            {
+              at: '2026-03-27T12:00:00.000Z',
+              note: 'Initial shell created.'
             }
           ],
           createdAt: '2026-03-27T12:00:00.000Z'
@@ -30,10 +43,19 @@ describe('report-web', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'AI Coding Model Procurement Options'
+        name: 'Direct API vs OpenRouter for AI Coding Teams'
       })
     ).toBeInTheDocument();
-    expect(screen.getByText('Demand is rising.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Start with a decision report before building a tool.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Capture official pricing and availability sources.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Do not publish unsupported cost claims.')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Initial shell created.')).toBeInTheDocument();
   });
 
   it('renders an error when the report request fails', async () => {
@@ -46,8 +68,6 @@ describe('report-web', () => {
       />
     );
 
-    expect(
-      await screen.findByText('Failed to load report')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Failed to load report')).toBeInTheDocument();
   });
 });
