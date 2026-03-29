@@ -20,7 +20,8 @@ The current phase focuses on:
 ## Core Principles
 
 - `Agent compiles, Worker executes`
-- `Topic / TopicRun / Evidence / Artifact` are first-class objects
+- `OpenFons v1 的唯一北极星：把真实用户问题稳定编译成可验证的 OpportunitySpec、EvidenceSet 和 ReportSpec，先交付可盈利的网页报告，并为视频、文章与工具/订阅机会保留统一真源。`
+- `Topic / TopicRun / SourceCapture / CollectionLog / Evidence / EvidenceSet / Artifact` are first-class objects
 - `TaskSpec / WorkflowSpec / ReportSpec` are the stable intermediate contracts
 - Skill, Web UI, and API must converge on the same execution model
 - LLM browser automation is a controlled fallback, not the default runtime
@@ -50,7 +51,6 @@ The first planning set has been copied into [`docs/plan/`](./docs/plan/):
 
 ## Immediate Next Steps
 
-1. Initialize repository governance and community files.
-2. Bootstrap `packages/contracts` and `packages/domain-models`.
-3. Stand up the minimal deterministic execution chain.
-4. Add the first control-plane and ops-plane surfaces.
+1. Freeze the v1 `OpportunitySpec` and `ReportSpec` contract shape.
+2. Implement the first `TopicRun / Source Captures / Collection Logs -> EvidenceSet` normalization slice.
+3. Add derived content compilation after the report truth path is stable.
