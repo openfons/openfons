@@ -578,7 +578,7 @@
   <main class="page">
     <section class="governance-banner">
       <strong>2026-03-29 治理说明</strong>
-      <p>本图保留为历史架构与规划视图，不直接代表当前单案例执行顺序，也不代表 2026-03-28 dual experiment 的 winner 选择或页面排期继续有效。若与当前执行冲突，以 docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md 与 docs/sot/开放源平台当前正式架构说明.md 为准，并继续遵守 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
+      <p>本图保留为历史架构与规划视图，不直接代表当前单案例执行顺序，也不代表 2026-03-28 dual experiment 的 winner 选择或页面排期继续有效。当前执行层已经把 `SearchGateway v1` 明确成第一个 gateway 子项目；受控采集层后续再视需要收口为独立 `CollectorGateway`。若与当前执行冲突，以 docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md、docs/superpowers/specs/2026-03-30-search-gateway-v1-design.md 与 docs/sot/开放源平台当前正式架构说明.md 为准，并继续遵守 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
     </section>    <section class="hero">
       <div class="hero-main">
         <div class="eyebrow">Architecture Fusion Map / 2026-03-27</div>
@@ -602,11 +602,15 @@
           </div>
           <div class="signal">
             <strong>借 DeerFlow</strong>
-            <p>借它的 `runtime / skills / tools / sub-agents / sandbox / provider adapters` 组织方式。</p>
+            <p>借它的 `runtime / gateway / skills / tools / sub-agents / sandbox / provider adapters` 组织方式。</p>
           </div>
           <div class="signal">
             <strong>借 MiroFish</strong>
             <p>借它的“让复杂流程被看见”的产品表达和报告交付形态。</p>
+          </div>
+          <div class="signal">
+            <strong>当前落点</strong>
+            <p>执行层第一个明确子项目是 `SearchGateway v1`：它既服务 planning-stage discovery，也服务 post-confirmation evidence search，先产出 `SearchRun / SearchResult / UpgradeCandidate`，再由后续正式采集边界决定如何升级到 `SourceCapture / CollectionLog`。</p>
           </div>
         </div>
       </aside>
@@ -696,10 +700,12 @@
             <div class="step"><strong>User Input</strong>自然语言问题、主题、目标受众、市场与上下文。</div>
             <div class="step"><strong>Intent Structuring</strong>把原始提问整理成结构化意图与候选方向。</div>
             <div class="step"><strong>Planning Swarm</strong>多角色受控深度研究：需求、竞争、变现、地区/语言、证据要求与反证问题。</div>
+            <div class="step"><strong>Planning-stage SearchGateway</strong>在机会判断前执行 discovery search，产出 `SearchRun / SearchResult / UpgradeCandidate`，供规划阶段扩词、发现 cohort、识别 SERP 结构和反证问题。</div>
             <div class="step"><strong>Opportunity Judge</strong>形成唯一外部前置契约 `OpportunitySpec`，并明确未知项与证据要求。</div>
             <div class="step"><strong>User Confirmation</strong>只有确认通过后，才允许把机会判断推进到任务编译层。</div>
             <div class="step"><strong>Task Compiler</strong>把 `OpportunitySpec` 在用户确认后编译成 `TaskSpec / WorkflowSpec`，明确执行边界与采集要求。</div>
-            <div class="step"><strong>Controlled Collection / Worker Execution</strong>只允许在受控 workflow 中完成 `TopicRun / SourceCapture / CollectionLog` 级留痕采集、分析和回传。</div>
+            <div class="step"><strong>Evidence-stage SearchGateway</strong>在任务确认后执行补证据 search，继续产出 `SearchRun / SearchResult / UpgradeCandidate`，并支持多 provider 聚合、降级和候选升级。</div>
+            <div class="step"><strong>Controlled Collection</strong>只允许在受控 workflow 中把升级候选推进成 `TopicRun / SourceCapture / CollectionLog` 级留痕采集、分析和回传；后续可再把这一层单独收口成 `CollectorGateway`。</div>
             <div class="step"><strong>Evidence Qualification -> ReportSpec -> Artifact</strong>把采集结果资格化为 `EvidenceSet`，归纳 findings，再生成 `ReportSpec` 和最终 `Artifact`。</div>
           </div>
           <div class="callout">这条链真正的护城河不是“能跑 agent”，而是“能把机会判断、证据门禁、资产沉淀做成可追溯主线”。</div>
@@ -739,7 +745,7 @@
               </tr>
               <tr>
                 <th scope="row">Execution Plane</th>
-                <td>skills、workers、tools、sandbox、providers</td>
+                <td>gateway、skills、workers、tools、sandbox、providers</td>
                 <td>受控执行，不允许绕过控制面直接野跑</td>
               </tr>
               <tr>
@@ -836,14 +842,19 @@
             </div>
             <div class="chip-row">
               <span class="chip deer">Runtime Harness</span>
+              <span class="chip deer">Gateway</span>
               <span class="chip deer">Skill Loader</span>
               <span class="chip deer">Tools Registry</span>
               <span class="chip deer">Sub-Agent Executor</span>
               <span class="chip deer">Sandbox / Provisioner</span>
               <span class="chip deer">Provider Adapters</span>
+              <span class="chip keep">SearchGateway</span>
+              <span class="chip keep">SearchRun</span>
+              <span class="chip keep">UpgradeCandidate</span>
+              <span class="chip keep">CollectorGateway</span>
               <span class="chip keep">Controlled Collection</span>
             </div>
-            <div class="mini-note">执行层不该直接把 thread 或 memory 当真源，它只负责受控执行和结果回传。</div>
+            <div class="mini-note">执行层不该直接把 thread 或 memory 当真源，它只负责受控执行和结果回传；当前第一个明确 gateway 子项目是 `SearchGateway v1`，它的 discovery 结果必须先经过升级边界，不能直接冒充 `SourceCapture` 或 `EvidenceSet`。</div>
           </div>
 
           <div class="layer">
@@ -957,9 +968,9 @@
           <h3>下一步</h3>
           <p>引入 DeerFlow 风格的执行平面，而不是整个产品壳。</p>
           <ul class="bullet-list">
-            <li>补 runtime harness、skill loader、tool registry。</li>
-            <li>补 provider credential schema 与 capability matrix。</li>
-            <li>补 sandbox / provisioner，支持更强的执行隔离。</li>
+            <li>先落地 `SearchGateway v1`，把 planning-stage discovery 和 evidence-stage search、多 provider 降级、规则筛选和 upgrade candidate 跑通。</li>
+            <li>再决定是否把受控采集层单独收口成 `CollectorGateway`，用于把 `SearchRun / SearchResult / UpgradeCandidate` 正式桥接到 `TopicRun / SourceCapture / CollectionLog`。</li>
+            <li>在这两个子项目稳定后，再继续补 runtime harness、skill loader、tool registry、provider credential schema、capability matrix 和 sandbox / provisioner。</li>
           </ul>
         </article>
         <article class="phase-card later">

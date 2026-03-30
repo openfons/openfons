@@ -48,6 +48,9 @@
 - `docs/workbench/README.md`
 - `docs/workbench/openfons-best-practice-architecture-2026-03-27.html`
 - `docs/workbench/MiroFish与DeerFlow深度对比及对OpenFons的借鉴建议-2026-03-27.md`
+- 如果当前在推进执行层网关化，可同时参考：
+  - `docs/superpowers/specs/2026-03-30-search-gateway-v1-design.md`
+  - `docs/superpowers/plans/2026-03-30-search-gateway-v1.md`
 
 ### `docs/history`
 
@@ -84,6 +87,9 @@
 
 推荐先读：
 - `docs/superpowers/README.md`
+- 当前活跃子项目示例：
+  - `docs/superpowers/specs/2026-03-30-search-gateway-v1-design.md`
+  - `docs/superpowers/plans/2026-03-30-search-gateway-v1.md`
 
 ## 新人最快阅读顺序
 
