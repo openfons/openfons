@@ -1,19 +1,19 @@
 import type {
   CompilationResult,
   OpportunitySpec,
-  ReportSpec
+  ReportView
 } from '@openfons/contracts';
 
 export type MemoryStore = {
   getOpportunity: (id: string) => OpportunitySpec | undefined;
   saveOpportunity: (opportunity: OpportunitySpec) => void;
   saveCompilation: (result: CompilationResult) => void;
-  getReport: (id: string) => ReportSpec | undefined;
+  getReportView: (id: string) => ReportView | undefined;
 };
 
 export const createMemoryStore = (): MemoryStore => {
   const opportunities = new Map<string, OpportunitySpec>();
-  const reports = new Map<string, ReportSpec>();
+  const reportViews = new Map<string, ReportView>();
 
   return {
     getOpportunity: (id) => opportunities.get(id),
@@ -22,8 +22,13 @@ export const createMemoryStore = (): MemoryStore => {
     },
     saveCompilation: (result) => {
       opportunities.set(result.opportunity.id, result.opportunity);
-      reports.set(result.report.id, result.report);
+      reportViews.set(result.report.id, {
+        report: result.report,
+        evidenceSet: result.evidenceSet,
+        sourceCaptures: result.sourceCaptures,
+        collectionLogs: result.collectionLogs
+      });
     },
-    getReport: (id) => reports.get(id)
+    getReportView: (id) => reportViews.get(id)
   };
 };

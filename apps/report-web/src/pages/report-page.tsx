@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ReportSpec } from '@openfons/contracts';
+import type { ReportView } from '@openfons/contracts';
 import { createReportLoader, type ReportLoader } from '../api';
 
 type Props = {
@@ -17,7 +17,7 @@ export const ReportPage = ({
     ).env.VITE_CONTROL_API_BASE_URL ?? 'http://localhost:3001'
   )
 }: Props) => {
-  const [report, setReport] = useState<ReportSpec | null>(null);
+  const [reportView, setReportView] = useState<ReportView | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export const ReportPage = ({
     loadReport(reportId)
       .then((next) => {
         if (!cancelled) {
-          setReport(next);
+          setReportView(next);
         }
       })
       .catch((caught) => {
@@ -44,20 +44,93 @@ export const ReportPage = ({
     return <p className="page-shell">{error}</p>;
   }
 
-  if (!report) {
+  if (!reportView) {
     return <p className="page-shell">Loading report...</p>;
   }
+
+  const { report, evidenceSet, sourceCaptures, collectionLogs } = reportView;
+  const evidenceById = new Map(
+    evidenceSet.items.map((item) => [item.id, item] as const)
+  );
 
   return (
     <main className="page-shell">
       <section className="hero-card">
-        <p className="eyebrow">OpenFons Report Delivery</p>
+        <p className="eyebrow">OpenFons Evidence-Backed Report</p>
         <h1>{report.title}</h1>
         <p className="meta-line">
           {report.audience} / {report.geo} / {report.language}
         </p>
         <p>{report.summary}</p>
         <p className="thesis">{report.thesis}</p>
+        <p className="meta-line">Updated: {report.updatedAt}</p>
+      </section>
+
+      <section className="section-card">
+        <h2>Claims</h2>
+        <ul className="detail-list">
+          {report.claims.map((claim) => (
+            <li key={claim.id}>
+              <strong>{claim.label}</strong>: {claim.statement}
+              <div className="inline-ref">
+                Evidence:{' '}
+                {claim.evidenceIds
+                  .map(
+                    (evidenceId) =>
+                      evidenceById.get(evidenceId)?.statement ?? evidenceId
+                  )
+                  .join(' | ')}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section-card">
+        <h2>Sources</h2>
+        <ul className="detail-list">
+          {report.sourceIndex.map((source) => {
+            const capture = sourceCaptures.find(
+              (item) => item.id === source.captureId
+            );
+
+            return (
+              <li key={source.captureId}>
+                <a href={source.url} target="_blank" rel="noreferrer">
+                  {source.title}
+                </a>
+                <div className="inline-ref">
+                  {source.sourceKind} / {source.useAs} / {source.reportability} /{' '}
+                  {source.riskLevel}
+                  {capture ? ` / ${capture.captureType}` : ''}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section className="section-card">
+        <h2>Evidence</h2>
+        <ul className="detail-list">
+          {evidenceSet.items.map((item) => (
+            <li key={item.id}>
+              <strong>{item.kind}</strong>: {item.statement}
+              <div className="inline-ref">Freshness: {item.freshnessNote}</div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section-card">
+        <h2>Capture Log</h2>
+        <ul className="detail-list">
+          {collectionLogs.map((log) => (
+            <li key={log.id}>
+              {log.step} / {log.status} - {log.message}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {report.sections.map((section) => (
@@ -89,7 +162,10 @@ export const ReportPage = ({
         <h2>Update Log</h2>
         <ul className="detail-list">
           {report.updateLog.map((item) => (
-            <li key={`${item.at}-${item.note}`}>{item.note}</li>
+            <li key={`${item.at}-${item.note}`}>
+              {item.note}
+              <div className="inline-ref">{item.at}</div>
+            </li>
           ))}
         </ul>
       </section>

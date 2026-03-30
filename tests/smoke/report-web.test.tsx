@@ -7,36 +7,112 @@ describe('report-web', () => {
     cleanup();
   });
 
-  it('renders a report loaded from the API', async () => {
+  it('renders evidence-backed claims and sources from a report view', async () => {
     render(
       <ReportPage
         reportId="report_001"
         loadReport={async () => ({
-          id: 'report_001',
-          opportunityId: 'opp_001',
-          slug: 'direct-api-vs-openrouter-ai-coding',
-          title: 'Direct API vs OpenRouter for AI Coding Teams',
-          summary: 'Decision report shell',
-          audience: 'engineering leads',
-          geo: 'US',
-          language: 'English',
-          thesis: 'Start with a decision report before building a tool.',
-          sections: [
+          report: {
+            id: 'report_001',
+            opportunityId: 'opp_001',
+            slug: 'direct-api-vs-openrouter-ai-coding',
+            title: 'Direct API vs OpenRouter for AI Coding Teams',
+            summary: 'A source-backed comparison for the first AI procurement run.',
+            audience: 'small ai teams',
+            geo: 'global',
+            language: 'English',
+            thesis: 'Use direct providers when compliance matters most.',
+            claims: [
+              {
+                id: 'claim_001',
+                label: 'Official direct-buy baseline',
+                statement: 'Direct provider pricing must anchor comparisons.',
+                evidenceIds: ['evi_001']
+              }
+            ],
+            sourceIndex: [
+              {
+                captureId: 'cap_001',
+                title: 'OpenAI API pricing',
+                url: 'https://platform.openai.com/pricing',
+                sourceKind: 'official',
+                useAs: 'primary',
+                reportability: 'reportable',
+                riskLevel: 'low',
+                lastCheckedAt: '2026-03-30T08:00:00.000Z'
+              }
+            ],
+            sections: [
+              {
+                id: 'sec_001',
+                title: 'Quick Answer',
+                body: 'Start from official provider pricing and availability pages.'
+              }
+            ],
+            evidenceBoundaries: [
+              'Do not publish pricing claims without official pricing captures.'
+            ],
+            risks: ['Community pain points do not override official pricing.'],
+            updateLog: [
+              {
+                at: '2026-03-30T08:10:00.000Z',
+                note: 'Initial AI procurement evidence-backed report compiled.'
+              }
+            ],
+            createdAt: '2026-03-30T08:10:00.000Z',
+            updatedAt: '2026-03-30T08:10:00.000Z'
+          },
+          evidenceSet: {
+            id: 'es_001',
+            topicRunId: 'run_001',
+            createdAt: '2026-03-30T08:05:00.000Z',
+            updatedAt: '2026-03-30T08:10:00.000Z',
+            items: [
+              {
+                id: 'evi_001',
+                topicRunId: 'run_001',
+                captureId: 'cap_001',
+                kind: 'pricing',
+                statement: 'Official provider pricing must be the comparison anchor.',
+                sourceKind: 'official',
+                useAs: 'primary',
+                reportability: 'reportable',
+                riskLevel: 'low',
+                freshnessNote: 'Verified during the current run.',
+                supportingCaptureIds: ['cap_001']
+              }
+            ]
+          },
+          sourceCaptures: [
             {
-              id: 'sec_001',
-              title: 'Quick Answer',
-              body: 'Start with a report-web decision page.'
+              id: 'cap_001',
+              topicRunId: 'run_001',
+              title: 'OpenAI API pricing',
+              url: 'https://platform.openai.com/pricing',
+              sourceKind: 'official',
+              useAs: 'primary',
+              reportability: 'reportable',
+              riskLevel: 'low',
+              captureType: 'pricing-page',
+              status: 'captured',
+              accessedAt: '2026-03-30T08:00:00.000Z',
+              capturedAt: '2026-03-30T08:00:00.000Z',
+              language: 'en',
+              region: 'global',
+              summary: 'Provider pricing page capture'
             }
           ],
-          evidenceBoundaries: ['Capture official pricing and availability sources.'],
-          risks: ['Do not publish unsupported cost claims.'],
-          updateLog: [
+          collectionLogs: [
             {
-              at: '2026-03-27T12:00:00.000Z',
-              note: 'Initial shell created.'
+              id: 'log_001',
+              topicRunId: 'run_001',
+              captureId: 'cap_001',
+              step: 'capture',
+              status: 'success',
+              message: 'Captured OpenAI API pricing.',
+              createdAt: '2026-03-30T08:00:00.000Z'
             }
-          ],
-          createdAt: '2026-03-27T12:00:00.000Z'
+          ]
         })}
       />
     );
@@ -47,15 +123,17 @@ describe('report-web', () => {
       })
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Start with a decision report before building a tool.')
+      await screen.findByText('Official direct-buy baseline')
+    ).toBeInTheDocument();
+    expect(screen.getByText('OpenAI API pricing')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Do not publish pricing claims without official pricing captures.'
+      )
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Capture official pricing and availability sources.')
+      screen.getByText('Initial AI procurement evidence-backed report compiled.')
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('Do not publish unsupported cost claims.')
-    ).toBeInTheDocument();
-    expect(screen.getByText('Initial shell created.')).toBeInTheDocument();
   });
 
   it('renders an error when the report request fails', async () => {

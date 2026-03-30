@@ -69,15 +69,15 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
   });
 
   app.get('/api/v1/reports/:reportId', (c) => {
-    const report = store.getReport(c.req.param('reportId'));
+    const reportView = store.getReportView(c.req.param('reportId'));
 
-    if (!report) {
+    if (!reportView) {
       throw new HTTPException(404, {
         message: 'Report not found'
       });
     }
 
-    return c.json(report);
+    return c.json(reportView);
   });
 
   return app;

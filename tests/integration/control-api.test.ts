@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../../services/control-api/src/app';
 
 describe('control-api', () => {
-  it('creates, compiles, and returns a report shell', async () => {
+  it('compiles an opportunity into a report view backed by evidence', async () => {
     const app = createApp();
 
     const createResponse = await app.request('/api/v1/opportunities', {
@@ -11,13 +11,13 @@ describe('control-api', () => {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        title: 'AI Coding Model Procurement Options',
-        query: 'best ai coding models',
-        market: 'north-america',
-        audience: 'engineering leads',
-        problem: 'Teams need to compare price and routing options',
-        outcome: 'Produce a decision report shell',
-        geo: 'US',
+        title: 'Direct API vs OpenRouter for AI Coding Teams',
+        query: 'direct api vs openrouter',
+        market: 'global',
+        audience: 'small ai teams',
+        problem: 'Teams need cheaper but reliable model procurement',
+        outcome: 'Produce a source-backed report',
+        geo: 'global',
         language: 'English'
       })
     });
@@ -25,7 +25,7 @@ describe('control-api', () => {
     expect(createResponse.status).toBe(201);
     const created = await createResponse.json();
     expect(created.opportunity.status).toBe('draft');
-    expect(created.opportunity.geo).toBe('US');
+    expect(created.opportunity.geo).toBe('global');
     expect(created.opportunity.language).toBe('English');
     expect(created.opportunity.firstDeliverySurface).toBe('report-web');
 
@@ -39,29 +39,24 @@ describe('control-api', () => {
     expect(compileResponse.status).toBe(200);
     const compiled = await compileResponse.json();
     expect(compiled.opportunity.status).toBe('compiled');
+    expect(compiled.topicRun.topicKey).toBe('ai-procurement');
+    expect(compiled.sourceCaptures.length).toBeGreaterThan(0);
+    expect(compiled.evidenceSet.items.length).toBeGreaterThan(0);
+    expect(compiled.report.claims.length).toBeGreaterThan(0);
     expect(compiled.workflow.taskIds).toHaveLength(3);
     expect(compiled.opportunity.pageCandidates[0].slug).toBe(
-      'ai-coding-model-procurement-options'
+      'direct-api-vs-openrouter-for-ai-coding-teams'
     );
-    expect(compiled.report.slug).toBe('ai-coding-model-procurement-options');
-    expect(compiled.report.evidenceBoundaries).toContain(
-      'Capture the official pricing page.'
-    );
-    expect(compiled.report.risks).toContain(
-      'Do not publish price or availability claims without official source captures.'
-    );
-    expect(compiled.report.updateLog[0].note).toBe(
-      'Initial deterministic report shell generated from OpportunitySpec.'
-    );
-    expect(compiled.report.id).toMatch(/^report_[a-z0-9]{8}$/);
 
     const reportResponse = await app.request(
       `/api/v1/reports/${compiled.report.id}`
     );
 
     expect(reportResponse.status).toBe(200);
-    const report = await reportResponse.json();
-    expect(report.title).toContain('AI Coding Model');
+    const reportView = await reportResponse.json();
+    expect(reportView.report.id).toBe(compiled.report.id);
+    expect(reportView.evidenceSet.id).toBe(compiled.evidenceSet.id);
+    expect(reportView.sourceCaptures[0].title).toContain('pricing');
   });
 
   it('rejects invalid opportunity payloads', async () => {

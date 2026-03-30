@@ -2,55 +2,52 @@ import { describe, expect, it } from 'vitest';
 import {
   CompilationResultSchema,
   OpportunityInputSchema,
-  ReportSpecSchema
+  ReportSpecSchema,
+  ReportViewSchema
 } from '@openfons/contracts';
 
 function createValidCompilationResult() {
   return {
     opportunity: {
       id: 'opp_001',
-      slug: 'ai-coding-model-procurement-options',
-      title: 'AI Coding Model Procurement Options',
-      market: 'north-america',
+      slug: 'direct-api-vs-openrouter-ai-coding',
+      title: 'Direct API vs OpenRouter for AI Coding Teams',
+      market: 'global',
       input: {
-        title: 'AI Coding Model Procurement Options',
-        query: 'best ai coding models',
-        market: 'north-america',
-        audience: 'engineering leads',
-        problem: 'Teams need to compare price and routing options',
-        outcome: 'Produce a decision report shell',
-        geo: 'US',
+        title: 'Direct API vs OpenRouter for AI Coding Teams',
+        query: 'direct api vs openrouter',
+        market: 'global',
+        audience: 'small ai teams',
+        problem: 'Teams need cheaper but reliable model procurement',
+        outcome: 'Produce a source-backed report',
+        geo: 'global',
         language: 'English'
       },
       status: 'compiled' as const,
-      createdAt: '2026-03-27T12:00:00.000Z',
-      audience: 'engineering leads',
-      geo: 'US',
+      createdAt: '2026-03-30T08:00:00.000Z',
+      audience: 'small ai teams',
+      geo: 'global',
       language: 'English',
-      searchIntent: 'decision' as const,
-      angle: 'Direct API vs router guidance for small AI teams',
+      searchIntent: 'comparison' as const,
+      angle: 'Compare direct provider buying with relay platforms',
       firstDeliverySurface: 'report-web' as const,
       pageCandidates: [
         {
-          slug: 'ai-coding-model-procurement-options',
-          title: 'AI Coding Model Procurement Options',
-          query: 'ai coding model procurement options'
+          slug: 'direct-api-vs-openrouter-ai-coding',
+          title: 'Direct API vs OpenRouter for AI Coding Teams',
+          query: 'direct api vs openrouter'
         }
       ],
       evidenceRequirements: [
         {
           kind: 'official-pricing' as const,
-          note: 'Capture the official pricing page.'
-        },
-        {
-          kind: 'official-availability' as const,
-          note: 'Capture the official regional availability page.'
+          note: 'Capture official provider and relay pricing pages.'
         }
       ],
       productOpportunityHints: [
         {
           kind: 'tracker' as const,
-          note: 'Track provider pricing changes over time.'
+          note: 'Track provider pricing and routing changes over time.'
         }
       ]
     },
@@ -80,61 +77,160 @@ function createValidCompilationResult() {
       taskIds: ['task_001', 'task_002', 'task_003'],
       status: 'ready' as const
     },
+    topicRun: {
+      id: 'run_001',
+      opportunityId: 'opp_001',
+      workflowId: 'wf_001',
+      topicKey: 'ai-procurement',
+      status: 'compiled' as const,
+      startedAt: '2026-03-30T08:00:00.000Z',
+      updatedAt: '2026-03-30T08:10:00.000Z'
+    },
+    sourceCaptures: [
+      {
+        id: 'cap_001',
+        topicRunId: 'run_001',
+        title: 'OpenAI API pricing',
+        url: 'https://platform.openai.com/pricing',
+        sourceKind: 'official' as const,
+        useAs: 'primary' as const,
+        reportability: 'reportable' as const,
+        riskLevel: 'low' as const,
+        captureType: 'pricing-page' as const,
+        status: 'captured' as const,
+        accessedAt: '2026-03-30T08:00:00.000Z',
+        capturedAt: '2026-03-30T08:00:00.000Z',
+        language: 'en',
+        region: 'global',
+        summary: 'Provider pricing page capture'
+      }
+    ],
+    collectionLogs: [
+      {
+        id: 'log_001',
+        topicRunId: 'run_001',
+        captureId: 'cap_001',
+        step: 'capture' as const,
+        status: 'success' as const,
+        message: 'Captured official pricing page.',
+        createdAt: '2026-03-30T08:00:00.000Z'
+      }
+    ],
+    evidenceSet: {
+      id: 'es_001',
+      topicRunId: 'run_001',
+      createdAt: '2026-03-30T08:05:00.000Z',
+      updatedAt: '2026-03-30T08:10:00.000Z',
+      items: [
+        {
+          id: 'evi_001',
+          topicRunId: 'run_001',
+          captureId: 'cap_001',
+          kind: 'pricing' as const,
+          statement:
+            'Official provider pricing must be the comparison anchor for direct-buy comparisons.',
+          sourceKind: 'official' as const,
+          useAs: 'primary' as const,
+          reportability: 'reportable' as const,
+          riskLevel: 'low' as const,
+          freshnessNote: 'Verified during the current run.',
+          supportingCaptureIds: ['cap_001']
+        }
+      ]
+    },
     report: {
       id: 'report_001',
       opportunityId: 'opp_001',
       slug: 'direct-api-vs-openrouter-ai-coding',
       title: 'Direct API vs OpenRouter for AI Coding Teams',
-      summary: 'Decision report shell',
-      audience: 'engineering leads',
-      geo: 'US',
+      summary: 'A source-backed comparison for the first AI procurement run.',
+      audience: 'small ai teams',
+      geo: 'global',
       language: 'English',
-      thesis: 'Start with a decision report before building a tool.',
+      thesis:
+        'Use direct providers when compliance and invoice certainty matter most; use relays when coverage and routing flexibility dominate.',
+      claims: [
+        {
+          id: 'claim_001',
+          label: 'Direct purchase anchor',
+          statement: 'Direct provider pricing must be the comparison anchor.',
+          evidenceIds: ['evi_001']
+        }
+      ],
+      sourceIndex: [
+        {
+          captureId: 'cap_001',
+          title: 'OpenAI API pricing',
+          url: 'https://platform.openai.com/pricing',
+          sourceKind: 'official' as const,
+          useAs: 'primary' as const,
+          reportability: 'reportable' as const,
+          riskLevel: 'low' as const,
+          lastCheckedAt: '2026-03-30T08:00:00.000Z'
+        }
+      ],
       sections: [
         {
           id: 'sec_001',
           title: 'Quick Answer',
-          body: 'Start with a report-web decision page.'
+          body:
+            'Start from official pricing and availability pages, then layer relay tradeoffs on top.'
         }
       ],
-      evidenceBoundaries: ['Capture official pricing and availability sources.'],
-      risks: ['Do not publish unsupported cost claims.'],
+      evidenceBoundaries: [
+        'Do not publish pricing claims without an official pricing capture.'
+      ],
+      risks: [
+        'Community complaints can corroborate pain points but cannot define final pricing claims alone.'
+      ],
       updateLog: [
         {
-          at: '2026-03-27T12:00:00.000Z',
-          note: 'Initial shell created.'
+          at: '2026-03-30T08:10:00.000Z',
+          note: 'Initial AI procurement evidence-backed report compiled.'
         }
       ],
-      createdAt: '2026-03-27T12:00:00.000Z'
-    }
+      createdAt: '2026-03-30T08:10:00.000Z',
+      updatedAt: '2026-03-30T08:10:00.000Z'
+    },
+    artifacts: [
+      {
+        id: 'art_001',
+        topicRunId: 'run_001',
+        reportId: 'report_001',
+        type: 'report' as const,
+        storage: 'memory' as const,
+        uri: 'memory://report/report_001',
+        createdAt: '2026-03-30T08:10:00.000Z'
+      }
+    ]
   };
 }
 
 describe('@openfons/contracts', () => {
   it('parses a valid opportunity input', () => {
     const parsed = OpportunityInputSchema.parse({
-      title: 'AI Coding Model Procurement Options',
-      query: 'best ai coding models',
-      market: 'north-america',
-      audience: 'engineering leads',
-      problem: 'Teams need to compare price and routing options',
-      outcome: 'Produce a decision report shell',
-      geo: 'US',
+      title: 'Direct API vs OpenRouter for AI Coding Teams',
+      query: 'direct api vs openrouter',
+      market: 'global',
+      audience: 'small ai teams',
+      problem: 'Teams need cheaper but reliable model procurement',
+      outcome: 'Produce a source-backed report',
+      geo: 'global',
       language: 'English'
     });
 
-    expect(parsed.query).toBe('best ai coding models');
+    expect(parsed.query).toBe('direct api vs openrouter');
   });
 
   it('rejects an opportunity without a title', () => {
     const result = OpportunityInputSchema.safeParse({
       title: '',
-      query: 'best ai coding models',
-      market: 'north-america',
-      audience: 'engineering leads',
-      problem: 'Teams need to compare price and routing options',
-      outcome: 'Produce a decision report shell',
-      geo: 'US',
+      query: 'direct api vs openrouter',
+      market: 'global',
+      audience: 'small ai teams',
+      problem: 'Teams need cheaper but reliable model procurement',
+      outcome: 'Produce a source-backed report',
+      geo: 'global',
       language: 'English'
     });
 
@@ -146,39 +242,85 @@ describe('@openfons/contracts', () => {
 
     expect(parsed.opportunity.firstDeliverySurface).toBe('report-web');
     expect(parsed.opportunity.pageCandidates[0].slug).toBe(
-      'ai-coding-model-procurement-options'
+      'direct-api-vs-openrouter-ai-coding'
     );
-    expect(parsed.report.thesis).toContain('decision report');
-    expect(parsed.report.updateLog[0].note).toBe('Initial shell created.');
+    expect(parsed.topicRun.topicKey).toBe('ai-procurement');
+    expect(parsed.report.thesis).toContain('direct providers');
+    expect(parsed.report.updateLog[0].note).toBe(
+      'Initial AI procurement evidence-backed report compiled.'
+    );
     expect(parsed.report).toMatchObject(
       ReportSpecSchema.parse({
         id: 'report_001',
         opportunityId: 'opp_001',
         slug: 'direct-api-vs-openrouter-ai-coding',
         title: 'Direct API vs OpenRouter for AI Coding Teams',
-        summary: 'Decision report shell',
-        audience: 'engineering leads',
-        geo: 'US',
+        summary: 'A source-backed comparison for the first AI procurement run.',
+        audience: 'small ai teams',
+        geo: 'global',
         language: 'English',
-        thesis: 'Start with a decision report before building a tool.',
+        thesis:
+          'Use direct providers when compliance and invoice certainty matter most; use relays when coverage and routing flexibility dominate.',
+        claims: [
+          {
+            id: 'claim_001',
+            label: 'Direct purchase anchor',
+            statement:
+              'Direct provider pricing must be the comparison anchor.',
+            evidenceIds: ['evi_001']
+          }
+        ],
+        sourceIndex: [
+          {
+            captureId: 'cap_001',
+            title: 'OpenAI API pricing',
+            url: 'https://platform.openai.com/pricing',
+            sourceKind: 'official',
+            useAs: 'primary',
+            reportability: 'reportable',
+            riskLevel: 'low',
+            lastCheckedAt: '2026-03-30T08:00:00.000Z'
+          }
+        ],
         sections: [
           {
             id: 'sec_001',
             title: 'Quick Answer',
-            body: 'Start with a report-web decision page.'
+            body:
+              'Start from official pricing and availability pages, then layer relay tradeoffs on top.'
           }
         ],
-        evidenceBoundaries: ['Capture official pricing and availability sources.'],
-        risks: ['Do not publish unsupported cost claims.'],
+        evidenceBoundaries: [
+          'Do not publish pricing claims without an official pricing capture.'
+        ],
+        risks: [
+          'Community complaints can corroborate pain points but cannot define final pricing claims alone.'
+        ],
         updateLog: [
           {
-            at: '2026-03-27T12:00:00.000Z',
-            note: 'Initial shell created.'
+            at: '2026-03-30T08:10:00.000Z',
+            note: 'Initial AI procurement evidence-backed report compiled.'
           }
         ],
-        createdAt: '2026-03-27T12:00:00.000Z'
+        createdAt: '2026-03-30T08:10:00.000Z',
+        updatedAt: '2026-03-30T08:10:00.000Z'
       })
     );
+  });
+
+  it('parses a report view built from the evidence chain', () => {
+    const compilation = createValidCompilationResult();
+    const parsed = CompilationResultSchema.parse(compilation);
+    const view = ReportViewSchema.parse({
+      report: parsed.report,
+      evidenceSet: parsed.evidenceSet,
+      sourceCaptures: parsed.sourceCaptures,
+      collectionLogs: parsed.collectionLogs
+    });
+
+    expect(view.report.claims[0].evidenceIds).toEqual(['evi_001']);
+    expect(view.sourceCaptures[0].sourceKind).toBe('official');
+    expect(view.evidenceSet.items[0].statement).toContain('comparison anchor');
   });
 
   it('rejects a compilation result when pageCandidates is empty', () => {
@@ -272,6 +414,30 @@ describe('@openfons/contracts', () => {
   it('rejects a compilation result when workflow task ids contain duplicates', () => {
     const input = createValidCompilationResult();
     input.workflow.taskIds = ['task_001', 'task_002', 'task_002'];
+
+    const result = CompilationResultSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a compilation result when topic run ids do not align', () => {
+    const input = createValidCompilationResult();
+    input.topicRun.opportunityId = 'opp_wrong';
+
+    const result = CompilationResultSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a compilation result when report claims reference missing evidence', () => {
+    const input = createValidCompilationResult();
+    input.report.claims[0].evidenceIds = ['evi_missing'];
+
+    const result = CompilationResultSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a compilation result when evidence references a missing capture', () => {
+    const input = createValidCompilationResult();
+    input.evidenceSet.items[0].supportingCaptureIds = ['cap_missing'];
 
     const result = CompilationResultSchema.safeParse(input);
     expect(result.success).toBe(false);

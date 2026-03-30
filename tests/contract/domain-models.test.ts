@@ -1,26 +1,69 @@
 import { describe, expect, it } from 'vitest';
-import { addEvidence, createEvidenceSet } from '@openfons/domain-models';
+import {
+  addEvidence,
+  createArtifact,
+  createCollectionLog,
+  createEvidenceSet,
+  createSourceCapture,
+  createTopicRun
+} from '@openfons/domain-models';
 
 describe('@openfons/domain-models', () => {
-  it('creates an empty evidence set for a topic', () => {
-    const evidenceSet = createEvidenceSet('topic_ai_agents');
+  it('creates a topic run with the expected ids', () => {
+    const topicRun = createTopicRun('opp_001', 'wf_001', 'ai-procurement');
 
-    expect(evidenceSet.topicId).toBe('topic_ai_agents');
-    expect(evidenceSet.items).toEqual([]);
+    expect(topicRun.opportunityId).toBe('opp_001');
+    expect(topicRun.workflowId).toBe('wf_001');
+    expect(topicRun.topicKey).toBe('ai-procurement');
+    expect(topicRun.status).toBe('planned');
   });
 
-  it('adds evidence immutably', () => {
-    const initial = createEvidenceSet('topic_ai_agents');
+  it('creates captures, logs, evidence, and artifacts immutably', () => {
+    const topicRun = createTopicRun('opp_001', 'wf_001', 'ai-procurement');
+    const capture = createSourceCapture({
+      topicRunId: topicRun.id,
+      title: 'OpenAI API pricing',
+      url: 'https://platform.openai.com/pricing',
+      sourceKind: 'official',
+      useAs: 'primary',
+      reportability: 'reportable',
+      riskLevel: 'low',
+      captureType: 'pricing-page',
+      language: 'en',
+      region: 'global',
+      summary: 'Official pricing capture'
+    });
+    const log = createCollectionLog({
+      topicRunId: topicRun.id,
+      captureId: capture.id,
+      step: 'capture',
+      status: 'success',
+      message: 'Captured pricing page.'
+    });
+    const initial = createEvidenceSet(topicRun.id);
     const next = addEvidence(initial, {
       id: 'evi_001',
-      source: 'search',
-      title: 'Best AI coding models',
-      url: 'https://example.com/models',
-      collectedAt: '2026-03-27T12:00:00.000Z',
-      summary: 'Comparison snapshot'
+      topicRunId: topicRun.id,
+      captureId: capture.id,
+      kind: 'pricing',
+      statement: 'Official pricing must anchor comparisons.',
+      sourceKind: 'official',
+      useAs: 'primary',
+      reportability: 'reportable',
+      riskLevel: 'low',
+      freshnessNote: 'Checked this run.',
+      supportingCaptureIds: [capture.id]
     });
+    const artifact = createArtifact(
+      topicRun.id,
+      'report',
+      'memory://report/report_001',
+      'report_001'
+    );
 
+    expect(log.captureId).toBe(capture.id);
     expect(initial.items).toHaveLength(0);
     expect(next.items).toHaveLength(1);
+    expect(artifact.reportId).toBe('report_001');
   });
 });
