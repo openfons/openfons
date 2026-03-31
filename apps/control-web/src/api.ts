@@ -5,6 +5,14 @@ export type ControlApi = {
   compileOpportunity: (opportunityId: string) => Promise<CompilationResult>;
 };
 
+const readErrorMessage = async (
+  response: Response,
+  fallback: string
+) => {
+  const message = (await response.text()).trim();
+  return message || fallback;
+};
+
 export const createControlApi = (baseUrl: string): ControlApi => ({
   async createOpportunity(input) {
     const response = await fetch(`${baseUrl}/api/v1/opportunities`, {
@@ -16,7 +24,9 @@ export const createControlApi = (baseUrl: string): ControlApi => ({
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create opportunity');
+      throw new Error(
+        await readErrorMessage(response, 'Failed to create opportunity')
+      );
     }
 
     const parsed = (await response.json()) as { opportunity: OpportunitySpec };
@@ -31,7 +41,9 @@ export const createControlApi = (baseUrl: string): ControlApi => ({
     );
 
     if (!response.ok) {
-      throw new Error('Failed to compile opportunity');
+      throw new Error(
+        await readErrorMessage(response, 'Failed to compile opportunity')
+      );
     }
 
     return (await response.json()) as CompilationResult;

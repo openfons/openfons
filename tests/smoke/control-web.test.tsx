@@ -1,10 +1,12 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createControlApi } from '../../apps/control-web/src/api';
 import { OpportunityPage } from '../../apps/control-web/src/pages/opportunity-page';
 
 describe('control-web', () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it('submits an opportunity and shows the generated report link', async () => {
@@ -269,5 +271,29 @@ describe('control-web', () => {
     fireEvent.click(screen.getByRole('button', { name: /compile report shell/i }));
 
     expect(await screen.findByText('Failed to compile opportunity')).toBeInTheDocument();
+  });
+
+  it('surfaces backend compile error details from control-api', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.',
+        {
+          status: 409
+        }
+      )
+    );
+
+    const api = createControlApi('http://localhost:3001');
+
+    await expect(api.compileOpportunity('opp_001')).rejects.toThrow(
+      'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:3001/api/v1/opportunities/opp_001/compile',
+      {
+        method: 'POST'
+      }
+    );
   });
 });
