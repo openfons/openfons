@@ -260,7 +260,7 @@
   <main class="page">
     <section class="governance-banner">
       <strong>2026-03-29 治理说明</strong>
-      <p>本图保留为历史 best-practice 架构视图，不直接代表当前单案例执行排期，也不代表 2026-03-28 dual experiment 的旧评分继续有效。若与当前执行冲突，以 docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md 与 docs/sot/开放源平台当前正式架构说明.md 为准，并继续遵守 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
+      <p>本图保留为历史 best-practice 架构视图，不直接代表当前单案例执行排期，也不代表 2026-03-28 dual experiment 的旧评分继续有效。当前执行层正在把 `SearchGateway v1` 作为第一个明确 gateway 子项目落地；若与当前执行冲突，以 docs/superpowers/specs/2026-03-29-openfons-deep-planning-and-decoupled-pipeline-design.md、docs/superpowers/specs/2026-03-30-search-gateway-v1-design.md 与 docs/sot/开放源平台当前正式架构说明.md 为准，并继续遵守 Authority / Distribution / Compliance / Maintenance Cost 四个 hard gates。</p>
     </section>    <section class="intro">
       <h1>OpenFons 最佳实践架构图</h1>
       <p class="subtitle">
@@ -336,13 +336,13 @@
         <div class="step-row">
           <div class="step-card">
             <strong>Step 7. Worker Execution</strong>
-            <p>受控执行采集、分析、回传。可引入 harness、skills、sandbox、sub-agents。</p>
+            <p>受控执行采集、分析、回传。当前已明确的 gateway 子项目是 `SearchGateway v1`，它先产生 `SearchRun / SearchResult / UpgradeCandidate`；这些候选结果后续再进入正式采集链路，落成 `SourceCapture / CollectionLog`。同时可继续引入 harness、skills、sandbox、sub-agents。</p>
           </div>
         </div>
         <div class="borrow-box">
           <strong>借鉴边界</strong>
           借 DeerFlow 的 <code>Runtime Harness / Skills Loader / Tools Registry / Sandbox / Sub-Agent</code>。
-          但 <code>memory / thread</code> 不能当长期真源。
+          但 <code>memory / thread</code> 不能当长期真源；当前第一个具体 gateway 子项目是 <code>SearchGateway v1</code>，它属于 discovery execution layer，不等于 <code>SourceCapture</code> 或 <code>EvidenceSet</code>，也不应把后续正式采集链过早写死成已实现服务名。
         </div>
       </article>
 

@@ -1,0 +1,12 @@
+{
+  "planning": {
+    "providers": ["ddg", "google", "brave", "bing"],
+    "allowDomains": ["openai.com", "help.openai.com", "ai.google.dev", "openrouter.ai"],
+    "denyDomains": ["medium.com", "reddit.com"]
+  },
+  "evidence": {
+    "providers": ["google", "bing", "baidu", "brave", "tavily", "ddg"],
+    "allowDomains": ["openai.com", "help.openai.com", "ai.google.dev", "openrouter.ai"],
+    "denyDomains": ["medium.com", "pinterest.com"]
+  }
+}

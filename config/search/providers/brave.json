@@ -1,0 +1,20 @@
+{
+  "providerId": "brave",
+  "displayName": "Brave Search API",
+  "category": "external-api",
+  "enabledByDefault": true,
+  "requiresCredential": true,
+  "supportsGeo": true,
+  "supportsLanguage": true,
+  "supportsPagination": true,
+  "supportsMultiQuery": true,
+  "supportsAsync": true,
+  "supportsSnippet": true,
+  "supportsRichMetadata": true,
+  "supportsRateLimitHeader": true,
+  "defaultPriority": 15,
+  "defaultTimeoutMs": 5000,
+  "degradePriority": 20,
+  "riskLevel": "medium",
+  "notes": "Third-party API with free monthly credits and rate-limit headers."
+}
