@@ -147,6 +147,9 @@ importers:
       '@openfons/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@openfons/domain-models':
+        specifier: workspace:*
+        version: link:../../packages/domain-models
       '@openfons/shared':
         specifier: workspace:*
         version: link:../../packages/shared

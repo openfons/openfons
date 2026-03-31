@@ -1,52 +1,248 @@
 import { createId, nowIso } from '@openfons/shared';
 
-export type TopicStatus = 'draft' | 'ready';
-export type ArtifactType = 'opportunity' | 'report';
+export type SourceKind =
+  | 'official'
+  | 'community'
+  | 'commercial'
+  | 'inference';
 
-export type Topic = {
+export type SourceUseAs =
+  | 'primary'
+  | 'secondary'
+  | 'corroboration'
+  | 'discovery-only';
+
+export type Reportability = 'reportable' | 'caveated' | 'blocked';
+export type RiskLevel = 'low' | 'medium' | 'high';
+
+export type CaptureType =
+  | 'pricing-page'
+  | 'availability-page'
+  | 'doc-page'
+  | 'community-thread'
+  | 'analysis-note';
+
+export type CaptureStatus = 'captured' | 'failed';
+export type TopicRunStatus = 'planned' | 'captured' | 'qualified' | 'compiled';
+export type CollectionStep = 'discover' | 'capture' | 'qualify' | 'compile';
+export type CollectionStatus = 'success' | 'warning' | 'error';
+
+export type EvidenceKind =
+  | 'pricing'
+  | 'availability'
+  | 'routing'
+  | 'language'
+  | 'community'
+  | 'inference';
+
+export type ArtifactType =
+  | 'opportunity'
+  | 'topic-run'
+  | 'evidence-set'
+  | 'report';
+
+export type ArtifactStorage = 'memory' | 'file';
+
+export type TopicRun = {
   id: string;
-  query: string;
-  market: string;
-  audience: string;
-  status: TopicStatus;
+  opportunityId: string;
+  workflowId: string;
+  topicKey: string;
+  status: TopicRunStatus;
+  startedAt: string;
+  updatedAt: string;
+};
+
+export type SourceCapture = {
+  id: string;
+  topicRunId: string;
+  title: string;
+  url: string;
+  sourceKind: SourceKind;
+  useAs: SourceUseAs;
+  reportability: Reportability;
+  riskLevel: RiskLevel;
+  captureType: CaptureType;
+  status: CaptureStatus;
+  accessedAt: string;
+  capturedAt?: string;
+  language: string;
+  region: string;
+  summary: string;
+};
+
+export type CollectionLog = {
+  id: string;
+  topicRunId: string;
+  captureId?: string;
+  step: CollectionStep;
+  status: CollectionStatus;
+  message: string;
+  createdAt: string;
 };
 
 export type Evidence = {
   id: string;
-  source: string;
-  title: string;
-  url: string;
-  collectedAt: string;
-  summary: string;
+  topicRunId: string;
+  captureId: string;
+  kind: EvidenceKind;
+  statement: string;
+  sourceKind: SourceKind;
+  useAs: SourceUseAs;
+  reportability: Reportability;
+  riskLevel: RiskLevel;
+  freshnessNote: string;
+  supportingCaptureIds: string[];
 };
 
 export type EvidenceSet = {
   id: string;
-  topicId: string;
+  topicRunId: string;
   createdAt: string;
+  updatedAt: string;
   items: Evidence[];
 };
 
 export type Artifact = {
   id: string;
-  topicId: string;
+  topicRunId: string;
+  reportId?: string;
   type: ArtifactType;
-  storage: 'memory' | 'file';
+  storage: ArtifactStorage;
   uri: string;
   createdAt: string;
 };
 
-export const createEvidenceSet = (topicId: string): EvidenceSet => ({
-  id: createId('es'),
-  topicId,
-  createdAt: nowIso(),
-  items: []
+export type CreateSourceCaptureInput = {
+  topicRunId: string;
+  title: string;
+  url: string;
+  sourceKind: SourceKind;
+  useAs: SourceUseAs;
+  reportability: Reportability;
+  riskLevel: RiskLevel;
+  captureType: CaptureType;
+  language: string;
+  region: string;
+  summary: string;
+};
+
+export type CreateCollectionLogInput = {
+  topicRunId: string;
+  captureId?: string;
+  step: CollectionStep;
+  status: CollectionStatus;
+  message: string;
+};
+
+const createTimestampPair = () => {
+  const timestamp = nowIso();
+  return {
+    createdAt: timestamp,
+    updatedAt: timestamp
+  };
+};
+
+export const createTopicRun = (
+  opportunityId: string,
+  workflowId: string,
+  topicKey: string
+): TopicRun => {
+  const { createdAt, updatedAt } = createTimestampPair();
+
+  return {
+    id: createId('run'),
+    opportunityId,
+    workflowId,
+    topicKey,
+    status: 'planned',
+    startedAt: createdAt,
+    updatedAt
+  };
+};
+
+export const createSourceCapture = ({
+  topicRunId,
+  title,
+  url,
+  sourceKind,
+  useAs,
+  reportability,
+  riskLevel,
+  captureType,
+  language,
+  region,
+  summary
+}: CreateSourceCaptureInput): SourceCapture => {
+  const { createdAt } = createTimestampPair();
+
+  return {
+    id: createId('cap'),
+    topicRunId,
+    title,
+    url,
+    sourceKind,
+    useAs,
+    reportability,
+    riskLevel,
+    captureType,
+    status: 'captured',
+    accessedAt: createdAt,
+    capturedAt: createdAt,
+    language,
+    region,
+    summary
+  };
+};
+
+export const createCollectionLog = ({
+  topicRunId,
+  captureId,
+  step,
+  status,
+  message
+}: CreateCollectionLogInput): CollectionLog => ({
+  id: createId('log'),
+  topicRunId,
+  captureId,
+  step,
+  status,
+  message,
+  createdAt: nowIso()
 });
+
+export const createEvidenceSet = (topicRunId: string): EvidenceSet => {
+  const { createdAt, updatedAt } = createTimestampPair();
+
+  return {
+    id: createId('es'),
+    topicRunId,
+    createdAt,
+    updatedAt,
+    items: []
+  };
+};
 
 export const addEvidence = (
   evidenceSet: EvidenceSet,
   evidence: Evidence
 ): EvidenceSet => ({
   ...evidenceSet,
+  updatedAt: nowIso(),
   items: [...evidenceSet.items, evidence]
+});
+
+export const createArtifact = (
+  topicRunId: string,
+  type: ArtifactType,
+  uri: string,
+  reportId?: string
+): Artifact => ({
+  id: createId('art'),
+  topicRunId,
+  reportId,
+  type,
+  storage: 'memory',
+  uri,
+  createdAt: nowIso()
 });

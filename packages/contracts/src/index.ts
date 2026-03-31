@@ -273,6 +273,154 @@ export const UpdateLogEntrySchema = z.object({
   note: z.string().min(1)
 });
 
+export const SourceKindSchema = z.enum([
+  'official',
+  'community',
+  'commercial',
+  'inference'
+]);
+
+export const SourceUseAsSchema = z.enum([
+  'primary',
+  'secondary',
+  'corroboration',
+  'discovery-only'
+]);
+
+export const ReportabilitySchema = z.enum([
+  'reportable',
+  'caveated',
+  'blocked'
+]);
+
+export const RiskLevelSchema = z.enum(['low', 'medium', 'high']);
+
+export const CaptureTypeSchema = z.enum([
+  'pricing-page',
+  'availability-page',
+  'doc-page',
+  'community-thread',
+  'analysis-note'
+]);
+
+export const CaptureStatusSchema = z.enum(['captured', 'failed']);
+export const TopicRunStatusSchema = z.enum([
+  'planned',
+  'captured',
+  'qualified',
+  'compiled'
+]);
+export const CollectionStepSchema = z.enum([
+  'discover',
+  'capture',
+  'qualify',
+  'compile'
+]);
+export const CollectionStatusSchema = z.enum(['success', 'warning', 'error']);
+export const EvidenceKindSchema = z.enum([
+  'pricing',
+  'availability',
+  'routing',
+  'language',
+  'community',
+  'inference'
+]);
+export const ArtifactTypeSchema = z.enum([
+  'opportunity',
+  'topic-run',
+  'evidence-set',
+  'report'
+]);
+export const ArtifactStorageSchema = z.enum(['memory', 'file']);
+
+export const TopicRunSchema = z.object({
+  id: z.string().min(1),
+  opportunityId: z.string().min(1),
+  workflowId: z.string().min(1),
+  topicKey: z.string().min(1),
+  status: TopicRunStatusSchema,
+  startedAt: z.string().datetime(),
+  updatedAt: z.string().datetime()
+});
+
+export const SourceCaptureSchema = z.object({
+  id: z.string().min(1),
+  topicRunId: z.string().min(1),
+  title: z.string().min(1),
+  url: z.string().url(),
+  sourceKind: SourceKindSchema,
+  useAs: SourceUseAsSchema,
+  reportability: ReportabilitySchema,
+  riskLevel: RiskLevelSchema,
+  captureType: CaptureTypeSchema,
+  status: CaptureStatusSchema,
+  accessedAt: z.string().datetime(),
+  capturedAt: z.string().datetime().optional(),
+  language: z.string().min(1),
+  region: z.string().min(1),
+  summary: z.string().min(1)
+});
+
+export const CollectionLogSchema = z.object({
+  id: z.string().min(1),
+  topicRunId: z.string().min(1),
+  captureId: z.string().min(1).optional(),
+  step: CollectionStepSchema,
+  status: CollectionStatusSchema,
+  message: z.string().min(1),
+  createdAt: z.string().datetime()
+});
+
+export const EvidenceSchema = z.object({
+  id: z.string().min(1),
+  topicRunId: z.string().min(1),
+  captureId: z.string().min(1),
+  kind: EvidenceKindSchema,
+  statement: z.string().min(1),
+  sourceKind: SourceKindSchema,
+  useAs: SourceUseAsSchema,
+  reportability: ReportabilitySchema,
+  riskLevel: RiskLevelSchema,
+  freshnessNote: z.string().min(1),
+  supportingCaptureIds: z.array(z.string().min(1)).min(1)
+});
+
+export const EvidenceSetSchema = z.object({
+  id: z.string().min(1),
+  topicRunId: z.string().min(1),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  items: z.array(EvidenceSchema).min(1)
+});
+
+export const ArtifactSchema = z.object({
+  id: z.string().min(1),
+  topicRunId: z.string().min(1),
+  reportId: z.string().min(1).optional(),
+  type: ArtifactTypeSchema,
+  storage: ArtifactStorageSchema,
+  uri: z.string().min(1),
+  createdAt: z.string().datetime()
+});
+
+export const ReportClaimSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  statement: z.string().min(1),
+  evidenceIds: z.array(z.string().min(1)).min(1)
+});
+
+export const ReportSourceRefSchema = z.object({
+  captureId: z.string().min(1),
+  title: z.string().min(1),
+  url: z.string().url(),
+  sourceKind: SourceKindSchema,
+  useAs: SourceUseAsSchema,
+  reportability: ReportabilitySchema,
+  riskLevel: RiskLevelSchema,
+  lastCheckedAt: z.string().datetime()
+});
+
 export const ReportSpecSchema = z.object({
   id: z.string().min(1),
   opportunityId: z.string().min(1),
@@ -283,11 +431,21 @@ export const ReportSpecSchema = z.object({
   geo: z.string().min(1),
   language: z.string().min(1),
   thesis: z.string().min(1),
+  claims: z.array(ReportClaimSchema).min(1),
+  sourceIndex: z.array(ReportSourceRefSchema).min(1),
   sections: z.array(ReportSectionSchema).min(1),
   evidenceBoundaries: z.array(z.string().min(1)).min(1),
   risks: z.array(z.string().min(1)).min(1),
   updateLog: z.array(UpdateLogEntrySchema).min(1),
-  createdAt: z.string().datetime()
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime()
+});
+
+export const ReportViewSchema = z.object({
+  report: ReportSpecSchema,
+  evidenceSet: EvidenceSetSchema,
+  sourceCaptures: z.array(SourceCaptureSchema).min(1),
+  collectionLogs: z.array(CollectionLogSchema).min(1)
 });
 
 const REQUIRED_TASK_KINDS = [
@@ -301,10 +459,18 @@ export const CompilationResultSchema = z
     opportunity: OpportunitySpecSchema,
     tasks: z.array(TaskSpecSchema).length(3),
     workflow: WorkflowSpecSchema,
-    report: ReportSpecSchema
+    topicRun: TopicRunSchema,
+    sourceCaptures: z.array(SourceCaptureSchema).min(1),
+    collectionLogs: z.array(CollectionLogSchema).min(1),
+    evidenceSet: EvidenceSetSchema,
+    report: ReportSpecSchema,
+    artifacts: z.array(ArtifactSchema).min(1)
   })
   .superRefine((value, ctx) => {
     const opportunityId = value.opportunity.id;
+    const workflowId = value.workflow.id;
+    const topicRunId = value.topicRun.id;
+    const reportId = value.report.id;
 
     value.tasks.forEach((task, index) => {
       if (task.opportunityId !== opportunityId) {
@@ -380,13 +546,163 @@ export const CompilationResultSchema = z
           'Tasks must include each required kind exactly once: collect-evidence, score-opportunity, render-report'
       });
     }
+
+    if (value.topicRun.opportunityId !== opportunityId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['topicRun', 'opportunityId'],
+        message: 'Topic run opportunityId must match opportunity.id'
+      });
+    }
+
+    if (value.topicRun.workflowId !== workflowId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['topicRun', 'workflowId'],
+        message: 'Topic run workflowId must match workflow.id'
+      });
+    }
+
+    const captureIds = new Set<string>();
+    value.sourceCaptures.forEach((capture, index) => {
+      captureIds.add(capture.id);
+
+      if (capture.topicRunId !== topicRunId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sourceCaptures', index, 'topicRunId'],
+          message: 'Source capture topicRunId must match topicRun.id'
+        });
+      }
+
+      if (capture.status === 'captured' && !capture.capturedAt) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['sourceCaptures', index, 'capturedAt'],
+          message: 'Captured source captures must include capturedAt'
+        });
+      }
+    });
+
+    value.collectionLogs.forEach((log, index) => {
+      if (log.topicRunId !== topicRunId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['collectionLogs', index, 'topicRunId'],
+          message: 'Collection log topicRunId must match topicRun.id'
+        });
+      }
+
+      if (log.captureId && !captureIds.has(log.captureId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['collectionLogs', index, 'captureId'],
+          message: 'Collection log captureId must reference a known source capture'
+        });
+      }
+    });
+
+    if (value.evidenceSet.topicRunId !== topicRunId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['evidenceSet', 'topicRunId'],
+        message: 'Evidence set topicRunId must match topicRun.id'
+      });
+    }
+
+    const evidenceIds = new Set<string>();
+    value.evidenceSet.items.forEach((evidence, index) => {
+      evidenceIds.add(evidence.id);
+
+      if (evidence.topicRunId !== topicRunId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['evidenceSet', 'items', index, 'topicRunId'],
+          message: 'Evidence topicRunId must match topicRun.id'
+        });
+      }
+
+      if (!captureIds.has(evidence.captureId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['evidenceSet', 'items', index, 'captureId'],
+          message: 'Evidence captureId must reference a known source capture'
+        });
+      }
+
+      evidence.supportingCaptureIds.forEach((captureId, captureIndex) => {
+        if (!captureIds.has(captureId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [
+              'evidenceSet',
+              'items',
+              index,
+              'supportingCaptureIds',
+              captureIndex
+            ],
+            message:
+              'Evidence supportingCaptureIds must reference known source captures'
+          });
+        }
+      });
+    });
+
+    value.artifacts.forEach((artifact, index) => {
+      if (artifact.topicRunId !== topicRunId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['artifacts', index, 'topicRunId'],
+          message: 'Artifact topicRunId must match topicRun.id'
+        });
+      }
+
+      if (artifact.reportId && artifact.reportId !== reportId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['artifacts', index, 'reportId'],
+          message: 'Artifact reportId must match report.id when present'
+        });
+      }
+    });
+
+    value.report.sourceIndex.forEach((sourceRef, index) => {
+      if (!captureIds.has(sourceRef.captureId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['report', 'sourceIndex', index, 'captureId'],
+          message: 'Report sourceIndex captureId must reference a known source capture'
+        });
+      }
+    });
+
+    value.report.claims.forEach((claim, index) => {
+      claim.evidenceIds.forEach((evidenceId, evidenceIndex) => {
+        if (!evidenceIds.has(evidenceId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['report', 'claims', index, 'evidenceIds', evidenceIndex],
+            message: 'Report claim evidenceIds must reference known evidence'
+          });
+        }
+      });
+    });
   });
 
 export type OpportunityInput = z.infer<typeof OpportunityInputSchema>;
 export type OpportunitySpec = z.infer<typeof OpportunitySpecSchema>;
 export type TaskSpec = z.infer<typeof TaskSpecSchema>;
 export type WorkflowSpec = z.infer<typeof WorkflowSpecSchema>;
+export type TopicRun = z.infer<typeof TopicRunSchema>;
+export type SourceCapture = z.infer<typeof SourceCaptureSchema>;
+export type CollectionLog = z.infer<typeof CollectionLogSchema>;
+export type Evidence = z.infer<typeof EvidenceSchema>;
+export type EvidenceSet = z.infer<typeof EvidenceSetSchema>;
+export type Artifact = z.infer<typeof ArtifactSchema>;
+export type ReportClaim = z.infer<typeof ReportClaimSchema>;
+export type ReportSourceRef = z.infer<typeof ReportSourceRefSchema>;
 export type ReportSpec = z.infer<typeof ReportSpecSchema>;
+export type ReportView = z.infer<typeof ReportViewSchema>;
 export type CompilationResult = z.infer<typeof CompilationResultSchema>;
 export type SearchPurpose = z.infer<typeof SearchPurposeSchema>;
 export type SearchRunStatus = z.infer<typeof SearchRunStatusSchema>;

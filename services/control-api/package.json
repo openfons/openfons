@@ -13,6 +13,7 @@
   "dependencies": {
     "@hono/node-server": "^1.14.4",
     "@openfons/contracts": "workspace:*",
+    "@openfons/domain-models": "workspace:*",
     "@openfons/shared": "workspace:*",
     "hono": "^4.7.5"
   }

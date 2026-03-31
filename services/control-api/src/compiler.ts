@@ -6,9 +6,15 @@ import type {
   TaskSpec,
   WorkflowSpec
 } from '@openfons/contracts';
+import { createArtifact } from '@openfons/domain-models';
 import { createId, nowIso, slugify } from '@openfons/shared';
+import {
+  buildAiProcurementCase,
+  supportsAiProcurementCase
+} from './cases/ai-procurement.js';
 
 export class InvalidOpportunityInputError extends Error {}
+export class UnsupportedCompilationCaseError extends Error {}
 
 const DEFAULT_EVIDENCE_REQUIREMENTS: OpportunitySpec['evidenceRequirements'] = [
   {
@@ -97,6 +103,12 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
 export const buildCompilation = (
   opportunity: OpportunitySpec
 ): CompilationResult => {
+  if (!supportsAiProcurementCase(opportunity)) {
+    throw new UnsupportedCompilationCaseError(
+      'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
+    );
+  }
+
   const tasks: TaskSpec[] = [
     {
       id: createId('task'),
@@ -125,47 +137,93 @@ export const buildCompilation = (
     status: 'ready'
   };
 
+  const caseBundle = buildAiProcurementCase(opportunity, workflow);
   const reportCreatedAt = nowIso();
   const report: ReportSpec = {
     id: createId('report'),
     opportunityId: opportunity.id,
     slug: opportunity.pageCandidates[0].slug,
     title: opportunity.pageCandidates[0].title,
-    summary: `Decision report for ${opportunity.title}`,
+    summary: 'First evidence-backed AI procurement report.',
     audience: opportunity.audience,
     geo: opportunity.geo,
     language: opportunity.language,
-    thesis: opportunity.angle,
+    thesis:
+      'Start from official provider pricing and availability, then caveat relay convenience versus direct compliance certainty.',
+    claims: [
+      {
+        id: 'claim_direct_anchor',
+        label: 'Official direct-buy baseline',
+        statement:
+          'Direct provider pricing must anchor comparisons before any relay premium or convenience claim.',
+        evidenceIds: [caseBundle.evidenceSet.items[0].id]
+      },
+      {
+        id: 'claim_relay_fee_context',
+        label: 'Relay convenience needs fee context',
+        statement:
+          'Relay routing can simplify coverage and provider switching, but cost comparisons must preserve platform-fee and billing-mode caveats.',
+        evidenceIds: [
+          caseBundle.evidenceSet.items[1].id,
+          caseBundle.evidenceSet.items[2].id
+        ]
+      },
+      {
+        id: 'claim_region_first',
+        label: 'Region is not optional',
+        statement:
+          'Country availability and language support can change the best procurement path even when headline price looks cheaper elsewhere.',
+        evidenceIds: [caseBundle.evidenceSet.items[3].id]
+      }
+    ],
+    sourceIndex: caseBundle.sourceCaptures.map((capture) => ({
+      captureId: capture.id,
+      title: capture.title,
+      url: capture.url,
+      sourceKind: capture.sourceKind,
+      useAs: capture.useAs,
+      reportability: capture.reportability,
+      riskLevel: capture.riskLevel,
+      lastCheckedAt: capture.accessedAt
+    })),
     sections: [
       {
         id: createId('sec'),
         title: 'Quick Answer',
-        body: `Start with a ${opportunity.searchIntent} report for ${opportunity.audience} in ${opportunity.geo}.`
+        body: 'Use official pricing and availability pages to set the baseline, then caveat relay convenience and community pain points.'
       },
       {
         id: createId('sec'),
-        title: 'Evidence Boundary',
-        body: opportunity.evidenceRequirements.map((item) => item.note).join(' ')
-      },
-      {
-        id: createId('sec'),
-        title: 'First Delivery Surface',
-        body: 'Publish the report-web artifact before expanding to derivative content or product surfaces.'
+        title: 'Evidence Scope',
+        body: 'This first run covers provider pricing, relay pricing, and official region availability only.'
       }
     ],
-    evidenceBoundaries: opportunity.evidenceRequirements.map((item) => item.note),
+    evidenceBoundaries: [
+      'Do not publish pricing claims without at least one official pricing capture.',
+      'Relay comparisons must preserve caveats when source terms come from relay-owned pages.'
+    ],
     risks: [
-      'Do not publish price or availability claims without official source captures.',
-      'Do not split tool or subscription contracts out of OpportunitySpec in v1.'
+      'A deterministic first run can prove the chain shape, but it does not replace later live collection.',
+      'Community pain points may corroborate workflow friction, but they do not override official pricing or availability.'
     ],
     updateLog: [
       {
         at: reportCreatedAt,
-        note: 'Initial deterministic report shell generated from OpportunitySpec.'
+        note: 'Initial AI procurement evidence-backed report compiled.'
       }
     ],
-    createdAt: reportCreatedAt
+    createdAt: reportCreatedAt,
+    updatedAt: reportCreatedAt
   };
+
+  const artifacts = [
+    createArtifact(
+      caseBundle.topicRun.id,
+      'report',
+      `memory://report/${report.id}`,
+      report.id
+    )
+  ];
 
   return {
     opportunity: {
@@ -174,6 +232,11 @@ export const buildCompilation = (
     },
     tasks,
     workflow,
-    report
+    topicRun: caseBundle.topicRun,
+    sourceCaptures: caseBundle.sourceCaptures,
+    collectionLogs: caseBundle.collectionLogs,
+    evidenceSet: caseBundle.evidenceSet,
+    report,
+    artifacts
   };
 };

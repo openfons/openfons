@@ -1,6 +1,6 @@
-import type { ReportSpec } from '@openfons/contracts';
+import type { ReportView } from '@openfons/contracts';
 
-export type ReportLoader = (reportId: string) => Promise<ReportSpec>;
+export type ReportLoader = (reportId: string) => Promise<ReportView>;
 
 export const createReportLoader = (baseUrl: string): ReportLoader => {
   return async (reportId) => {
@@ -10,6 +10,6 @@ export const createReportLoader = (baseUrl: string): ReportLoader => {
       throw new Error('Failed to load report');
     }
 
-    return (await response.json()) as ReportSpec;
+    return (await response.json()) as ReportView;
   };
 };
