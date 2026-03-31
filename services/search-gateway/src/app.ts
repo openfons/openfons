@@ -37,6 +37,25 @@ export const createApp = (
     }
   };
 
+  const parseOptionalJsonBody = async (
+    request: { raw: Request },
+    message = 'Invalid JSON payload'
+  ) => {
+    const rawBody = await request.raw.clone().text();
+
+    if (rawBody.trim() === '') {
+      return {};
+    }
+
+    try {
+      return JSON.parse(rawBody) as unknown;
+    } catch {
+      throw new HTTPException(400, {
+        message
+      });
+    }
+  };
+
   app.post('/api/v1/search/runs', async (c) => {
     const payload = await parseJsonBody(c.req);
     const parsed = SearchRequestSchema.safeParse(payload);
@@ -69,6 +88,12 @@ export const createApp = (
       });
     }
 
+    if (!store.getRun(c.req.param('id'))) {
+      throw new HTTPException(404, {
+        message: 'Search run not found'
+      });
+    }
+
     const payload = await parseJsonBody(c.req);
     const result = await deps.upgrade(c.req.param('id'), payload as {
       selectedSearchResultIds: string[];
@@ -85,7 +110,7 @@ export const createApp = (
   );
 
   app.post('/api/v1/search/config/validate', async (c) => {
-    const payload = (await c.req.json().catch(() => ({}))) as {
+    const payload = (await parseOptionalJsonBody(c.req)) as {
       projectId?: string;
     };
 

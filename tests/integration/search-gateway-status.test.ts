@@ -15,9 +15,10 @@ describe('search-gateway provider status', () => {
     process.env.GOOGLE_APIKEY = 'google-key';
     process.env.GOOGLE_CX = 'google-cx';
     process.env.BING_APIKEY = 'bing-key';
-    process.env.BING_ENDPOINT = 'https://api.bing.microsoft.com/v7.0/search';
     process.env.BAIDU_APIKEY = 'baidu-key';
     process.env.BAIDU_SECRETKEY = 'baidu-secret';
+    process.env.BAIDU_ENDPOINT = 'https://baidu.example.com/search';
+    process.env.DDG_ENDPOINT = 'https://ddg.example.com/search';
     process.env.BRAVE_APIKEY = 'brave-key';
     process.env.TAVILY_APIKEY = 'tavily-key';
 
@@ -29,5 +30,26 @@ describe('search-gateway provider status', () => {
       statuses.find((item) => item.providerId === 'google')?.credentialResolvedFrom
     ).toBe('system');
     expect(validation.valid).toBe(true);
+  });
+
+  it('marks providers unhealthy when required runtime config is missing from the public schema contract', () => {
+    process.env.GOOGLE_APIKEY = 'google-key';
+    process.env.GOOGLE_CX = 'google-cx';
+    process.env.BING_APIKEY = 'bing-key';
+    process.env.BAIDU_APIKEY = 'baidu-key';
+    process.env.BAIDU_SECRETKEY = 'baidu-secret';
+    process.env.BRAVE_APIKEY = 'brave-key';
+    process.env.TAVILY_APIKEY = 'tavily-key';
+
+    const statuses = getProviderStatus('openfons');
+    const validation = validateSearchConfig('openfons');
+
+    expect(statuses.find((item) => item.providerId === 'ddg')?.healthy).toBe(false);
+    expect(statuses.find((item) => item.providerId === 'baidu')?.healthy).toBe(
+      false
+    );
+    expect(validation.valid).toBe(false);
+    expect(validation.errors).toContain('ddg: missing-required-config');
+    expect(validation.errors).toContain('baidu: missing-required-config');
   });
 });

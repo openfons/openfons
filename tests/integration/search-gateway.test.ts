@@ -103,6 +103,22 @@ describe('search-gateway service', () => {
       })
     });
 
+    const createResponse = await app.request('/api/v1/search/runs', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        projectId: 'openfons',
+        purpose: 'evidence',
+        query: 'openai pricing official',
+        providers: ['google'],
+        maxResults: 10,
+        pages: 1,
+        autoUpgrade: false
+      })
+    });
+
+    expect(createResponse.status).toBe(201);
+
     const response = await app.request('/api/v1/search/runs/search_run_002/upgrade', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -114,6 +130,43 @@ describe('search-gateway service', () => {
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload.dispatchedCount).toBe(1);
+  });
+
+  it('returns 404 when upgrading an unknown search run', async () => {
+    const app = createApp({
+      search: async () => ({
+        searchRun: {
+          id: 'unused',
+          projectId: 'openfons',
+          purpose: 'planning' as const,
+          query: 'unused',
+          status: 'completed' as const,
+          selectedProviders: ['google'],
+          degradedProviders: [],
+          startedAt: '2026-03-30T08:10:00.000Z',
+          finishedAt: '2026-03-30T08:10:01.000Z'
+        },
+        results: [],
+        upgradeCandidates: [],
+        diagnostics: [],
+        downgradeInfo: []
+      }),
+      providerStatus: () => [],
+      upgrade: async () => {
+        throw new Error('should not be called');
+      }
+    });
+
+    const response = await app.request('/api/v1/search/runs/missing/upgrade', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        selectedSearchResultIds: ['search_result_001']
+      })
+    });
+
+    expect(response.status).toBe(404);
+    await expect(response.text()).resolves.toBe('Search run not found');
   });
 
   it('returns 400 for malformed json payloads on search run creation', async () => {
@@ -185,5 +238,39 @@ describe('search-gateway service', () => {
     const payload = await response.json();
     expect(payload.projectId).toBe('another-project');
     expect(payload.providers[0].providerId).toBe('bing');
+  });
+
+  it('returns 400 for malformed json payloads on config validation', async () => {
+    const app = createApp({
+      search: async () => ({
+        searchRun: {
+          id: 'unused',
+          projectId: 'openfons',
+          purpose: 'planning' as const,
+          query: 'unused',
+          status: 'completed' as const,
+          selectedProviders: ['google'],
+          degradedProviders: [],
+          startedAt: '2026-03-30T08:20:00.000Z',
+          finishedAt: '2026-03-30T08:20:01.000Z'
+        },
+        results: [],
+        upgradeCandidates: [],
+        diagnostics: [],
+        downgradeInfo: []
+      }),
+      providerStatus: () => []
+    });
+
+    const response = await app.request('/api/v1/search/config/validate', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: '{bad json'
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe('Invalid JSON payload');
   });
 });

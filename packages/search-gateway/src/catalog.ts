@@ -60,23 +60,26 @@ export const getProviderStatus = (projectId?: string): ProviderStatus[] => {
           )
         )
       : false;
-
-    return ProviderStatusSchema.parse({
-      providerId: provider.providerId,
-      enabled: provider.enabledByDefault,
-      healthy: !provider.requiresCredential || projectSatisfied || systemSatisfied,
-      credentialResolvedFrom: !provider.requiresCredential
+    const configSatisfied =
+      requiredFields.length === 0 || projectSatisfied || systemSatisfied;
+    const resolvedFrom =
+      requiredFields.length === 0
         ? 'none'
         : projectSatisfied
           ? 'project'
           : systemSatisfied
             ? 'system'
-            : 'none',
-      degraded:
-        provider.requiresCredential && !projectSatisfied && !systemSatisfied,
+            : 'none';
+
+    return ProviderStatusSchema.parse({
+      providerId: provider.providerId,
+      enabled: provider.enabledByDefault,
+      healthy: configSatisfied,
+      credentialResolvedFrom: resolvedFrom,
+      degraded: !configSatisfied,
       reason:
-        provider.requiresCredential && !projectSatisfied && !systemSatisfied
-          ? 'missing-credential'
+        !configSatisfied
+          ? 'missing-required-config'
           : undefined
     });
   });
@@ -89,7 +92,9 @@ export const validateSearchConfig = (projectId?: string): ValidationResult => {
     valid: resolvedProviders.every((provider) => provider.healthy),
     errors: resolvedProviders
       .filter((provider) => !provider.healthy)
-      .map((provider) => `${provider.providerId}: missing credential`),
+      .map(
+        (provider) => `${provider.providerId}: ${provider.reason ?? 'invalid-config'}`
+      ),
     warnings: [],
     resolvedProviders
   });

@@ -586,25 +586,25 @@ Use these exact `notes` values for the remaining provider files:
   },
   {
     "providerId": "bing",
-    "requiredFields": ["apiKey", "endpoint"],
-    "optionalFields": [],
-    "validationRules": ["apiKey must be non-empty", "endpoint must be non-empty"],
+    "requiredFields": ["apiKey"],
+    "optionalFields": ["endpoint"],
+    "validationRules": ["apiKey must be non-empty", "endpoint must be non-empty when provided"],
     "sensitiveFields": ["apiKey"],
     "projectOverrideAllowed": true
   },
   {
     "providerId": "baidu",
-    "requiredFields": ["apiKey", "secretKey"],
+    "requiredFields": ["apiKey", "secretKey", "endpoint"],
     "optionalFields": [],
-    "validationRules": ["apiKey must be non-empty", "secretKey must be non-empty"],
+    "validationRules": ["apiKey must be non-empty", "secretKey must be non-empty", "endpoint must be non-empty"],
     "sensitiveFields": ["apiKey", "secretKey"],
     "projectOverrideAllowed": true
   },
   {
     "providerId": "ddg",
-    "requiredFields": [],
+    "requiredFields": ["endpoint"],
     "optionalFields": [],
-    "validationRules": [],
+    "validationRules": ["endpoint must be non-empty"],
     "sensitiveFields": [],
     "projectOverrideAllowed": true
   },
@@ -1338,22 +1338,26 @@ export const getProviderStatus = (projectId?: string): ProviderStatus[] => {
         )
       : false;
 
-    return ProviderStatusSchema.parse({
-      providerId: provider.providerId,
-      enabled: provider.enabledByDefault,
-      healthy: !provider.requiresCredential || projectSatisfied || systemSatisfied,
-      credentialResolvedFrom: !provider.requiresCredential
+    const configSatisfied =
+      requiredFields.length === 0 || projectSatisfied || systemSatisfied;
+    const resolvedFrom =
+      requiredFields.length === 0
         ? 'none'
         : projectSatisfied
           ? 'project'
           : systemSatisfied
             ? 'system'
-            : 'none',
-      degraded:
-        provider.requiresCredential && !projectSatisfied && !systemSatisfied,
+            : 'none';
+
+    return ProviderStatusSchema.parse({
+      providerId: provider.providerId,
+      enabled: provider.enabledByDefault,
+      healthy: configSatisfied,
+      credentialResolvedFrom: resolvedFrom,
+      degraded: !configSatisfied,
       reason:
-        provider.requiresCredential && !projectSatisfied && !systemSatisfied
-          ? 'missing-credential'
+        !configSatisfied
+          ? 'missing-required-config'
           : undefined
     });
   });
@@ -1366,7 +1370,9 @@ export const validateSearchConfig = (projectId?: string): ValidationResult => {
     valid: resolvedProviders.every((provider) => provider.healthy),
     errors: resolvedProviders
       .filter((provider) => !provider.healthy)
-      .map((provider) => `${provider.providerId}: missing credential`),
+      .map(
+        (provider) => `${provider.providerId}: ${provider.reason ?? 'invalid-config'}`
+      ),
     warnings: [],
     resolvedProviders
   });
