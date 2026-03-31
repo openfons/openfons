@@ -75,5 +75,8 @@ describe('ai procurement case bundle', () => {
     expect(
       bundle.sourceCaptures.every((capture) => capture.sourceKind !== 'inference')
     ).toBe(true);
+    expect(
+      bundle.sourceCaptures.some((capture) => capture.sourceKind === 'community')
+    ).toBe(true);
   });
 });

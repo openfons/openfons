@@ -14,6 +14,20 @@ import { createId, nowIso } from '@openfons/shared';
 
 export const AI_PROCUREMENT_CASE_KEY = 'ai-procurement-v1';
 
+export const supportsAiProcurementCase = (
+  opportunity: OpportunitySpec
+) => {
+  const haystack = [
+    opportunity.slug,
+    opportunity.title,
+    opportunity.input.query
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  return haystack.includes('openrouter') && haystack.includes('api');
+};
+
 export const buildAiProcurementCase = (
   opportunity: OpportunitySpec,
   workflow: WorkflowSpec
@@ -90,6 +104,20 @@ export const buildAiProcurementCase = (
       region: 'global',
       summary:
         'Official help article stating that access outside supported countries may lead to suspension.'
+    }),
+    createSourceCapture({
+      topicRunId: topicRun.id,
+      title: 'OpenRouter model pricing misleading?',
+      url: 'https://www.reddit.com/r/OpenRouter/comments/1mgz77y/openrouter_model_pricing_misleading/',
+      sourceKind: 'community',
+      useAs: 'corroboration',
+      reportability: 'caveated',
+      riskLevel: 'medium',
+      captureType: 'community-thread',
+      language: 'en',
+      region: 'global',
+      summary:
+        'Community report showing that relay pricing and provider-level charges can be confusing without checking billing caveats closely.'
     })
   ];
 
@@ -134,6 +162,21 @@ export const buildAiProcurementCase = (
       freshnessNote:
         'Routing and billing rules were checked against the current OpenRouter pricing page and FAQ during the run.',
       supportingCaptureIds: [sourceCaptures[2].id, sourceCaptures[3].id]
+    },
+    {
+      id: createId('evi'),
+      topicRunId: topicRun.id,
+      captureId: sourceCaptures[5].id,
+      kind: 'community',
+      statement:
+        'Community operators report that relay pricing can be confusing in practice, which corroborates the need to preserve billing caveats instead of presenting routed usage as a simple headline-price comparison.',
+      sourceKind: 'community',
+      useAs: 'corroboration',
+      reportability: 'caveated',
+      riskLevel: 'medium',
+      freshnessNote:
+        'A live community discussion was checked during the run to corroborate operator confusion around relay pricing.',
+      supportingCaptureIds: [sourceCaptures[5].id]
     },
     {
       id: createId('evi'),

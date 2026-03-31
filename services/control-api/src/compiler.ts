@@ -8,9 +8,13 @@ import type {
 } from '@openfons/contracts';
 import { createArtifact } from '@openfons/domain-models';
 import { createId, nowIso, slugify } from '@openfons/shared';
-import { buildAiProcurementCase } from './cases/ai-procurement.js';
+import {
+  buildAiProcurementCase,
+  supportsAiProcurementCase
+} from './cases/ai-procurement.js';
 
 export class InvalidOpportunityInputError extends Error {}
+export class UnsupportedCompilationCaseError extends Error {}
 
 const DEFAULT_EVIDENCE_REQUIREMENTS: OpportunitySpec['evidenceRequirements'] = [
   {
@@ -99,6 +103,12 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
 export const buildCompilation = (
   opportunity: OpportunitySpec
 ): CompilationResult => {
+  if (!supportsAiProcurementCase(opportunity)) {
+    throw new UnsupportedCompilationCaseError(
+      'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
+    );
+  }
+
   const tasks: TaskSpec[] = [
     {
       id: createId('task'),
@@ -153,14 +163,17 @@ export const buildCompilation = (
         label: 'Relay convenience needs fee context',
         statement:
           'Relay routing can simplify coverage and provider switching, but cost comparisons must preserve platform-fee and billing-mode caveats.',
-        evidenceIds: [caseBundle.evidenceSet.items[1].id]
+        evidenceIds: [
+          caseBundle.evidenceSet.items[1].id,
+          caseBundle.evidenceSet.items[2].id
+        ]
       },
       {
         id: 'claim_region_first',
         label: 'Region is not optional',
         statement:
           'Country availability and language support can change the best procurement path even when headline price looks cheaper elsewhere.',
-        evidenceIds: [caseBundle.evidenceSet.items[2].id]
+        evidenceIds: [caseBundle.evidenceSet.items[3].id]
       }
     ],
     sourceIndex: caseBundle.sourceCaptures.map((capture) => ({

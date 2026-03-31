@@ -5,7 +5,8 @@ import { HTTPException } from 'hono/http-exception';
 import {
   buildCompilation,
   buildOpportunity,
-  InvalidOpportunityInputError
+  InvalidOpportunityInputError,
+  UnsupportedCompilationCaseError
 } from './compiler.js';
 import { createMemoryStore, type MemoryStore } from './store.js';
 
@@ -62,7 +63,20 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
       });
     }
 
-    const compiled = buildCompilation(opportunity);
+    let compiled;
+
+    try {
+      compiled = buildCompilation(opportunity);
+    } catch (error) {
+      if (error instanceof UnsupportedCompilationCaseError) {
+        throw new HTTPException(409, {
+          message: error.message
+        });
+      }
+
+      throw error;
+    }
+
     store.saveCompilation(compiled);
 
     return c.json(compiled);

@@ -96,6 +96,42 @@ describe('control-api', () => {
     await expect(response.text()).resolves.toBe('Report not found');
   });
 
+  it('rejects compile requests for unsupported opportunity topics', async () => {
+    const app = createApp();
+
+    const createResponse = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: 'Best CRM for Dental Clinics',
+        query: 'best crm for dental clinics',
+        market: 'us',
+        audience: 'dental clinic owners',
+        problem: 'Need to compare CRM options',
+        outcome: 'Produce a source-backed report',
+        geo: 'US',
+        language: 'English'
+      })
+    });
+
+    expect(createResponse.status).toBe(201);
+    const created = await createResponse.json();
+
+    const compileResponse = await app.request(
+      `/api/v1/opportunities/${created.opportunity.id}/compile`,
+      {
+        method: 'POST'
+      }
+    );
+
+    expect(compileResponse.status).toBe(409);
+    await expect(compileResponse.text()).resolves.toContain(
+      'Direct API vs OpenRouter'
+    );
+  });
+
   it('rejects malformed json payloads', async () => {
     const app = createApp();
 
