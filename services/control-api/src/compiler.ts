@@ -149,6 +149,13 @@ export const buildCompilation = (
         evidenceIds: [caseBundle.evidenceSet.items[0].id]
       },
       {
+        id: 'claim_relay_fee_context',
+        label: 'Relay convenience needs fee context',
+        statement:
+          'Relay routing can simplify coverage and provider switching, but cost comparisons must preserve platform-fee and billing-mode caveats.',
+        evidenceIds: [caseBundle.evidenceSet.items[1].id]
+      },
+      {
         id: 'claim_region_first',
         label: 'Region is not optional',
         statement:
