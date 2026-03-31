@@ -1,0 +1,20 @@
+{
+  "providerId": "ddg",
+  "displayName": "DuckDuckGo",
+  "category": "open-source-meta",
+  "enabledByDefault": true,
+  "requiresCredential": false,
+  "supportsGeo": false,
+  "supportsLanguage": true,
+  "supportsPagination": true,
+  "supportsMultiQuery": true,
+  "supportsAsync": true,
+  "supportsSnippet": true,
+  "supportsRichMetadata": false,
+  "supportsRateLimitHeader": false,
+  "defaultPriority": 50,
+  "defaultTimeoutMs": 4000,
+  "degradePriority": 10,
+  "riskLevel": "medium",
+  "notes": "Low-cost fallback discovery provider."
+}

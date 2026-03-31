@@ -125,6 +125,18 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/search-gateway:
+    dependencies:
+      '@openfons/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@openfons/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
+
   packages/shared: {}
 
   services/control-api:
@@ -138,6 +150,21 @@ importers:
       '@openfons/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      hono:
+        specifier: ^4.7.5
+        version: 4.12.9
+
+  services/search-gateway:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.14.4
+        version: 1.19.11(hono@4.12.9)
+      '@openfons/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@openfons/search-gateway':
+        specifier: workspace:*
+        version: link:../../packages/search-gateway
       hono:
         specifier: ^4.7.5
         version: 4.12.9

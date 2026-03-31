@@ -1,0 +1,20 @@
+{
+  "providerId": "baidu",
+  "displayName": "Baidu Search",
+  "category": "external-api",
+  "enabledByDefault": true,
+  "requiresCredential": true,
+  "supportsGeo": true,
+  "supportsLanguage": true,
+  "supportsPagination": true,
+  "supportsMultiQuery": true,
+  "supportsAsync": true,
+  "supportsSnippet": true,
+  "supportsRichMetadata": false,
+  "supportsRateLimitHeader": false,
+  "defaultPriority": 30,
+  "defaultTimeoutMs": 6000,
+  "degradePriority": 40,
+  "riskLevel": "medium",
+  "notes": "Primary Chinese-language search provider for mainland-oriented discovery."
+}

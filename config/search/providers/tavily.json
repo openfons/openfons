@@ -1,0 +1,20 @@
+{
+  "providerId": "tavily",
+  "displayName": "Tavily Search",
+  "category": "external-api",
+  "enabledByDefault": true,
+  "requiresCredential": true,
+  "supportsGeo": false,
+  "supportsLanguage": true,
+  "supportsPagination": true,
+  "supportsMultiQuery": true,
+  "supportsAsync": true,
+  "supportsSnippet": true,
+  "supportsRichMetadata": true,
+  "supportsRateLimitHeader": false,
+  "defaultPriority": 25,
+  "defaultTimeoutMs": 5000,
+  "degradePriority": 30,
+  "riskLevel": "medium",
+  "notes": "Search API optimized for LLM retrieval and result enrichment."
+}
