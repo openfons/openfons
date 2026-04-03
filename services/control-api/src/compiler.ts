@@ -9,9 +9,14 @@ import type {
 import { createArtifact } from '@openfons/domain-models';
 import { createId, nowIso, slugify } from '@openfons/shared';
 import {
+  addAiProcurementFallbackWarning,
   buildAiProcurementCase,
   supportsAiProcurementCase
 } from './cases/ai-procurement.js';
+import {
+  createAiProcurementRealCollectionBridge,
+  type BuildAiProcurementCaseBundle
+} from './collection/real-collection-bridge.js';
 
 export class InvalidOpportunityInputError extends Error {}
 export class UnsupportedCompilationCaseError extends Error {}
@@ -100,44 +105,77 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
   };
 };
 
-export const buildCompilation = (
-  opportunity: OpportunitySpec
-): CompilationResult => {
+const createTasks = (opportunityId: string): TaskSpec[] => [
+  {
+    id: createId('task'),
+    opportunityId,
+    kind: 'collect-evidence',
+    status: 'ready'
+  },
+  {
+    id: createId('task'),
+    opportunityId,
+    kind: 'score-opportunity',
+    status: 'ready'
+  },
+  {
+    id: createId('task'),
+    opportunityId,
+    kind: 'render-report',
+    status: 'ready'
+  }
+];
+
+const createWorkflow = (
+  opportunityId: string,
+  tasks: TaskSpec[]
+): WorkflowSpec => ({
+  id: createId('wf'),
+  opportunityId,
+  taskIds: tasks.map((task) => task.id),
+  status: 'ready'
+});
+
+const buildCaseBundle = async (
+  opportunity: OpportunitySpec,
+  workflow: WorkflowSpec,
+  buildAiProcurementCaseBundle?: BuildAiProcurementCaseBundle
+) => {
+  const caseBuilder =
+    buildAiProcurementCaseBundle ?? createAiProcurementRealCollectionBridge();
+
+  try {
+    return await caseBuilder(opportunity, workflow);
+  } catch (error) {
+    const reason =
+      error instanceof Error ? error.message : 'unknown real collection bridge error';
+
+    return addAiProcurementFallbackWarning(
+      buildAiProcurementCase(opportunity, workflow),
+      reason
+    );
+  }
+};
+
+export const buildCompilation = async (
+  opportunity: OpportunitySpec,
+  deps: {
+    buildAiProcurementCaseBundle?: BuildAiProcurementCaseBundle;
+  } = {}
+): Promise<CompilationResult> => {
   if (!supportsAiProcurementCase(opportunity)) {
     throw new UnsupportedCompilationCaseError(
       'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
     );
   }
 
-  const tasks: TaskSpec[] = [
-    {
-      id: createId('task'),
-      opportunityId: opportunity.id,
-      kind: 'collect-evidence',
-      status: 'ready'
-    },
-    {
-      id: createId('task'),
-      opportunityId: opportunity.id,
-      kind: 'score-opportunity',
-      status: 'ready'
-    },
-    {
-      id: createId('task'),
-      opportunityId: opportunity.id,
-      kind: 'render-report',
-      status: 'ready'
-    }
-  ];
-
-  const workflow: WorkflowSpec = {
-    id: createId('wf'),
-    opportunityId: opportunity.id,
-    taskIds: tasks.map((task) => task.id),
-    status: 'ready'
-  };
-
-  const caseBundle = buildAiProcurementCase(opportunity, workflow);
+  const tasks = createTasks(opportunity.id);
+  const workflow = createWorkflow(opportunity.id, tasks);
+  const caseBundle = await buildCaseBundle(
+    opportunity,
+    workflow,
+    deps.buildAiProcurementCaseBundle
+  );
   const reportCreatedAt = nowIso();
   const report: ReportSpec = {
     id: createId('report'),
