@@ -10,7 +10,12 @@ import {
 } from './compiler.js';
 import { createMemoryStore, type MemoryStore } from './store.js';
 
-export const createApp = (store: MemoryStore = createMemoryStore()) => {
+type BuildCompilationOptions = Parameters<typeof buildCompilation>[1];
+
+export const createApp = (
+  options: BuildCompilationOptions = {},
+  store: MemoryStore = createMemoryStore()
+) => {
   const app = new Hono();
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
@@ -53,7 +58,7 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
     return c.json({ opportunity }, 201);
   });
 
-  app.post('/api/v1/opportunities/:opportunityId/compile', (c) => {
+  app.post('/api/v1/opportunities/:opportunityId/compile', async (c) => {
     const opportunityId = c.req.param('opportunityId');
     const opportunity = store.getOpportunity(opportunityId);
 
@@ -66,7 +71,7 @@ export const createApp = (store: MemoryStore = createMemoryStore()) => {
     let compiled;
 
     try {
-      compiled = buildCompilation(opportunity);
+      compiled = await buildCompilation(opportunity, options);
     } catch (error) {
       if (error instanceof UnsupportedCompilationCaseError) {
         throw new HTTPException(409, {

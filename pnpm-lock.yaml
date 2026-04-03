@@ -150,6 +150,9 @@ importers:
       '@openfons/domain-models':
         specifier: workspace:*
         version: link:../../packages/domain-models
+      '@openfons/search-gateway':
+        specifier: workspace:*
+        version: link:../../packages/search-gateway
       '@openfons/shared':
         specifier: workspace:*
         version: link:../../packages/shared

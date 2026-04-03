@@ -1,0 +1,129 @@
+import type {
+  SearchProviderId,
+  SearchRequest,
+  SearchRunResult
+} from '@openfons/contracts';
+import {
+  createBaiduAdapter,
+  createBingAdapter,
+  createBraveAdapter,
+  createDdgAdapter,
+  createGoogleAdapter,
+  createSearchGateway,
+  createTavilyAdapter,
+  type SearchProviderAdapter
+} from '@openfons/search-gateway';
+
+type EnvShape = Record<string, string | undefined>;
+
+export type SearchClient = {
+  search: (request: SearchRequest) => Promise<SearchRunResult>;
+};
+
+const DEFAULT_BING_ENDPOINT = 'https://api.bing.microsoft.com/v7.0/search';
+
+const resolveEnvValue = (
+  env: EnvShape,
+  projectId: string | undefined,
+  providerId: SearchProviderId,
+  field: string
+) =>
+  (projectId
+    ? env[
+        `${projectId.toUpperCase()}_${providerId.toUpperCase()}_${field.toUpperCase()}`
+      ]
+    : undefined) ?? env[`${providerId.toUpperCase()}_${field.toUpperCase()}`];
+
+const loadProviderAdapters = ({
+  projectId,
+  env = process.env,
+  fetchImpl = fetch
+}: {
+  projectId?: string;
+  env?: EnvShape;
+  fetchImpl?: typeof fetch;
+} = {}): Partial<Record<SearchProviderId, SearchProviderAdapter>> => {
+  const adapters: Partial<Record<SearchProviderId, SearchProviderAdapter>> = {};
+
+  const googleApiKey = resolveEnvValue(env, projectId, 'google', 'apiKey');
+  const googleCx = resolveEnvValue(env, projectId, 'google', 'cx');
+  if (googleApiKey && googleCx) {
+    adapters.google = createGoogleAdapter({
+      fetch: fetchImpl,
+      apiKey: googleApiKey,
+      cx: googleCx
+    });
+  }
+
+  const bingApiKey = resolveEnvValue(env, projectId, 'bing', 'apiKey');
+  const bingEndpoint =
+    resolveEnvValue(env, projectId, 'bing', 'endpoint') ?? DEFAULT_BING_ENDPOINT;
+  if (bingApiKey) {
+    adapters.bing = createBingAdapter({
+      fetch: fetchImpl,
+      apiKey: bingApiKey,
+      endpoint: bingEndpoint
+    });
+  }
+
+  const baiduApiKey = resolveEnvValue(env, projectId, 'baidu', 'apiKey');
+  const baiduSecretKey = resolveEnvValue(env, projectId, 'baidu', 'secretKey');
+  const baiduEndpoint = resolveEnvValue(env, projectId, 'baidu', 'endpoint');
+  if (baiduApiKey && baiduSecretKey && baiduEndpoint) {
+    adapters.baidu = createBaiduAdapter({
+      fetch: fetchImpl,
+      apiKey: baiduApiKey,
+      secretKey: baiduSecretKey,
+      endpoint: baiduEndpoint
+    });
+  }
+
+  const ddgEndpoint = resolveEnvValue(env, projectId, 'ddg', 'endpoint');
+  if (ddgEndpoint) {
+    adapters.ddg = createDdgAdapter({
+      fetch: fetchImpl,
+      endpoint: ddgEndpoint
+    });
+  }
+
+  const braveApiKey = resolveEnvValue(env, projectId, 'brave', 'apiKey');
+  if (braveApiKey) {
+    adapters.brave = createBraveAdapter({
+      fetch: fetchImpl,
+      apiKey: braveApiKey
+    });
+  }
+
+  const tavilyApiKey = resolveEnvValue(env, projectId, 'tavily', 'apiKey');
+  if (tavilyApiKey) {
+    adapters.tavily = createTavilyAdapter({
+      fetch: fetchImpl,
+      apiKey: tavilyApiKey
+    });
+  }
+
+  return adapters;
+};
+
+export const createRuntimeSearchClient = ({
+  projectId = 'openfons',
+  env = process.env,
+  fetchImpl = fetch
+}: {
+  projectId?: string;
+  env?: EnvShape;
+  fetchImpl?: typeof fetch;
+} = {}): SearchClient => {
+  const gateway = createSearchGateway({
+    projectId,
+    providers: loadProviderAdapters({
+      projectId,
+      env,
+      fetchImpl
+    })
+  });
+
+  return {
+    search: (request) => gateway.search(request)
+  };
+};
