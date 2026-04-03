@@ -280,10 +280,12 @@ export const buildAiProcurementCase = (
 
 export const addAiProcurementFallbackWarning = (
   bundle: AiProcurementCaseBundle,
-  reason: string
+  reason: string,
+  logs: CollectionLog[] = []
 ): AiProcurementCaseBundle => ({
   ...bundle,
   collectionLogs: [
+    ...logs,
     createCollectionLog({
       topicRunId: bundle.topicRun.id,
       step: 'discover',

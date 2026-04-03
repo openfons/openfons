@@ -275,7 +275,10 @@ describe('control-api', () => {
   it('falls back explicitly when the real collection bridge fails', async () => {
     const app = createApp({
       buildAiProcurementCaseBundle: async () => {
-        throw new Error('search providers unavailable');
+        throw Object.assign(new Error('search providers unavailable'), {
+          name: 'AiProcurementRuntimeError',
+          logs: []
+        });
       }
     });
 

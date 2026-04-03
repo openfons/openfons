@@ -15,6 +15,7 @@ import {
 } from './cases/ai-procurement.js';
 import {
   createAiProcurementRealCollectionBridge,
+  isAiProcurementRuntimeError,
   type BuildAiProcurementCaseBundle
 } from './collection/real-collection-bridge.js';
 
@@ -147,12 +148,14 @@ const buildCaseBundle = async (
   try {
     return await caseBuilder(opportunity, workflow);
   } catch (error) {
-    const reason =
-      error instanceof Error ? error.message : 'unknown real collection bridge error';
+    if (!isAiProcurementRuntimeError(error)) {
+      throw error;
+    }
 
     return addAiProcurementFallbackWarning(
       buildAiProcurementCase(opportunity, workflow),
-      reason
+      error.message,
+      error.logs ?? []
     );
   }
 };
