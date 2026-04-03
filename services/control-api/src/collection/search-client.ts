@@ -37,11 +37,13 @@ const resolveEnvValue = (
 const loadProviderAdapters = ({
   projectId,
   env = process.env,
-  fetchImpl = fetch
+  fetchImpl = fetch,
+  ddgSearchImpl
 }: {
   projectId?: string;
   env?: EnvShape;
   fetchImpl?: typeof fetch;
+  ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
 } = {}): Partial<Record<SearchProviderId, SearchProviderAdapter>> => {
   const adapters: Partial<Record<SearchProviderId, SearchProviderAdapter>> = {};
 
@@ -79,12 +81,11 @@ const loadProviderAdapters = ({
   }
 
   const ddgEndpoint = resolveEnvValue(env, projectId, 'ddg', 'endpoint');
-  if (ddgEndpoint) {
-    adapters.ddg = createDdgAdapter({
-      fetch: fetchImpl,
-      endpoint: ddgEndpoint
-    });
-  }
+  adapters.ddg = createDdgAdapter({
+    fetch: fetchImpl,
+    endpoint: ddgEndpoint,
+    searchImpl: ddgSearchImpl
+  });
 
   const braveApiKey = resolveEnvValue(env, projectId, 'brave', 'apiKey');
   if (braveApiKey) {
@@ -108,18 +109,21 @@ const loadProviderAdapters = ({
 export const createRuntimeSearchClient = ({
   projectId = 'openfons',
   env = process.env,
-  fetchImpl = fetch
+  fetchImpl = fetch,
+  ddgSearchImpl
 }: {
   projectId?: string;
   env?: EnvShape;
   fetchImpl?: typeof fetch;
+  ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
 } = {}): SearchClient => {
   const gateway = createSearchGateway({
     projectId,
     providers: loadProviderAdapters({
       projectId,
       env,
-      fetchImpl
+      fetchImpl,
+      ddgSearchImpl
     })
   });
 

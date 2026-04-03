@@ -187,7 +187,10 @@ const createRealBridgeBundle = (
 
 describe('control-api', () => {
   it('compiles an opportunity into a report view backed by evidence', async () => {
-    const app = createApp();
+    const app = createApp({
+      buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+        createRealBridgeBundle(opportunity, workflow)
+    });
 
     const createResponse = await app.request('/api/v1/opportunities', {
       method: 'POST',
