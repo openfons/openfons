@@ -25,6 +25,8 @@
 
 ## Git 规则
 - 遵守当前仓库的分支、PR、CI、评审和发布规则。
+- 默认禁止创建新的 git worktree，也禁止为了隔离、验证、执行计划或规避当前工作区状态而自行建议、切换到或依赖新 worktree；除非用户在当前对话中明确要求，否则必须在当前工作区内完成工作。
+- 如果当前工作区存在脏改动、同步风险、验证冲突或其他需要隔离的情况，先向用户说明风险并询问如何处理，不得自行通过新建 worktree 规避；即使某个 skill 默认要求使用 worktree，也以本规则为准。
 - 仅自动提交和推送 MemoryTree 自有变更（`Memory/**` 以及由 MemoryTree 管理的本文件），但在当前仓库未获批前，不得包含 `Memory/06_transcripts/raw/**`。
 - 提交标题使用 MemoryTree 专用标识。优先使用 `memorytree(<scope>): <subject>`；若仓库强制其他提交规范，则使用兼容格式，例如 `docs(memorytree): <subject>`。
 - 对 MemoryTree 专用变更使用专用分支和 PR；仅在仓库规则允许时才开启自动合并。
