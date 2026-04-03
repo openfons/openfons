@@ -93,4 +93,34 @@ describe('search-gateway runtime wiring', () => {
 
     expect(dispatch.dispatchedCount).toBe(1);
   });
+
+  it('creates the default ddg runtime adapter without requiring an endpoint', async () => {
+    const gateway = createRuntimeGateway({
+      projectId: 'openfons',
+      env: process.env,
+      ddgSearchImpl: async () => [
+        {
+          title: 'OpenAI API pricing',
+          url: 'https://openai.com/api/pricing/',
+          snippet: 'Official pricing page',
+          rank: 1,
+          page: 1
+        }
+      ]
+    });
+
+    const result = await gateway.search({
+      projectId: 'openfons',
+      purpose: 'planning',
+      query: 'openai pricing official',
+      providers: ['ddg'],
+      maxResults: 10,
+      pages: 1,
+      autoUpgrade: false
+    });
+
+    expect(result.results).toHaveLength(1);
+    expect(result.results[0].provider).toBe('ddg');
+    expect(result.downgradeInfo).toEqual([]);
+  });
 });

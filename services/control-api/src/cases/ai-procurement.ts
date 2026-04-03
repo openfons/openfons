@@ -51,9 +51,9 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
   {
     key: 'openai-pricing',
     title: 'OpenAI API pricing',
-    query: 'openai api pricing',
+    query: 'site:openai.com openai api pricing',
     url: 'https://openai.com/api/pricing/',
-    urlPattern: /^https:\/\/openai\.com\/api\/pricing\/?$/i,
+    urlPattern: /^https:\/\/openai\.com\/api\/pricing\/?(?:\?[^#]*)?$/i,
     sourceKind: 'official',
     useAs: 'primary',
     reportability: 'reportable',
@@ -66,10 +66,11 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
   },
   {
     key: 'gemini-pricing',
-    title: 'Gemini Developer API pricing',
-    query: 'gemini developer api pricing',
-    url: 'https://ai.google.dev/pricing',
-    urlPattern: /^https:\/\/ai\.google\.dev\/pricing\/?$/i,
+    title: 'Gemini Developer API billing',
+    query: 'site:ai.google.dev gemini api pricing',
+    url: 'https://ai.google.dev/gemini-api/docs/billing',
+    urlPattern:
+      /^https:\/\/ai\.google\.dev\/gemini-api\/docs\/billing(?:\?[^#]*)?\/?$/i,
     sourceKind: 'official',
     useAs: 'primary',
     reportability: 'reportable',
@@ -78,14 +79,14 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
     language: 'en',
     region: 'global',
     summary:
-      'Official Gemini pricing page with free-tier, paid-tier, and tool-pricing tables.'
+      'Official Gemini billing page with current pricing and paid-tier guidance.'
   },
   {
     key: 'openrouter-pricing',
     title: 'OpenRouter pricing',
-    query: 'openrouter pricing',
+    query: 'site:openrouter.ai openrouter pricing',
     url: 'https://openrouter.ai/pricing',
-    urlPattern: /^https:\/\/openrouter\.ai\/pricing\/?$/i,
+    urlPattern: /^https:\/\/openrouter\.ai\/pricing\/?(?:\?[^#]*)?$/i,
     sourceKind: 'official',
     useAs: 'primary',
     reportability: 'caveated',
@@ -99,9 +100,9 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
   {
     key: 'openrouter-faq',
     title: 'OpenRouter FAQ',
-    query: 'openrouter faq byok fees',
+    query: 'site:openrouter.ai openrouter faq byok fees',
     url: 'https://openrouter.ai/docs/faq',
-    urlPattern: /^https:\/\/openrouter\.ai\/docs\/faq\/?$/i,
+    urlPattern: /^https:\/\/openrouter\.ai\/docs\/faq\/?(?:\?[^#]*)?$/i,
     sourceKind: 'official',
     useAs: 'secondary',
     reportability: 'caveated',
@@ -115,10 +116,10 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
   {
     key: 'openai-availability',
     title: 'OpenAI API supported countries and territories',
-    query: 'openai api supported countries territories',
-    url: 'https://help.openai.com/articles/5347006-openai-api-supported-countries-and-territories',
+    query: 'site:help.openai.com 5347006 openai api supported countries territories',
+    url: 'https://help.openai.com/en/articles/5347006-openai-api-supported-countries-and-territories',
     urlPattern:
-      /^https:\/\/help\.openai\.com\/articles\/5347006-openai-api-supported-countries-and-territories\/?$/i,
+      /^https:\/\/help\.openai\.com\/[a-z-]+\/articles\/5347006-openai-api-supported-countries-and-territories\/?$/i,
     sourceKind: 'official',
     useAs: 'primary',
     reportability: 'reportable',
@@ -131,20 +132,20 @@ export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
   },
   {
     key: 'openrouter-community',
-    title: 'OpenRouter model pricing misleading?',
-    query: 'openrouter model pricing misleading reddit',
-    url: 'https://www.reddit.com/r/OpenRouter/comments/1mgz77y/openrouter_model_pricing_misleading/',
+    title: 'OpenRouter streaming does not return cost and is_byok',
+    query: 'openrouter byok github issue',
+    url: 'https://github.com/BerriAI/litellm/issues/11626',
     urlPattern:
-      /^https:\/\/www\.reddit\.com\/r\/OpenRouter\/comments\/1mgz77y\/openrouter_model_pricing_misleading\/?$/i,
+      /^https:\/\/github\.com\/BerriAI\/litellm\/issues\/11626\/?(?:\?[^#]*)?$/i,
     sourceKind: 'community',
     useAs: 'corroboration',
     reportability: 'caveated',
     riskLevel: 'medium',
-    captureType: 'community-thread',
+    captureType: 'doc-page',
     language: 'en',
     region: 'global',
     summary:
-      'Community report showing that relay pricing and provider-level charges can be confusing without checking billing caveats closely.'
+      'Community issue showing that cost and BYOK billing signals can be unclear in OpenRouter integrations, which corroborates the need to preserve relay billing caveats.'
   }
 ];
 
@@ -202,7 +203,7 @@ const buildEvidenceItems = (
     captureId: sourceCaptures[5].id,
     kind: 'community',
     statement:
-      'Community operators report that relay pricing can be confusing in practice, which corroborates the need to preserve billing caveats instead of presenting routed usage as a simple headline-price comparison.',
+      'Community integrators report that OpenRouter cost and BYOK billing signals can be unclear in practice, which corroborates that relay pricing caveats should not be flattened into a simple headline-price comparison.',
     sourceKind: 'community',
     useAs: 'corroboration',
     reportability: 'caveated',

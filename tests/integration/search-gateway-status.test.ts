@@ -18,7 +18,6 @@ describe('search-gateway provider status', () => {
     process.env.BAIDU_APIKEY = 'baidu-key';
     process.env.BAIDU_SECRETKEY = 'baidu-secret';
     process.env.BAIDU_ENDPOINT = 'https://baidu.example.com/search';
-    process.env.DDG_ENDPOINT = 'https://ddg.example.com/search';
     process.env.BRAVE_APIKEY = 'brave-key';
     process.env.TAVILY_APIKEY = 'tavily-key';
 
@@ -29,6 +28,7 @@ describe('search-gateway provider status', () => {
     expect(
       statuses.find((item) => item.providerId === 'google')?.credentialResolvedFrom
     ).toBe('system');
+    expect(statuses.find((item) => item.providerId === 'ddg')?.healthy).toBe(true);
     expect(validation.valid).toBe(true);
   });
 
@@ -44,12 +44,11 @@ describe('search-gateway provider status', () => {
     const statuses = getProviderStatus('openfons');
     const validation = validateSearchConfig('openfons');
 
-    expect(statuses.find((item) => item.providerId === 'ddg')?.healthy).toBe(false);
+    expect(statuses.find((item) => item.providerId === 'ddg')?.healthy).toBe(true);
     expect(statuses.find((item) => item.providerId === 'baidu')?.healthy).toBe(
       false
     );
     expect(validation.valid).toBe(false);
-    expect(validation.errors).toContain('ddg: missing-required-config');
     expect(validation.errors).toContain('baidu: missing-required-config');
   });
 });

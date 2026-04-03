@@ -69,7 +69,19 @@ describe('ai procurement case bundle', () => {
     ).toBe(true);
     expect(
       bundle.sourceCaptures.some(
+        (capture) => capture.url === 'https://ai.google.dev/gemini-api/docs/billing'
+      )
+    ).toBe(true);
+    expect(
+      bundle.sourceCaptures.some(
         (capture) => capture.url === 'https://openrouter.ai/docs/faq'
+      )
+    ).toBe(true);
+    expect(
+      bundle.sourceCaptures.some(
+        (capture) =>
+          capture.url ===
+          'https://help.openai.com/en/articles/5347006-openai-api-supported-countries-and-territories'
       )
     ).toBe(true);
     expect(

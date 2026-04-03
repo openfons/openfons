@@ -214,7 +214,9 @@ export const createAiProcurementRealCollectionBridge = ({
     const capturePlans: CapturePlan[] = selectedTargets.map((target) => ({
       topicRunId: topicRun.id,
       title: target.title,
-      url: target.result.url,
+      // Search proves the target was discovered; capture uses the canonical URL
+      // so query params, locale variants, or anti-bot wrappers don't degrade the run.
+      url: target.url,
       snippet: target.result.snippet,
       sourceKind: target.sourceKind,
       useAs: target.useAs,

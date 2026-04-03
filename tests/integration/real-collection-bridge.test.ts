@@ -221,6 +221,56 @@ describe('real collection bridge follow-up behavior', () => {
     });
   });
 
+  it('captures canonical target urls instead of volatile matched result urls', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const capturePlans: Array<{ title: string; url: string }> = [];
+    const bridge = createAiProcurementRealCollectionBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = AI_PROCUREMENT_CAPTURE_TARGETS.find(
+            (item) => item.query === request.query
+          );
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return {
+            ...createSearchRunResult(target),
+            results: [
+              {
+                ...createSearchRunResult(target).results[0],
+                url:
+                  target.key === 'openrouter-community'
+                    ? 'https://github.com/BerriAI/litellm/issues/11626?tracking=1'
+                    : target.key === 'openai-availability'
+                      ? 'https://help.openai.com/fr-ca/articles/5347006-openai-api-supported-countries-and-territories'
+                      : target.url
+              }
+            ]
+          };
+        }
+      },
+      captureRunner: async (plans) => {
+        capturePlans.push(...plans.map((plan) => ({ title: plan.title, url: plan.url })));
+        return createCaptureRunnerResult(plans);
+      }
+    });
+
+    await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: bridge
+    });
+
+    expect(capturePlans).toContainEqual({
+      title: 'OpenAI API supported countries and territories',
+      url: 'https://help.openai.com/en/articles/5347006-openai-api-supported-countries-and-territories'
+    });
+    expect(capturePlans).toContainEqual({
+      title: 'OpenRouter streaming does not return cost and is_byok',
+      url: 'https://github.com/BerriAI/litellm/issues/11626'
+    });
+  });
+
   it('does not silently fall back for unexpected bridge invariant errors', async () => {
     const opportunity = buildOpportunity(createOpportunityInput());
 
