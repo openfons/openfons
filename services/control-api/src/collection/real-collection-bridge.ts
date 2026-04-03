@@ -1,6 +1,7 @@
 import type {
   CollectionLog,
   SearchRequest,
+  SearchRunResult,
   SearchResult
 } from '@openfons/contracts';
 import {
@@ -27,6 +28,22 @@ import {
 type SelectedTarget = (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number] & {
   result: SearchResult;
 };
+
+export class AiProcurementRuntimeError extends Error {
+  readonly logs: CollectionLog[];
+
+  constructor(message: string, logs: CollectionLog[], cause?: unknown) {
+    super(message, cause ? { cause } : undefined);
+    this.name = 'AiProcurementRuntimeError';
+    this.logs = logs;
+  }
+}
+
+export const isAiProcurementRuntimeError = (
+  error: unknown
+): error is { message: string; logs?: CollectionLog[]; name: string } =>
+  error instanceof AiProcurementRuntimeError ||
+  (error instanceof Error && error.name === 'AiProcurementRuntimeError');
 
 const buildSearchRequest = (input: {
   projectId: string;
@@ -55,6 +72,57 @@ const selectSearchResult = (
   results: SearchResult[]
 ) => results.find((result) => target.urlPattern.test(result.url));
 
+const createRuntimeError = (
+  message: string,
+  logs: CollectionLog[],
+  cause?: unknown
+) => new AiProcurementRuntimeError(message, logs, cause);
+
+const createSearchTraceLogs = ({
+  topicRunId,
+  targetKey,
+  selectedUrl,
+  searchRun
+}: {
+  topicRunId: string;
+  targetKey: string;
+  selectedUrl: string;
+  searchRun: SearchRunResult;
+}) => {
+  const logs: CollectionLog[] = [
+    createCollectionLog({
+      topicRunId,
+      step: 'discover',
+      status: 'success',
+      message: `Search ${targetKey} selected ${selectedUrl} (selected providers: ${searchRun.searchRun.selectedProviders.join(', ')})`
+    })
+  ];
+
+  if (searchRun.searchRun.degradedProviders.length > 0) {
+    logs.push(
+      createCollectionLog({
+        topicRunId,
+        step: 'discover',
+        status: 'warning',
+        message: `Search ${targetKey} degraded providers: ${searchRun.searchRun.degradedProviders.join(', ')}`
+      })
+    );
+  }
+
+  logs.push(
+    ...searchRun.downgradeInfo.map((item) =>
+      createCollectionLog({
+        topicRunId,
+        step: 'discover',
+        status: 'warning',
+        message: `Search ${targetKey} downgrade ${item.providerId} -> ${item.fallbackProviderId ?? 'none'}: ${item.reason}`
+      })
+    )
+  );
+
+  return logs;
+};
+
 export type BuildAiProcurementCaseBundle = (
   opportunity: Parameters<typeof buildAiProcurementCase>[0],
   workflow: Parameters<typeof buildAiProcurementCase>[1]
@@ -76,21 +144,57 @@ export const createAiProcurementRealCollectionBridge = ({
 
     for (const [index, target] of AI_PROCUREMENT_CAPTURE_TARGETS.entries()) {
       const taskId = workflow.taskIds[index % workflow.taskIds.length];
-      const searchRun = await searchClient.search(
-        buildSearchRequest({
-          projectId,
-          opportunityId: opportunity.id,
-          workflowId: workflow.id,
-          taskId,
-          query: target.query,
-          geo: opportunity.geo,
-          language: opportunity.language
-        })
-      );
+      let searchRun: SearchRunResult;
+
+      try {
+        searchRun = await searchClient.search(
+          buildSearchRequest({
+            projectId,
+            opportunityId: opportunity.id,
+            workflowId: workflow.id,
+            taskId,
+            query: target.query,
+            geo: opportunity.geo,
+            language: opportunity.language
+          })
+        );
+      } catch (error) {
+        throw createRuntimeError(
+          `search failed for ${target.key}: ${error instanceof Error ? error.message : 'unknown error'}`,
+          [
+            ...discoveryLogs,
+            createCollectionLog({
+              topicRunId: topicRun.id,
+              step: 'discover',
+              status: 'error',
+              message: `Search ${target.key} failed: ${error instanceof Error ? error.message : 'unknown error'}`
+            })
+          ],
+          error
+        );
+      }
+
       const selected = selectSearchResult(target, searchRun.results);
 
       if (!selected) {
-        throw new Error(`no search result matched ${target.key}`);
+        throw createRuntimeError(
+          `no search result matched ${target.key}`,
+          [
+            ...discoveryLogs,
+            ...createSearchTraceLogs({
+              topicRunId: topicRun.id,
+              targetKey: target.key,
+              selectedUrl: 'no-match',
+              searchRun
+            }),
+            createCollectionLog({
+              topicRunId: topicRun.id,
+              step: 'discover',
+              status: 'error',
+              message: `Search ${target.key} failed to find a matching capture target`
+            })
+          ]
+        );
       }
 
       selectedTargets.push({
@@ -98,11 +202,11 @@ export const createAiProcurementRealCollectionBridge = ({
         result: selected
       });
       discoveryLogs.push(
-        createCollectionLog({
+        ...createSearchTraceLogs({
           topicRunId: topicRun.id,
-          step: 'discover',
-          status: 'success',
-          message: `Selected ${selected.url} for ${target.key}`
+          targetKey: target.key,
+          selectedUrl: selected.url,
+          searchRun
         })
       );
     }
@@ -121,7 +225,27 @@ export const createAiProcurementRealCollectionBridge = ({
       region: target.region
     }));
 
-    const { sourceCaptures, collectionLogs } = await captureRunner(capturePlans);
+    let sourceCaptures: Awaited<ReturnType<CaptureRunner>>['sourceCaptures'];
+    let collectionLogs: Awaited<ReturnType<CaptureRunner>>['collectionLogs'];
+
+    try {
+      ({ sourceCaptures, collectionLogs } = await captureRunner(capturePlans));
+    } catch (error) {
+      throw createRuntimeError(
+        error instanceof Error ? error.message : 'capture runner failed',
+        [
+          ...discoveryLogs,
+          createCollectionLog({
+            topicRunId: topicRun.id,
+            step: 'capture',
+            status: 'error',
+            message: `Capture run failed: ${error instanceof Error ? error.message : 'unknown error'}`
+          })
+        ],
+        error
+      );
+    }
+
     const deterministicTemplate = buildAiProcurementCase(opportunity, workflow);
     const deterministicCaptures = deterministicTemplate.sourceCaptures;
 
