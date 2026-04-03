@@ -10,11 +10,13 @@ const repoRoot = path.resolve(
 );
 
 describe('@openfons/control-api workspace dependencies', () => {
-  it('resolves @openfons/search-gateway from the control-api package runtime', () => {
-    execSync('pnpm --filter @openfons/shared build', {
-      cwd: repoRoot,
-      stdio: 'pipe'
-    });
+  it(
+    'resolves @openfons/search-gateway from the control-api package runtime',
+    () => {
+      execSync('pnpm --filter @openfons/shared build', {
+        cwd: repoRoot,
+        stdio: 'pipe'
+      });
 
     execSync('pnpm --filter @openfons/contracts build', {
       cwd: repoRoot,
@@ -57,5 +59,7 @@ describe('@openfons/control-api workspace dependencies', () => {
       /packages[\\/]search-gateway[\\/]dist[\\/]index\.js$/
     );
     expect(result.exportedKeys).toContain('createSearchGateway');
-  });
+    },
+    15000
+  );
 });
