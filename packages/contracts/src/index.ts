@@ -236,6 +236,76 @@ export const ProductOpportunityHintSchema = z.object({
   note: z.string().min(1)
 });
 
+export const SignalSourceIdSchema = z.enum([
+  'web',
+  'reddit',
+  'x',
+  'youtube',
+  'hacker-news',
+  'polymarket',
+  'bluesky',
+  'tiktok',
+  'instagram'
+]);
+
+export const SignalCoverageRoleSchema = z.enum([
+  'required',
+  'recommended',
+  'optional'
+]);
+
+export const SignalCoverageStatusSchema = z.enum([
+  'planned',
+  'covered',
+  'partial',
+  'missing'
+]);
+
+export const OpportunityForecastSignalFamilySchema = z.enum([
+  'search',
+  'community',
+  'commercial',
+  'content',
+  'update'
+]);
+
+export const PlanningSignalSourceSchema = z.object({
+  sourceId: SignalSourceIdSchema,
+  role: SignalCoverageRoleSchema,
+  status: SignalCoverageStatusSchema,
+  rationale: z.string().min(1)
+});
+
+export const PlanningSignalBriefSchema = z.object({
+  lookbackDays: z.number().int().positive(),
+  comparisonMode: z.boolean(),
+  candidateEntities: z.array(z.string().min(1)).min(1),
+  sourceCoverage: z.array(PlanningSignalSourceSchema).min(1),
+  signalFamilies: z.array(OpportunityForecastSignalFamilySchema).min(1),
+  briefGoal: z.string().min(1)
+});
+
+export const OpportunityIntakeKindSchema = z.enum([
+  'comparison',
+  'single-subject',
+  'trend-watch',
+  'problem-investigation'
+]);
+
+export const OpportunityResearchModeSchema = z.enum([
+  'direct-compile',
+  'last30days-brief',
+  'hybrid'
+]);
+
+export const OpportunityIntakeProfileSchema = z.object({
+  intakeKind: OpportunityIntakeKindSchema,
+  researchMode: OpportunityResearchModeSchema,
+  primaryDecision: z.string().min(1),
+  acceptedDelivery: DeliverySurfaceSchema,
+  notes: z.array(z.string().min(1)).min(1)
+});
+
 export const OpportunitySpecSchema = z.object({
   id: z.string().min(1),
   slug: z.string().min(1),
@@ -252,7 +322,9 @@ export const OpportunitySpecSchema = z.object({
   firstDeliverySurface: DeliverySurfaceSchema,
   pageCandidates: z.array(PageCandidateSchema).min(1),
   evidenceRequirements: z.array(EvidenceRequirementSchema).min(1),
-  productOpportunityHints: z.array(ProductOpportunityHintSchema)
+  productOpportunityHints: z.array(ProductOpportunityHintSchema),
+  planningSignalBrief: PlanningSignalBriefSchema.optional(),
+  intakeProfile: OpportunityIntakeProfileSchema.optional()
 });
 
 export const TaskSpecSchema = z.object({
@@ -704,6 +776,21 @@ export const CompilationResultSchema = z
 export type OpportunityInput = z.infer<typeof OpportunityInputSchema>;
 export type CompilationPolicyCode = z.infer<typeof CompilationPolicyCodeSchema>;
 export type ApiError = z.infer<typeof ApiErrorSchema>;
+export type PlanningSignalBrief = z.infer<typeof PlanningSignalBriefSchema>;
+export type PlanningSignalSource = z.infer<typeof PlanningSignalSourceSchema>;
+export type SignalSourceId = z.infer<typeof SignalSourceIdSchema>;
+export type SignalCoverageRole = z.infer<typeof SignalCoverageRoleSchema>;
+export type SignalCoverageStatus = z.infer<typeof SignalCoverageStatusSchema>;
+export type OpportunityForecastSignalFamily = z.infer<
+  typeof OpportunityForecastSignalFamilySchema
+>;
+export type OpportunityIntakeKind = z.infer<typeof OpportunityIntakeKindSchema>;
+export type OpportunityResearchMode = z.infer<
+  typeof OpportunityResearchModeSchema
+>;
+export type OpportunityIntakeProfile = z.infer<
+  typeof OpportunityIntakeProfileSchema
+>;
 export type OpportunitySpec = z.infer<typeof OpportunitySpecSchema>;
 export type TaskSpec = z.infer<typeof TaskSpecSchema>;
 export type WorkflowSpec = z.infer<typeof WorkflowSpecSchema>;

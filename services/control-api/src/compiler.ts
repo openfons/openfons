@@ -4,6 +4,7 @@ import type {
   OpportunityInput,
   OpportunitySpec,
   ReportSpec,
+  SearchIntent,
   TaskSpec,
   WorkflowSpec
 } from '@openfons/contracts';
@@ -24,6 +25,10 @@ import {
   isAiProcurementRuntimeError,
   type BuildAiProcurementCaseBundle
 } from './collection/real-collection-bridge.js';
+import {
+  buildOpportunityIntakeProfile,
+  buildPlanningSignalBrief
+} from './planning/signal-brief.js';
 
 export class InvalidOpportunityInputError extends Error {}
 export class UnsupportedCompilationCaseError extends Error {}
@@ -93,6 +98,20 @@ const buildPageCandidates = (input: OpportunityInput) => {
   ];
 };
 
+const resolveSearchIntent = (
+  intakeKind: NonNullable<OpportunitySpec['intakeProfile']>['intakeKind']
+): SearchIntent => {
+  switch (intakeKind) {
+    case 'comparison':
+      return 'comparison';
+    case 'trend-watch':
+    case 'problem-investigation':
+      return 'evaluation';
+    default:
+      return 'decision';
+  }
+};
+
 export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
   const slug = slugify(input.title);
 
@@ -101,6 +120,9 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
       'Title must contain at least one alphanumeric character'
     );
   }
+
+  const planningSignalBrief = buildPlanningSignalBrief(input);
+  const intakeProfile = buildOpportunityIntakeProfile(input, planningSignalBrief);
 
   return {
     id: createId('opp'),
@@ -113,12 +135,14 @@ export const buildOpportunity = (input: OpportunityInput): OpportunitySpec => {
     audience: input.audience,
     geo: input.geo,
     language: input.language,
-    searchIntent: 'decision',
+    searchIntent: resolveSearchIntent(intakeProfile.intakeKind),
     angle: `${input.problem} -> ${input.outcome}`,
     firstDeliverySurface: 'report-web',
     pageCandidates: buildPageCandidates(input),
     evidenceRequirements: DEFAULT_EVIDENCE_REQUIREMENTS,
-    productOpportunityHints: DEFAULT_PRODUCT_HINTS
+    productOpportunityHints: DEFAULT_PRODUCT_HINTS,
+    planningSignalBrief,
+    intakeProfile
   };
 };
 

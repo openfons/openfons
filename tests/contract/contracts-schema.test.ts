@@ -4,6 +4,8 @@ import {
   CompilationPolicyCodeSchema,
   CompilationResultSchema,
   OpportunityInputSchema,
+  OpportunityIntakeProfileSchema,
+  PlanningSignalBriefSchema,
   ReportSpecSchema,
   ReportViewSchema
 } from '@openfons/contracts';
@@ -237,6 +239,47 @@ describe('@openfons/contracts', () => {
     });
 
     expect(parsed.query).toBe('direct api vs openrouter');
+  });
+
+  it('parses planning signal brief and intake profile subobjects', () => {
+    expect(
+      PlanningSignalBriefSchema.parse({
+        lookbackDays: 30,
+        comparisonMode: true,
+        candidateEntities: ['OpenAI', 'OpenRouter'],
+        sourceCoverage: [
+          {
+            sourceId: 'web',
+            role: 'required',
+            status: 'planned',
+            rationale: 'Ground the planning brief with public docs.'
+          },
+          {
+            sourceId: 'reddit',
+            role: 'recommended',
+            status: 'planned',
+            rationale: 'Capture practitioner friction.'
+          }
+        ],
+        signalFamilies: ['search', 'community', 'update'],
+        briefGoal:
+          'Establish the last-30-days comparison signal around OpenAI vs OpenRouter.'
+      })
+    ).toMatchObject({
+      comparisonMode: true
+    });
+
+    expect(
+      OpportunityIntakeProfileSchema.parse({
+        intakeKind: 'comparison',
+        researchMode: 'hybrid',
+        primaryDecision: 'Choose the safer procurement path',
+        acceptedDelivery: 'report-web',
+        notes: ['Use cross-source convergence before compile.']
+      })
+    ).toMatchObject({
+      intakeKind: 'comparison'
+    });
   });
 
   it('rejects an opportunity without a title', () => {
