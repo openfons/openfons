@@ -1,6 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import type { CompilationResult, OpportunityInput } from '@openfons/contracts';
-import { createControlApi, type ControlApi } from '../api';
+import {
+  ControlApiError,
+  createControlApi,
+  type ControlApi
+} from '../api';
 
 type Props = {
   api?: ControlApi;
@@ -25,7 +29,7 @@ export const OpportunityPage = ({
   const [form, setForm] = useState<OpportunityInput>(initialForm);
   const [result, setResult] = useState<CompilationResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   const updateField = (key: keyof OpportunityInput, value: string) => {
     setForm((current) => ({
@@ -38,17 +42,25 @@ export const OpportunityPage = ({
     event.preventDefault();
     setSubmitting(true);
     setError(null);
+    setResult(null);
 
     try {
       const opportunity = await api.createOpportunity(form);
       const compiled = await api.compileOpportunity(opportunity.id);
       setResult(compiled);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unknown error');
+      setError(
+        caught instanceof Error ? caught : new Error('Unknown error')
+      );
     } finally {
       setSubmitting(false);
     }
   };
+
+  const scopeGuidance =
+    error instanceof ControlApiError && error.code === 'out_of_scope_domain'
+      ? 'Try a vendor choice, pricing, or capability access question inside AI procurement.'
+      : null;
 
   return (
     <main className="page-shell">
@@ -56,8 +68,13 @@ export const OpportunityPage = ({
         <p className="eyebrow">OpenFons Control Plane</p>
         <h1>Compile the first report shell</h1>
         <p className="lede">
-          Submit one opportunity and prove the minimum control-plane slice.
+          Submit one bounded AI procurement question and compile a source-backed report.
         </p>
+        <ul className="summary-list">
+          <li>Vendor choice</li>
+          <li>Pricing and access</li>
+          <li>Capability procurement</li>
+        </ul>
         <form className="stack" onSubmit={submit}>
           <label>
             Title
@@ -95,7 +112,8 @@ export const OpportunityPage = ({
             {submitting ? 'Compiling...' : 'Compile report shell'}
           </button>
         </form>
-        {error ? <p className="error">{error}</p> : null}
+        {error ? <p className="error">{error.message}</p> : null}
+        {scopeGuidance ? <p className="error">{scopeGuidance}</p> : null}
       </section>
 
       {result ? (
