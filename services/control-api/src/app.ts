@@ -1,9 +1,10 @@
-import { OpportunityInputSchema } from '@openfons/contracts';
+import { ApiErrorSchema, OpportunityInputSchema } from '@openfons/contracts';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 
 import {
   buildCompilation,
+  CompilationPolicyError,
   buildOpportunity,
   InvalidOpportunityInputError,
   UnsupportedCompilationCaseError
@@ -73,6 +74,16 @@ export const createApp = (
     try {
       compiled = await buildCompilation(opportunity, options);
     } catch (error) {
+      if (error instanceof CompilationPolicyError) {
+        return c.json(
+          ApiErrorSchema.parse({
+            code: error.code,
+            message: error.message
+          }),
+          error.status
+        );
+      }
+
       if (error instanceof UnsupportedCompilationCaseError) {
         throw new HTTPException(409, {
           message: error.message

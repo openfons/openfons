@@ -11,10 +11,11 @@ import {
 } from '@openfons/domain-models';
 import { createId, nowIso } from '@openfons/shared';
 import {
-  AI_PROCUREMENT_CAPTURE_TARGETS,
   buildAiProcurementCase,
+  resolveAiProcurementProfileForOpportunity,
   type AiProcurementCaseBundle
 } from '../cases/ai-procurement.js';
+import type { AiProcurementCaptureTarget } from '../cases/ai-procurement-profiles.js';
 import {
   createCaptureRunner,
   type CapturePlan,
@@ -25,7 +26,7 @@ import {
   type SearchClient
 } from './search-client.js';
 
-type SelectedTarget = (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number] & {
+type SelectedTarget = AiProcurementCaptureTarget & {
   result: SearchResult;
 };
 
@@ -68,7 +69,7 @@ const buildSearchRequest = (input: {
 });
 
 const selectSearchResult = (
-  target: (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number],
+  target: AiProcurementCaptureTarget,
   results: SearchResult[]
 ) => results.find((result) => target.urlPattern.test(result.url));
 
@@ -139,10 +140,11 @@ export const createAiProcurementRealCollectionBridge = ({
 } = {}): BuildAiProcurementCaseBundle => {
   return async (opportunity, workflow) => {
     const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');
+    const profile = resolveAiProcurementProfileForOpportunity(opportunity);
     const selectedTargets: SelectedTarget[] = [];
     const discoveryLogs: CollectionLog[] = [];
 
-    for (const [index, target] of AI_PROCUREMENT_CAPTURE_TARGETS.entries()) {
+    for (const [index, target] of profile.captureTargets.entries()) {
       const taskId = workflow.taskIds[index % workflow.taskIds.length];
       let searchRun: SearchRunResult;
 

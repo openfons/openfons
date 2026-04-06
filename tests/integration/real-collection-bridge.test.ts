@@ -11,7 +11,8 @@ import {
 import { createId, nowIso } from '@openfons/shared';
 import { buildCompilation, buildOpportunity } from '../../services/control-api/src/compiler.js';
 import {
-  AI_PROCUREMENT_CAPTURE_TARGETS
+  AI_PROCUREMENT_CAPTURE_TARGETS,
+  resolveAiProcurementProfileForOpportunity
 } from '../../services/control-api/src/cases/ai-procurement.js';
 import {
   createAiProcurementRealCollectionBridge
@@ -269,6 +270,45 @@ describe('real collection bridge follow-up behavior', () => {
       title: 'OpenRouter streaming does not return cost and is_byok',
       url: 'https://github.com/BerriAI/litellm/issues/11626'
     });
+  });
+
+  it('queries the profile-derived target set instead of a single global list', async () => {
+    const opportunity = buildOpportunity({
+      title: 'OpenAI Availability and Rate Limit Access for APAC Teams',
+      query: 'openai availability and rate limit access for apac teams',
+      market: 'apac',
+      audience: 'platform teams',
+      problem: 'Need to know whether a public API path is available in-region',
+      outcome: 'Choose a compliant procurement path',
+      geo: 'APAC',
+      language: 'English'
+    });
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const seenQueries: string[] = [];
+    const bridge = createAiProcurementRealCollectionBridge({
+      searchClient: {
+        search: async (request) => {
+          seenQueries.push(request.query);
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(target);
+        }
+      },
+      captureRunner: async (plans) => createCaptureRunnerResult(plans)
+    });
+
+    await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: bridge
+    });
+
+    expect(seenQueries.some((query) => query.includes('supported countries'))).toBe(
+      true
+    );
   });
 
   it('does not silently fall back for unexpected bridge invariant errors', async () => {

@@ -387,9 +387,54 @@ describe('control-api', () => {
     );
 
     expect(compileResponse.status).toBe(409);
-    await expect(compileResponse.text()).resolves.toContain(
-      'Direct API vs OpenRouter'
+    await expect(compileResponse.json()).resolves.toMatchObject({
+      code: 'out_of_scope_domain',
+      message:
+        'Only bounded AI procurement decisions are supported in the current compile path.'
+    });
+  });
+
+  it('returns a structured 422 error when official evidence is missing', async () => {
+    const app = createApp({
+      buildAiProcurementCaseBundle: async (opportunity, workflow) => {
+        const bundle = createRealBridgeBundle(opportunity, workflow);
+
+        return {
+          ...bundle,
+          sourceCaptures: bundle.sourceCaptures.filter(
+            (capture) => capture.sourceKind === 'community'
+          ),
+          evidenceSet: {
+            ...bundle.evidenceSet,
+            items: bundle.evidenceSet.items.filter(
+              (item) => item.sourceKind === 'community'
+            )
+          }
+        };
+      }
+    });
+
+    const createResponse = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(createOpportunityInput())
+    });
+    const created = await createResponse.json();
+
+    const compileResponse = await app.request(
+      `/api/v1/opportunities/${created.opportunity.id}/compile`,
+      {
+        method: 'POST'
+      }
     );
+
+    expect(compileResponse.status).toBe(422);
+    await expect(compileResponse.json()).resolves.toMatchObject({
+      code: 'insufficient_public_evidence',
+      message: 'Need at least one official source family before compile.'
+    });
   });
 
   it('rejects malformed json payloads', async () => {

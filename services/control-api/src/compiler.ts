@@ -1,4 +1,5 @@
 import type {
+  CompilationPolicyCode,
   CompilationResult,
   OpportunityInput,
   OpportunitySpec,
@@ -11,8 +12,13 @@ import { createId, nowIso, slugify } from '@openfons/shared';
 import {
   addAiProcurementFallbackWarning,
   buildAiProcurementCase,
-  supportsAiProcurementCase
+  resolveAiProcurementProfileForOpportunity
 } from './cases/ai-procurement.js';
+import {
+  classifyAiProcurementOpportunity,
+  formatAiProcurementPolicyMessage
+} from './cases/ai-procurement-intake.js';
+import { validateAiProcurementEvidence } from './cases/ai-procurement-evidence.js';
 import {
   createAiProcurementRealCollectionBridge,
   isAiProcurementRuntimeError,
@@ -21,6 +27,16 @@ import {
 
 export class InvalidOpportunityInputError extends Error {}
 export class UnsupportedCompilationCaseError extends Error {}
+export class CompilationPolicyError extends UnsupportedCompilationCaseError {
+  constructor(
+    readonly code: CompilationPolicyCode,
+    readonly status: 409 | 422,
+    message: string
+  ) {
+    super(message);
+    this.name = 'CompilationPolicyError';
+  }
+}
 
 const DEFAULT_EVIDENCE_REQUIREMENTS: OpportunitySpec['evidenceRequirements'] = [
   {
@@ -166,9 +182,13 @@ export const buildCompilation = async (
     buildAiProcurementCaseBundle?: BuildAiProcurementCaseBundle;
   } = {}
 ): Promise<CompilationResult> => {
-  if (!supportsAiProcurementCase(opportunity)) {
-    throw new UnsupportedCompilationCaseError(
-      'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
+  const policy = classifyAiProcurementOpportunity(opportunity);
+
+  if (!policy.supported) {
+    throw new CompilationPolicyError(
+      policy.reason,
+      409,
+      formatAiProcurementPolicyMessage(policy)
     );
   }
 
@@ -179,44 +199,39 @@ export const buildCompilation = async (
     workflow,
     deps.buildAiProcurementCaseBundle
   );
+  const profile = resolveAiProcurementProfileForOpportunity(opportunity);
+  const evidencePolicy = validateAiProcurementEvidence({
+    sourceCaptures: caseBundle.sourceCaptures,
+    evidenceSet: caseBundle.evidenceSet
+  });
+
+  if (!evidencePolicy.valid) {
+    throw new CompilationPolicyError(
+      evidencePolicy.code,
+      422,
+      evidencePolicy.message
+    );
+  }
+
   const reportCreatedAt = nowIso();
   const report: ReportSpec = {
     id: createId('report'),
     opportunityId: opportunity.id,
     slug: opportunity.pageCandidates[0].slug,
     title: opportunity.pageCandidates[0].title,
-    summary: 'First evidence-backed AI procurement report.',
+    summary: profile.report.summary,
     audience: opportunity.audience,
     geo: opportunity.geo,
     language: opportunity.language,
-    thesis:
-      'Start from official provider pricing and availability, then caveat relay convenience versus direct compliance certainty.',
-    claims: [
-      {
-        id: 'claim_direct_anchor',
-        label: 'Official direct-buy baseline',
-        statement:
-          'Direct provider pricing must anchor comparisons before any relay premium or convenience claim.',
-        evidenceIds: [caseBundle.evidenceSet.items[0].id]
-      },
-      {
-        id: 'claim_relay_fee_context',
-        label: 'Relay convenience needs fee context',
-        statement:
-          'Relay routing can simplify coverage and provider switching, but cost comparisons must preserve platform-fee and billing-mode caveats.',
-        evidenceIds: [
-          caseBundle.evidenceSet.items[1].id,
-          caseBundle.evidenceSet.items[2].id
-        ]
-      },
-      {
-        id: 'claim_region_first',
-        label: 'Region is not optional',
-        statement:
-          'Country availability and language support can change the best procurement path even when headline price looks cheaper elsewhere.',
-        evidenceIds: [caseBundle.evidenceSet.items[3].id]
-      }
-    ],
+    thesis: profile.report.thesis,
+    claims: profile.report.claims.map((claim) => ({
+      id: claim.id,
+      label: claim.label,
+      statement: claim.statement,
+      evidenceIds: claim.evidenceIndexes.map(
+        (index) => caseBundle.evidenceSet.items[index].id
+      )
+    })),
     sourceIndex: caseBundle.sourceCaptures.map((capture) => ({
       captureId: capture.id,
       title: capture.title,
@@ -227,26 +242,13 @@ export const buildCompilation = async (
       riskLevel: capture.riskLevel,
       lastCheckedAt: capture.accessedAt
     })),
-    sections: [
-      {
-        id: createId('sec'),
-        title: 'Quick Answer',
-        body: 'Use official pricing and availability pages to set the baseline, then caveat relay convenience and community pain points.'
-      },
-      {
-        id: createId('sec'),
-        title: 'Evidence Scope',
-        body: 'This first run covers provider pricing, relay pricing, and official region availability only.'
-      }
-    ],
-    evidenceBoundaries: [
-      'Do not publish pricing claims without at least one official pricing capture.',
-      'Relay comparisons must preserve caveats when source terms come from relay-owned pages.'
-    ],
-    risks: [
-      'A deterministic first run can prove the chain shape, but it does not replace later live collection.',
-      'Community pain points may corroborate workflow friction, but they do not override official pricing or availability.'
-    ],
+    sections: profile.report.sections.map((section) => ({
+      id: createId('sec'),
+      title: section.title,
+      body: section.body
+    })),
+    evidenceBoundaries: profile.report.evidenceBoundaries,
+    risks: profile.report.risks,
     updateLog: [
       {
         at: reportCreatedAt,
