@@ -1,6 +1,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createControlApi } from '../../apps/control-web/src/api';
+import {
+  ControlApiError,
+  createControlApi
+} from '../../apps/control-web/src/api';
 import { OpportunityPage } from '../../apps/control-web/src/pages/opportunity-page';
 
 describe('control-web', () => {
@@ -273,21 +276,31 @@ describe('control-web', () => {
     expect(await screen.findByText('Failed to compile opportunity')).toBeInTheDocument();
   });
 
-  it('surfaces backend compile error details from control-api', async () => {
+  it('parses structured compile policy errors from control-api', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(
-        'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.',
+        JSON.stringify({
+          code: 'out_of_scope_domain',
+          message:
+            'Only bounded AI procurement decisions are supported in the current compile path.'
+        }),
         {
-          status: 409
+          status: 409,
+          headers: {
+            'content-type': 'application/json'
+          }
         }
       )
     );
 
     const api = createControlApi('http://localhost:3001');
 
-    await expect(api.compileOpportunity('opp_001')).rejects.toThrow(
-      'The first deterministic evidence chain currently only supports the Direct API vs OpenRouter AI procurement case.'
-    );
+    await expect(api.compileOpportunity('opp_001')).rejects.toMatchObject({
+      name: 'ControlApiError',
+      code: 'out_of_scope_domain',
+      message:
+        'Only bounded AI procurement decisions are supported in the current compile path.'
+    });
 
     expect(fetchMock).toHaveBeenCalledWith(
       'http://localhost:3001/api/v1/opportunities/opp_001/compile',
@@ -295,5 +308,104 @@ describe('control-web', () => {
         method: 'POST'
       }
     );
+  });
+
+  it('shows supported AI procurement shapes on the page', () => {
+    const api = {
+      createOpportunity: vi.fn(),
+      compileOpportunity: vi.fn()
+    };
+
+    render(<OpportunityPage api={api} />);
+
+    expect(screen.getByText(/vendor choice/i)).toBeInTheDocument();
+    expect(screen.getByText(/pricing and access/i)).toBeInTheDocument();
+    expect(screen.getByText(/capability procurement/i)).toBeInTheDocument();
+  });
+
+  it('shows scoped guidance for policy failures', async () => {
+    const api = {
+      createOpportunity: async () => ({
+        id: 'opp_001',
+        slug: 'openai-api-vs-openrouter',
+        title: 'OpenAI API vs OpenRouter',
+        market: 'global',
+        input: {
+          title: 'OpenAI API vs OpenRouter',
+          query: 'openai api vs openrouter',
+          market: 'global',
+          audience: 'engineering leads',
+          problem: 'Need to compare direct provider buying against relay routing',
+          outcome: 'Choose the safer procurement path',
+          geo: 'global',
+          language: 'English'
+        },
+        status: 'draft' as const,
+        createdAt: '2026-04-03T00:00:00.000Z',
+        audience: 'engineering leads',
+        geo: 'global',
+        language: 'English',
+        searchIntent: 'decision' as const,
+        angle: 'Compare direct provider buying against relay routing',
+        firstDeliverySurface: 'report-web' as const,
+        pageCandidates: [
+          {
+            slug: 'openai-api-vs-openrouter',
+            title: 'OpenAI API vs OpenRouter',
+            query: 'openai api vs openrouter'
+          }
+        ],
+        evidenceRequirements: [
+          {
+            kind: 'official-pricing' as const,
+            note: 'Capture official pricing pages.'
+          }
+        ],
+        productOpportunityHints: []
+      }),
+      compileOpportunity: async () => {
+        throw new ControlApiError(
+          'Only bounded AI procurement decisions are supported in the current compile path.',
+          409,
+          'out_of_scope_domain'
+        );
+      }
+    };
+
+    render(<OpportunityPage api={api} />);
+
+    fireEvent.change(screen.getByLabelText(/title/i), {
+      target: { value: 'OpenAI API vs OpenRouter' }
+    });
+    fireEvent.change(screen.getByLabelText(/query/i), {
+      target: { value: 'openai api vs openrouter' }
+    });
+    fireEvent.change(screen.getByLabelText(/market/i), {
+      target: { value: 'global' }
+    });
+    fireEvent.change(screen.getByLabelText(/audience/i), {
+      target: { value: 'engineering leads' }
+    });
+    fireEvent.change(screen.getByLabelText(/geo/i), {
+      target: { value: 'global' }
+    });
+    fireEvent.change(screen.getByLabelText(/language/i), {
+      target: { value: 'English' }
+    });
+    fireEvent.change(screen.getByLabelText(/problem/i), {
+      target: {
+        value: 'Need to compare direct provider buying against relay routing'
+      }
+    });
+    fireEvent.change(screen.getByLabelText(/outcome/i), {
+      target: { value: 'Choose the safer procurement path' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: /compile report shell/i }));
+
+    expect(
+      await screen.findByText(
+        /try a vendor choice, pricing, or capability access question/i
+      )
+    ).toBeInTheDocument();
   });
 });

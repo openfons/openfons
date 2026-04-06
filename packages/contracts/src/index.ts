@@ -12,6 +12,13 @@ export const OpportunityInputSchema = z.object({
 });
 
 export const OpportunityStatusSchema = z.enum(['draft', 'compiled']);
+export const CompilationPolicyCodeSchema = z.enum([
+  'out_of_scope_domain',
+  'missing_official_targets',
+  'insufficient_public_evidence',
+  'needs_authenticated_capture',
+  'underspecified_buyer_decision'
+]);
 export const TaskKindSchema = z.enum([
   'collect-evidence',
   'score-opportunity',
@@ -448,6 +455,11 @@ export const ReportViewSchema = z.object({
   collectionLogs: z.array(CollectionLogSchema).min(1)
 });
 
+export const ApiErrorSchema = z.object({
+  code: CompilationPolicyCodeSchema.optional(),
+  message: z.string().min(1)
+});
+
 const REQUIRED_TASK_KINDS = [
   'collect-evidence',
   'score-opportunity',
@@ -690,6 +702,8 @@ export const CompilationResultSchema = z
   });
 
 export type OpportunityInput = z.infer<typeof OpportunityInputSchema>;
+export type CompilationPolicyCode = z.infer<typeof CompilationPolicyCodeSchema>;
+export type ApiError = z.infer<typeof ApiErrorSchema>;
 export type OpportunitySpec = z.infer<typeof OpportunitySpecSchema>;
 export type TaskSpec = z.infer<typeof TaskSpecSchema>;
 export type WorkflowSpec = z.infer<typeof WorkflowSpecSchema>;

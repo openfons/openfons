@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ApiErrorSchema,
+  CompilationPolicyCodeSchema,
   CompilationResultSchema,
   OpportunityInputSchema,
   ReportSpecSchema,
@@ -207,6 +209,21 @@ function createValidCompilationResult() {
 }
 
 describe('@openfons/contracts', () => {
+  it('parses shared compile policy error bodies', () => {
+    expect(CompilationPolicyCodeSchema.parse('out_of_scope_domain')).toBe(
+      'out_of_scope_domain'
+    );
+
+    expect(
+      ApiErrorSchema.parse({
+        code: 'insufficient_public_evidence',
+        message: 'Need at least one official source family before compile.'
+      })
+    ).toMatchObject({
+      code: 'insufficient_public_evidence'
+    });
+  });
+
   it('parses a valid opportunity input', () => {
     const parsed = OpportunityInputSchema.parse({
       title: 'Direct API vs OpenRouter for AI Coding Teams',

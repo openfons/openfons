@@ -13,24 +13,17 @@ import {
   createTopicRun
 } from '@openfons/domain-models';
 import { createId, nowIso } from '@openfons/shared';
+import {
+  classifyAiProcurementOpportunity
+} from './ai-procurement-intake.js';
+import {
+  AI_PROCUREMENT_VENDOR_CHOICE_PROFILE,
+  resolveAiProcurementProfile,
+  type AiProcurementCaptureTarget,
+  type AiProcurementProfile
+} from './ai-procurement-profiles.js';
 
 export const AI_PROCUREMENT_CASE_KEY = 'ai-procurement-v1';
-
-export type AiProcurementCaptureTarget = {
-  key: string;
-  title: string;
-  query: string;
-  url: string;
-  urlPattern: RegExp;
-  sourceKind: SourceCapture['sourceKind'];
-  useAs: SourceCapture['useAs'];
-  reportability: SourceCapture['reportability'];
-  riskLevel: SourceCapture['riskLevel'];
-  captureType: SourceCapture['captureType'];
-  language: string;
-  region: string;
-  summary: string;
-};
 
 export type AiProcurementCaseBundle = {
   topicRun: {
@@ -47,194 +40,73 @@ export type AiProcurementCaseBundle = {
   evidenceSet: EvidenceSet;
 };
 
-export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] = [
-  {
-    key: 'openai-pricing',
-    title: 'OpenAI API pricing',
-    query: 'site:openai.com openai api pricing',
-    url: 'https://openai.com/api/pricing/',
-    urlPattern: /^https:\/\/openai\.com\/api\/pricing\/?(?:\?[^#]*)?$/i,
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'reportable',
-    riskLevel: 'low',
-    captureType: 'pricing-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Official pricing page with per-model input, cached-input, and output token rates.'
-  },
-  {
-    key: 'gemini-pricing',
-    title: 'Gemini Developer API billing',
-    query: 'site:ai.google.dev gemini api pricing',
-    url: 'https://ai.google.dev/gemini-api/docs/billing',
-    urlPattern:
-      /^https:\/\/ai\.google\.dev\/gemini-api\/docs\/billing(?:\?[^#]*)?\/?$/i,
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'reportable',
-    riskLevel: 'low',
-    captureType: 'pricing-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Official Gemini billing page with current pricing and paid-tier guidance.'
-  },
-  {
-    key: 'openrouter-pricing',
-    title: 'OpenRouter pricing',
-    query: 'site:openrouter.ai openrouter pricing',
-    url: 'https://openrouter.ai/pricing',
-    urlPattern: /^https:\/\/openrouter\.ai\/pricing\/?(?:\?[^#]*)?$/i,
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'caveated',
-    riskLevel: 'medium',
-    captureType: 'pricing-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Official relay pricing page that says model-provider rates pass through without markup.'
-  },
-  {
-    key: 'openrouter-faq',
-    title: 'OpenRouter FAQ',
-    query: 'site:openrouter.ai openrouter faq byok fees',
-    url: 'https://openrouter.ai/docs/faq',
-    urlPattern: /^https:\/\/openrouter\.ai\/docs\/faq\/?(?:\?[^#]*)?$/i,
-    sourceKind: 'official',
-    useAs: 'secondary',
-    reportability: 'caveated',
-    riskLevel: 'medium',
-    captureType: 'doc-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Official FAQ documenting a 5.5% credit-purchase fee and BYOK fees after the first 1M requests per month.'
-  },
-  {
-    key: 'openai-availability',
-    title: 'OpenAI API supported countries and territories',
-    query: 'site:help.openai.com 5347006 openai api supported countries territories',
-    url: 'https://help.openai.com/en/articles/5347006-openai-api-supported-countries-and-territories',
-    urlPattern:
-      /^https:\/\/help\.openai\.com\/[a-z-]+\/articles\/5347006-openai-api-supported-countries-and-territories\/?$/i,
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'reportable',
-    riskLevel: 'low',
-    captureType: 'availability-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Official help article stating that access outside supported countries may lead to suspension.'
-  },
-  {
-    key: 'openrouter-community',
-    title: 'OpenRouter streaming does not return cost and is_byok',
-    query: 'openrouter byok github issue',
-    url: 'https://github.com/BerriAI/litellm/issues/11626',
-    urlPattern:
-      /^https:\/\/github\.com\/BerriAI\/litellm\/issues\/11626\/?(?:\?[^#]*)?$/i,
-    sourceKind: 'community',
-    useAs: 'corroboration',
-    reportability: 'caveated',
-    riskLevel: 'medium',
-    captureType: 'doc-page',
-    language: 'en',
-    region: 'global',
-    summary:
-      'Community issue showing that cost and BYOK billing signals can be unclear in OpenRouter integrations, which corroborates the need to preserve relay billing caveats.'
-  }
-];
+export const AI_PROCUREMENT_CAPTURE_TARGETS: AiProcurementCaptureTarget[] =
+  AI_PROCUREMENT_VENDOR_CHOICE_PROFILE.captureTargets;
 
 export const supportsAiProcurementCase = (
   opportunity: OpportunitySpec
-) => {
-  const haystack = [
-    opportunity.slug,
-    opportunity.title,
-    opportunity.input.query
-  ]
-    .join(' ')
-    .toLowerCase();
+) => classifyAiProcurementOpportunity(opportunity).supported;
 
-  return haystack.includes('openrouter') && haystack.includes('api');
+export const resolveAiProcurementProfileForOpportunity = (
+  opportunity: OpportunitySpec
+): AiProcurementProfile => {
+  const policy = classifyAiProcurementOpportunity(opportunity);
+
+  if (!policy.supported) {
+    throw new Error(`unsupported ai procurement opportunity: ${policy.reason}`);
+  }
+
+  return resolveAiProcurementProfile(opportunity, policy.family);
 };
 
 const buildEvidenceItems = (
   topicRunId: string,
-  sourceCaptures: SourceCapture[]
-): Evidence[] => [
-  {
-    id: createId('evi'),
-    topicRunId,
-    captureId: sourceCaptures[0].id,
-    kind: 'pricing',
-    statement:
-      'Direct-provider comparisons should start from official provider pricing pages: OpenAI lists per-model input, cached-input, and output rates, while Gemini publishes separate free-tier, paid-tier, and tool-pricing tables.',
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'reportable',
-    riskLevel: 'low',
-    freshnessNote:
-      'Verified against the OpenAI API pricing page and Gemini Developer API pricing page during this run.',
-    supportingCaptureIds: [sourceCaptures[0].id, sourceCaptures[1].id]
-  },
-  {
-    id: createId('evi'),
-    topicRunId,
-    captureId: sourceCaptures[2].id,
-    kind: 'routing',
-    statement:
-      'OpenRouter says model-provider inference pricing passes through without markup, but it charges a 5.5% fee on credit purchases and applies BYOK fees after the first 1M monthly BYOK requests, so relay cost comparisons need billing caveats.',
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'caveated',
-    riskLevel: 'medium',
-    freshnessNote:
-      'Routing and billing rules were checked against the current OpenRouter pricing page and FAQ during the run.',
-    supportingCaptureIds: [sourceCaptures[2].id, sourceCaptures[3].id]
-  },
-  {
-    id: createId('evi'),
-    topicRunId,
-    captureId: sourceCaptures[5].id,
-    kind: 'community',
-    statement:
-      'Community integrators report that OpenRouter cost and BYOK billing signals can be unclear in practice, which corroborates that relay pricing caveats should not be flattened into a simple headline-price comparison.',
-    sourceKind: 'community',
-    useAs: 'corroboration',
-    reportability: 'caveated',
-    riskLevel: 'medium',
-    freshnessNote:
-      'A live community discussion was checked during the run to corroborate operator confusion around relay pricing.',
-    supportingCaptureIds: [sourceCaptures[5].id]
-  },
-  {
-    id: createId('evi'),
-    topicRunId,
-    captureId: sourceCaptures[4].id,
-    kind: 'availability',
-    statement:
-      'Region support is a first-class procurement constraint because OpenAI says API access outside supported countries may lead to blocked or suspended accounts.',
-    sourceKind: 'official',
-    useAs: 'primary',
-    reportability: 'reportable',
-    riskLevel: 'low',
-    freshnessNote: 'Official region lists were checked during the run.',
-    supportingCaptureIds: [sourceCaptures[4].id]
-  }
-];
+  profile: AiProcurementProfile,
+  sourceCaptures: AiProcurementCaseBundle['sourceCaptures']
+): Evidence[] => {
+  const capturesByKey = new Map(
+    profile.captureTargets.map((target, index) => [target.key, sourceCaptures[index]])
+  );
+
+  return profile.evidenceTemplates.map((template) => {
+    const primaryCapture = capturesByKey.get(template.captureKey);
+
+    if (!primaryCapture) {
+      throw new Error(`missing source capture for target ${template.captureKey}`);
+    }
+
+    return {
+      id: createId('evi'),
+      topicRunId,
+      captureId: primaryCapture.id,
+      kind: template.kind,
+      statement: template.statement,
+      sourceKind: template.sourceKind,
+      useAs: template.useAs,
+      reportability: template.reportability,
+      riskLevel: template.riskLevel,
+      freshnessNote: template.freshnessNote,
+      supportingCaptureIds: template.supportingCaptureKeys.map((captureKey) => {
+        const capture = capturesByKey.get(captureKey);
+
+        if (!capture) {
+          throw new Error(`missing supporting source capture for target ${captureKey}`);
+        }
+
+        return capture.id;
+      })
+    };
+  });
+};
 
 export const buildAiProcurementCase = (
   opportunity: OpportunitySpec,
   workflow: WorkflowSpec
 ): AiProcurementCaseBundle => {
   const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');
+  const profile = resolveAiProcurementProfileForOpportunity(opportunity);
 
-  const sourceCaptures: SourceCapture[] = AI_PROCUREMENT_CAPTURE_TARGETS.map(
+  const sourceCaptures: SourceCapture[] = profile.captureTargets.map(
     (target) =>
       createSourceCapture({
         topicRunId: topicRun.id,
@@ -274,7 +146,7 @@ export const buildAiProcurementCase = (
     evidenceSet: {
       ...evidenceSet,
       updatedAt: nowIso(),
-      items: buildEvidenceItems(topicRun.id, sourceCaptures)
+      items: buildEvidenceItems(topicRun.id, profile, sourceCaptures)
     }
   };
 };

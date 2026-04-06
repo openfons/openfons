@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { OpportunitySpec, WorkflowSpec } from '@openfons/contracts';
-import { buildAiProcurementCase } from '../../services/control-api/src/cases/ai-procurement';
+import {
+  buildAiProcurementCase,
+  resolveAiProcurementProfileForOpportunity
+} from '../../services/control-api/src/cases/ai-procurement';
 
 const opportunity: OpportunitySpec = {
   id: 'opp_001',
@@ -86,6 +89,35 @@ describe('ai procurement case bundle', () => {
     ).toBe(true);
     expect(
       bundle.sourceCaptures.every((capture) => capture.sourceKind !== 'inference')
+    ).toBe(true);
+    expect(
+      bundle.sourceCaptures.some((capture) => capture.sourceKind === 'community')
+    ).toBe(true);
+  });
+
+  it('uses the pricing-access profile for billing questions', () => {
+    const pricingOpportunity: OpportunitySpec = {
+      ...opportunity,
+      title: 'OpenAI vs OpenRouter Pricing for Startups',
+      slug: 'openai-vs-openrouter-pricing-for-startups',
+      input: {
+        ...opportunity.input,
+        title: 'OpenAI vs OpenRouter Pricing for Startups',
+        query: 'openai vs openrouter pricing for startups',
+        audience: 'startup founders',
+        problem: 'Need to compare pricing, credits, and billing predictability',
+        outcome: 'Choose the cheaper procurement path'
+      },
+      audience: 'startup founders',
+      angle: 'Compare AI API pricing and billing models'
+    };
+
+    const profile = resolveAiProcurementProfileForOpportunity(pricingOpportunity);
+    const bundle = buildAiProcurementCase(pricingOpportunity, workflow);
+
+    expect(profile.family).toBe('pricing-access');
+    expect(
+      bundle.sourceCaptures.some((capture) => capture.captureType === 'pricing-page')
     ).toBe(true);
     expect(
       bundle.sourceCaptures.some((capture) => capture.sourceKind === 'community')
