@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Direct API vs OpenRouter for AI Coding Teams</title>
+    <meta name="description" content="Evidence-backed comparison for AI coding teams deciding between direct model APIs and OpenRouter." />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3eadc;
+        --paper: rgba(255, 252, 247, 0.95);
+        --ink: #1f1b16;
+        --muted: #6d5947;
+        --line: rgba(78, 55, 31, 0.14);
+        --accent: #8c4b1f;
+        --accent-soft: #e4c4aa;
+        --shadow: 0 24px 60px rgba(49, 31, 14, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(140, 75, 31, 0.16), transparent 30%),
+          linear-gradient(180deg, #f7f1e7 0%, var(--bg) 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, rgba(255, 251, 245, 0.96), rgba(247, 236, 223, 0.96));
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-grid,
+      .detail-grid,
+      .summary-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+        align-items: start;
+      }
+
+      .detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 24px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .panel,
+      .card,
+      .narrative-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel,
+      .card {
+        padding: 22px;
+      }
+
+      .narrative-card {
+        padding: 24px;
+      }
+
+      .stack > * + * {
+        margin-top: 12px;
+      }
+
+      .eyebrow,
+      .kicker {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      h3 {
+        font-size: 1.06rem;
+      }
+
+      p,
+      li {
+        line-height: 1.7;
+      }
+
+      .lede {
+        font-size: 1.05rem;
+        color: var(--muted);
+      }
+
+      .thesis {
+        padding: 16px 18px;
+        border-left: 4px solid var(--accent);
+        background: rgba(228, 196, 170, 0.22);
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      .summary-chip {
+        padding: 16px 18px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+      }
+
+      .summary-chip strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.84rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      section {
+        margin-top: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .bullet-list {
+        padding-left: 20px;
+      }
+
+      .compact-list {
+        margin-top: 10px;
+      }
+
+      .narrative-grid,
+      .card-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .narrative-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      details {
+        margin-top: 20px;
+      }
+
+      details summary {
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .footer-note {
+        margin-top: 28px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .detail-grid,
+        .summary-grid,
+        .narrative-grid,
+        .card-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .page {
+          width: min(100% - 20px, 1180px);
+        }
+
+        .hero,
+        .panel,
+        .card,
+        .narrative-card {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="hero-grid">
+          <div class="stack">
+            <p class="eyebrow">AI Procurement Decision Guide</p>
+            <h1>Direct API vs OpenRouter for AI Coding Teams</h1>
+            <p class="lede">Evidence-backed comparison for AI coding teams deciding between direct model APIs and OpenRouter.</p>
+            <p class="thesis">Direct APIs are the safer default when a team has stable provider choices, supported-region access, and compliance needs; OpenRouter is useful when provider coverage and routing convenience outweigh fee and billing caveats.</p>
+          </div>
+          <aside class="panel stack">
+            <div class="summary-chip">
+              <strong>Audience</strong>
+              small ai teams
+            </div>
+            <div class="summary-chip">
+              <strong>Geo / Language</strong>
+              global / English
+            </div>
+            <div class="summary-chip">
+              <strong>Updated</strong>
+              2026-04-07T07:15:18.127Z
+            </div>
+          </aside>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-chip">
+            <strong>Claims</strong>
+            4
+          </div>
+          <div class="summary-chip">
+            <strong>Sources</strong>
+            6
+          </div>
+          <div class="summary-chip">
+            <strong>Evidence Items</strong>
+            4
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <div class="section-head">
+          <h2>Decision Guide</h2>
+          <p class="meta">When direct APIs win, when OpenRouter wins, and what risks stay visible</p>
+        </div>
+        <div class="narrative-grid">
+          
+        <article class="stack narrative-card">
+          <h3>Quick Answer</h3>
+          <p>Start with direct APIs when your team already knows which provider it needs, can buy in a supported region, and wants the cleanest pricing and account-control path. Consider OpenRouter when your team needs one routing layer across multiple providers, faster model switching, or simpler experiments, but do not assume it is automatically cheaper.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Executive Summary</h3>
+          <p>The current evidence supports a decision-page answer rather than a static price table: direct-provider pricing should anchor cost claims, relay fees and BYOK rules must stay visible, community friction shows billing signals can be unclear in integrations, and region availability can override headline price.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Where Direct API Wins</h3>
+          <p>Direct APIs win when the team values official billing, fewer relay-specific fee caveats, cleaner procurement records, and first-party account boundaries. They are also the safer baseline when regional availability or account suspension risk matters more than model-switching convenience.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Where OpenRouter Wins</h3>
+          <p>OpenRouter can win when a coding team needs fast provider coverage, a single routing surface, or simpler experiments across multiple models. The tradeoff is that routing convenience must be read together with credit-purchase fees, BYOK fee rules, and the practical visibility of cost and BYOK signals inside integrations.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Hidden Costs and Risks</h3>
+          <p>The hidden-cost question is not only token price. Teams must also account for credit fees, BYOK thresholds, provider availability, failed calls, unclear integration-level cost signals, billing governance, and whether a relay-owned page is the only source supporting a claim.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Decision Tree by Team Type</h3>
+          <p>Solo developer experimenting across many models: OpenRouter can be practical if fee caveats are acceptable. Small AI team with stable provider choices: prefer direct APIs first, then add a relay only for overflow or experiments. Team with unsupported-region risk: resolve official availability before comparing costs. Team optimizing procurement governance: keep direct billing as the baseline and treat routing as an explicit convenience layer.</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Claims</h2>
+          <p class="meta">Each claim stays attached to report evidence</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>Official direct-buy baseline</h3>
+          <p>Use official pricing and availability pages to set the baseline before any routing convenience claim is made.</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>pricing</strong>: Direct-provider comparisons should start from official provider pricing pages: OpenAI lists per-model input, cached-input, and output rates, while Gemini publishes separate free-tier, paid-tier, and tool-pricing tables.</li><li><strong>availability</strong>: Region support is a first-class procurement constraint because OpenAI says API access outside supported countries may lead to blocked or suspended accounts.</li>
+          </ul>
+        </article>
+      
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>OpenRouter is not automatically cheaper</h3>
+          <p>OpenRouter can simplify routing and model coverage, but its cost story must preserve credit-purchase fees, BYOK thresholds, and integration-level cost-signal caveats.</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>routing</strong>: OpenRouter says model-provider inference pricing passes through without markup, but it charges a 5.5% fee on credit purchases and applies BYOK fees after the first 1M monthly BYOK requests, so relay cost comparisons need billing caveats.</li><li><strong>community</strong>: Community integrators report that OpenRouter cost and BYOK billing signals can be unclear in practice, which corroborates that relay pricing caveats should not be flattened into a simple headline-price comparison.</li>
+          </ul>
+        </article>
+      
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>OpenRouter wins on routing convenience</h3>
+          <p>OpenRouter is most defensible when routing flexibility, provider coverage, or fast experiments matter more than the cleanest first-party procurement path.</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>routing</strong>: OpenRouter says model-provider inference pricing passes through without markup, but it charges a 5.5% fee on credit purchases and applies BYOK fees after the first 1M monthly BYOK requests, so relay cost comparisons need billing caveats.</li><li><strong>community</strong>: Community integrators report that OpenRouter cost and BYOK billing signals can be unclear in practice, which corroborates that relay pricing caveats should not be flattened into a simple headline-price comparison.</li>
+          </ul>
+        </article>
+      
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>Region is not optional</h3>
+          <p>Country availability and language support can change the best procurement path even when headline price looks cheaper elsewhere.</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>availability</strong>: Region support is a first-class procurement constraint because OpenAI says API access outside supported countries may lead to blocked or suspended accounts.</li>
+          </ul>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Sources</h2>
+          <p class="meta">Official and corroborating references</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card source-card">
+          <p class="kicker">official</p>
+          <h3>
+            <a href="https://openai.com/api/pricing/" target="_blank" rel="noreferrer">
+              OpenAI API pricing
+            </a>
+          </h3>
+          <p>Official pricing page with per-model input, cached-input, and output token rates.</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">official</p>
+          <h3>
+            <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer">
+              Gemini Developer API billing
+            </a>
+          </h3>
+          <p>Official Gemini billing page with current pricing and paid-tier guidance.</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">official</p>
+          <h3>
+            <a href="https://openrouter.ai/pricing" target="_blank" rel="noreferrer">
+              OpenRouter pricing
+            </a>
+          </h3>
+          <p>Official relay pricing page that says model-provider rates pass through without markup.</p>
+          <p class="meta">
+            primary / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">official</p>
+          <h3>
+            <a href="https://openrouter.ai/docs/faq" target="_blank" rel="noreferrer">
+              OpenRouter FAQ
+            </a>
+          </h3>
+          <p>Official FAQ documenting a 5.5% credit-purchase fee and BYOK fees after the first 1M requests per month.</p>
+          <p class="meta">
+            secondary / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">official</p>
+          <h3>
+            <a href="https://help.openai.com/en/articles/5347006-openai-api-supported-countries-and-territories" target="_blank" rel="noreferrer">
+              OpenAI API supported countries and territories
+            </a>
+          </h3>
+          <p>Official help article stating that access outside supported countries may lead to suspension.</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">community</p>
+          <h3>
+            <a href="https://github.com/BerriAI/litellm/issues/11626" target="_blank" rel="noreferrer">
+              OpenRouter streaming does not return cost and is_byok
+            </a>
+          </h3>
+          <p>Community issue showing that cost and BYOK billing signals can be unclear in OpenRouter integrations.</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:18.126Z</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Evidence</h2>
+          <p class="meta">Freshness notes stay visible in the exported page</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card evidence-card">
+          <p class="kicker">pricing</p>
+          <p>Direct-provider comparisons should start from official provider pricing pages: OpenAI lists per-model input, cached-input, and output rates, while Gemini publishes separate free-tier, paid-tier, and tool-pricing tables.</p>
+          <p class="meta">Freshness: Verified against the OpenAI API pricing page and Gemini Developer API pricing page during this run.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">routing</p>
+          <p>OpenRouter says model-provider inference pricing passes through without markup, but it charges a 5.5% fee on credit purchases and applies BYOK fees after the first 1M monthly BYOK requests, so relay cost comparisons need billing caveats.</p>
+          <p class="meta">Freshness: Routing and billing rules were checked against the current OpenRouter pricing page and FAQ during the run.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">community</p>
+          <p>Community integrators report that OpenRouter cost and BYOK billing signals can be unclear in practice, which corroborates that relay pricing caveats should not be flattened into a simple headline-price comparison.</p>
+          <p class="meta">Freshness: A live community discussion was checked during the run to corroborate operator confusion around relay pricing.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">availability</p>
+          <p>Region support is a first-class procurement constraint because OpenAI says API access outside supported countries may lead to blocked or suspended accounts.</p>
+          <p class="meta">Freshness: Official region lists were checked during the run.</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section class="detail-grid">
+        <article class="panel stack">
+          <h2>Evidence Boundaries</h2>
+          <ul class="bullet-list">
+            <li>Do not treat a relay as cheaper unless official pricing and fee caveats are both visible.</li><li>Do not publish pricing claims without at least one official pricing capture.</li><li>Relay comparisons must preserve caveats when source terms come from relay-owned pages.</li><li>Community pain points can corroborate workflow friction, but they cannot replace official pricing or availability terms.</li>
+          </ul>
+        </article>
+        <article class="panel stack">
+          <h2>Risks</h2>
+          <ul class="bullet-list">
+            <li>Headline price comparisons can mislead if credit-purchase fees, BYOK rules, or integration-level cost visibility are omitted.</li><li>Region availability can change the procurement answer even when one route appears cheaper.</li><li>Community pain points may corroborate workflow friction, but they do not override official pricing or availability.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="panel stack">
+        <h2>Update Log</h2>
+        <ul class="bullet-list">
+          <li>2026-04-07T07:15:18.127Z - Initial AI procurement evidence-backed report compiled.</li>
+        </ul>
+        
+      </section>
+
+      <p class="footer-note">
+        Generated from OpenFons evidence for an SEO-ready AI procurement decision page.
+      </p>
+    </main>
+  </body>
+</html>

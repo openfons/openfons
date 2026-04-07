@@ -10,7 +10,10 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "export:workbench:direct-api-vs-openrouter": "tsx scripts/workbench/export-direct-api-vs-openrouter.ts",
+    "export:workbench:direct-api-vs-openrouter-deck": "tsx scripts/workbench/export-direct-api-vs-openrouter-deck.ts",
+    "export:workbench:openclaw-real-artifact-report": "tsx scripts/workbench/export-openclaw-real-artifact-report.ts"
   },
   "devDependencies": {
     "@openfons/contracts": "workspace:*",

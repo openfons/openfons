@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw Hosting Real Artifact Batch Report</title>
+    <meta name="description" content="Evidence-backed snapshot from the 2026-03-26 redeploy batch for query &quot;openclaw 最合适的服务器虚拟主机&quot;." />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3eadc;
+        --paper: rgba(255, 252, 247, 0.95);
+        --ink: #1f1b16;
+        --muted: #6d5947;
+        --line: rgba(78, 55, 31, 0.14);
+        --accent: #8c4b1f;
+        --accent-soft: #e4c4aa;
+        --shadow: 0 24px 60px rgba(49, 31, 14, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(140, 75, 31, 0.16), transparent 30%),
+          linear-gradient(180deg, #f7f1e7 0%, var(--bg) 100%);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 56px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, rgba(255, 251, 245, 0.96), rgba(247, 236, 223, 0.96));
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-grid,
+      .detail-grid,
+      .summary-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+        align-items: start;
+      }
+
+      .detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 24px;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .panel,
+      .card,
+      .narrative-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel,
+      .card {
+        padding: 22px;
+      }
+
+      .narrative-card {
+        padding: 24px;
+      }
+
+      .stack > * + * {
+        margin-top: 12px;
+      }
+
+      .eyebrow,
+      .kicker {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1.05;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      h3 {
+        font-size: 1.06rem;
+      }
+
+      p,
+      li {
+        line-height: 1.7;
+      }
+
+      .lede {
+        font-size: 1.05rem;
+        color: var(--muted);
+      }
+
+      .thesis {
+        padding: 16px 18px;
+        border-left: 4px solid var(--accent);
+        background: rgba(228, 196, 170, 0.22);
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      .summary-chip {
+        padding: 16px 18px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+      }
+
+      .summary-chip strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.84rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      section {
+        margin-top: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .bullet-list {
+        padding-left: 20px;
+      }
+
+      .compact-list {
+        margin-top: 10px;
+      }
+
+      .narrative-grid,
+      .card-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .narrative-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      details {
+        margin-top: 20px;
+      }
+
+      details summary {
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .footer-note {
+        margin-top: 28px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 900px) {
+        .hero-grid,
+        .detail-grid,
+        .summary-grid,
+        .narrative-grid,
+        .card-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .page {
+          width: min(100% - 20px, 1180px);
+        }
+
+        .hero,
+        .panel,
+        .card,
+        .narrative-card {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div class="hero-grid">
+          <div class="stack">
+            <p class="eyebrow">OpenFons Workbench Export</p>
+            <h1>OpenClaw Hosting Real Artifact Batch Report</h1>
+            <p class="lede">Evidence-backed snapshot from the 2026-03-26 redeploy batch for query &quot;openclaw 最合适的服务器虚拟主机&quot;.</p>
+            <p class="thesis">This real artifact batch proves the collection chain can preserve both working outputs and failure evidence, which is the minimum base needed before a formal SEO page.</p>
+          </div>
+          <aside class="panel stack">
+            <div class="summary-chip">
+              <strong>Audience</strong>
+              operators building OpenFons evidence-backed content pages
+            </div>
+            <div class="summary-chip">
+              <strong>Geo / Language</strong>
+              CN / global / English
+            </div>
+            <div class="summary-chip">
+              <strong>Updated</strong>
+              2026-04-07T07:15:19.589Z
+            </div>
+          </aside>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-chip">
+            <strong>Claims</strong>
+            3
+          </div>
+          <div class="summary-chip">
+            <strong>Sources</strong>
+            43
+          </div>
+          <div class="summary-chip">
+            <strong>Evidence Items</strong>
+            4
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <div class="section-head">
+          <h2>Quick Narrative</h2>
+          <p class="meta">Taken from the compiled report sections</p>
+        </div>
+        <div class="narrative-grid">
+          
+        <article class="stack narrative-card">
+          <h3>Batch Snapshot</h3>
+          <p>Query: openclaw 最合适的服务器虚拟主机. Batch date: 2026-03-26. Files: 43 total, 18 success, 17 limitations, 8 meta. Root: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored.</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>What Worked After Redeploy</h3>
+          <p>真正已经完成“重新部署并重新产生产物”的主力链路，是 `pinchtab`、`playwright`、`camoufox`、`crawlee`、`ddgs`、`youtube-comment-downloader`、`amazon-review-scraper`、`HackerNews/API`、`V2EX API`、`MediaCrawler` 基础运行链路。</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>What Still Blocks Reliable Collection</h3>
+          <p>`yt-dlp` 这轮没有像上一批那样直接给出稳定搜索结果，而是明确撞上了 YouTube 的反机器人校验；这不是工具完全不可用，而是说明它在真实环境里高度依赖 cookie、账号和风控条件。 `X / TikTok / Reddit 官方 API / Facebook 公共页 / MediaCrawler 登录态` 这些线仍然要靠账号、cookie、代理、白名单或 API 凭据来补齐，暂时不能被包装成“开箱即用”。</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Next Controlled Moves</h3>
+          <p>第一阶段主线就围绕已经有真实产物的工具推进。</p>
+        </article>
+      
+        <article class="stack narrative-card">
+          <h3>Environment Snapshot</h3>
+          <p>uv=uv 0.10.7 (08ab1a344 2026-02-27)
+node=v24.12.0
+docker=Docker version 29.2.1, build a5c7197 | &gt; @openfons/collector-compat@0.1.0 smoke:node | PASS camoufox: imported camoufox</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Claims</h2>
+          <p class="meta">Each claim stays attached to report evidence</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>Real batch output exists after redeploy</h3>
+          <p>OpenFons 第一阶段“先把采集能力做实”这条路是可行的，但必须接受一个现实：公开数据源、弱登录态链路、账号链路、SaaS 链路的成熟度差异非常大，不能把它们当成同一稳定等级。</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>inference</strong>: The 2026-03-26 redeploy batch preserved 43 files, including 18 success artifacts, 17 limitation artifacts, and 8 metadata artifacts.</li><li><strong>inference</strong>: 真正已经完成“重新部署并重新产生产物”的主力链路，是 `pinchtab`、`playwright`、`camoufox`、`crawlee`、`ddgs`、`youtube-comment-downloader`、`amazon-review-scraper`、`HackerNews/API`、`V2EX API`、`MediaCrawler` 基础运行链路。</li>
+          </ul>
+        </article>
+      
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>Core collection paths produced reusable evidence</h3>
+          <p>真正已经完成“重新部署并重新产生产物”的主力链路，是 `pinchtab`、`playwright`、`camoufox`、`crawlee`、`ddgs`、`youtube-comment-downloader`、`amazon-review-scraper`、`HackerNews/API`、`V2EX API`、`MediaCrawler` 基础运行链路。</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>inference</strong>: 真正已经完成“重新部署并重新产生产物”的主力链路，是 `pinchtab`、`playwright`、`camoufox`、`crawlee`、`ddgs`、`youtube-comment-downloader`、`amazon-review-scraper`、`HackerNews/API`、`V2EX API`、`MediaCrawler` 基础运行链路。</li>
+          </ul>
+        </article>
+      
+        <article class="stack card claim-card">
+          <p class="kicker">Claim</p>
+          <h3>Credential-gated tools remain the main blocker</h3>
+          <p>`yt-dlp` 这轮没有像上一批那样直接给出稳定搜索结果，而是明确撞上了 YouTube 的反机器人校验；这不是工具完全不可用，而是说明它在真实环境里高度依赖 cookie、账号和风控条件。 `X / TikTok / Reddit 官方 API / Facebook 公共页 / MediaCrawler 登录态` 这些线仍然要靠账号、cookie、代理、白名单或 API 凭据来补齐，暂时不能被包装成“开箱即用”。</p>
+          <ul class="bullet-list compact-list">
+            <li><strong>inference</strong>: `yt-dlp` 这轮没有像上一批那样直接给出稳定搜索结果，而是明确撞上了 YouTube 的反机器人校验；这不是工具完全不可用，而是说明它在真实环境里高度依赖 cookie、账号和风控条件。</li><li><strong>inference</strong>: `X / TikTok / Reddit 官方 API / Facebook 公共页 / MediaCrawler 登录态` 这些线仍然要靠账号、cookie、代理、白名单或 API 凭据来补齐，暂时不能被包装成“开箱即用”。</li>
+          </ul>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Sources</h2>
+          <p class="meta">Captured sources and artifact references</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_paapi_import.json" target="_blank" rel="noreferrer">
+              amazon_paapi_import.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_paapi_import.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.587Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_ephemeral.json" target="_blank" rel="noreferrer">
+              amazon_simple_product_api_ephemeral.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_ephemeral.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.587Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_import.json" target="_blank" rel="noreferrer">
+              amazon_simple_product_api_import.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/amazon_simple_product_api_import.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.587Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/facebook_page_info.json" target="_blank" rel="noreferrer">
+              facebook_page_info.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/facebook_page_info.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.587Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_import.txt" target="_blank" rel="noreferrer">
+              firecrawl_import.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_import.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.587Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_status.json" target="_blank" rel="noreferrer">
+              firecrawl_status.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/firecrawl_status.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_extractors.txt" target="_blank" rel="noreferrer">
+              gallery_dl_extractors.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_extractors.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_version.txt" target="_blank" rel="noreferrer">
+              gallery_dl_version.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/gallery_dl_version.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_host_health.txt" target="_blank" rel="noreferrer">
+              pinchtab_host_health.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_host_health.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_nav.txt" target="_blank" rel="noreferrer">
+              pinchtab_nav.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/pinchtab_nav.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/praw_without_creds.txt" target="_blank" rel="noreferrer">
+              praw_without_creds.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/praw_without_creds.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/reddit_public_json.txt" target="_blank" rel="noreferrer">
+              reddit_public_json.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/reddit_public_json.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/tiktokapi_status.txt" target="_blank" rel="noreferrer">
+              tiktokapi_status.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/tiktokapi_status.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/twscrape_search.txt" target="_blank" rel="noreferrer">
+              twscrape_search.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/twscrape_search.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_raw.txt" target="_blank" rel="noreferrer">
+              yt_dlp_search_raw.txt
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_raw.txt</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_status.json" target="_blank" rel="noreferrer">
+              yt_dlp_search_status.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/yt_dlp_search_status.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/ytcog_search.json" target="_blank" rel="noreferrer">
+              ytcog_search.json
+            </a>
+          </h3>
+          <p>Real limitation artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/limitations/ytcog_search.json</p>
+          <p class="meta">
+            corroboration / caveated / medium
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/docker_ps.txt" target="_blank" rel="noreferrer">
+              docker_ps.txt
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/docker_ps.txt</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_container_health.json" target="_blank" rel="noreferrer">
+              pinchtab_container_health.json
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_container_health.json</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_docker_logs_initial.txt" target="_blank" rel="noreferrer">
+              pinchtab_docker_logs_initial.txt
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_docker_logs_initial.txt</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_image_digest.json" target="_blank" rel="noreferrer">
+              pinchtab_image_digest.json
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/pinchtab_image_digest.json</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/smoke_node.txt" target="_blank" rel="noreferrer">
+              smoke_node.txt
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/smoke_node.txt</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/smoke_python.txt" target="_blank" rel="noreferrer">
+              smoke_python.txt
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/smoke_python.txt</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/summary.json" target="_blank" rel="noreferrer">
+              summary.json
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/summary.json</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/tool_versions.txt" target="_blank" rel="noreferrer">
+              tool_versions.txt
+            </a>
+          </h3>
+          <p>Batch metadata artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/meta/tool_versions.txt</p>
+          <p class="meta">
+            secondary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/amazon_review_summary.json" target="_blank" rel="noreferrer">
+              amazon_review_summary.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/amazon_review_summary.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search_meta.json" target="_blank" rel="noreferrer">
+              camoufox_search_meta.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search_meta.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.html" target="_blank" rel="noreferrer">
+              camoufox_search.html
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.html</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.588Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.png" target="_blank" rel="noreferrer">
+              camoufox_search.png
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/camoufox_search.png</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/crawlee_ddg.json" target="_blank" rel="noreferrer">
+              crawlee_ddg.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/crawlee_ddg.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_input_digits.png" target="_blank" rel="noreferrer">
+              ddddocr_input_digits.png
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_input_digits.png</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_output_digits.txt" target="_blank" rel="noreferrer">
+              ddddocr_output_digits.txt
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddddocr_output_digits.txt</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddgs_search.json" target="_blank" rel="noreferrer">
+              ddgs_search.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/ddgs_search.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/hackernews_topstory.json" target="_blank" rel="noreferrer">
+              hackernews_topstory.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/hackernews_topstory.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_health.json" target="_blank" rel="noreferrer">
+              mediacrawler_health.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_health.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_help.txt" target="_blank" rel="noreferrer">
+              mediacrawler_help.txt
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/mediacrawler_help.txt</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_health.json" target="_blank" rel="noreferrer">
+              pinchtab_health.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_health.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_snapshot.json" target="_blank" rel="noreferrer">
+              pinchtab_snapshot.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/pinchtab_snapshot.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search_meta.json" target="_blank" rel="noreferrer">
+              playwright_search_meta.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search_meta.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.html" target="_blank" rel="noreferrer">
+              playwright_search.html
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.html</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.png" target="_blank" rel="noreferrer">
+              playwright_search.png
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/playwright_search.png</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/v2ex_hot.json" target="_blank" rel="noreferrer">
+              v2ex_hot.json
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/v2ex_hot.json</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        <article class="stack card source-card">
+          <p class="kicker">inference</p>
+          <h3>
+            <a href="file:///D:/demo/demo1/openfons/labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/youtube_comments_known_openclaw.jsonl" target="_blank" rel="noreferrer">
+              youtube_comments_known_openclaw.jsonl
+            </a>
+          </h3>
+          <p>Real success artifact preserved from the 2026-03-26 redeploy batch. Path: labs/collector-compat/results/artifacts/2026-03-26_redeploy_network_restored/success/youtube_comments_known_openclaw.jsonl</p>
+          <p class="meta">
+            primary / reportable / low
+          </p>
+          <p class="meta">Last checked: 2026-04-07T07:15:19.589Z</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Evidence</h2>
+          <p class="meta">Freshness notes stay visible in the exported page</p>
+        </div>
+        <div class="card-grid">
+          
+        <article class="stack card evidence-card">
+          <p class="kicker">inference</p>
+          <p>The 2026-03-26 redeploy batch preserved 43 files, including 18 success artifacts, 17 limitation artifacts, and 8 metadata artifacts.</p>
+          <p class="meta">Freshness: Counts were read from meta/summary.json in the preserved redeploy batch.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">inference</p>
+          <p>真正已经完成“重新部署并重新产生产物”的主力链路，是 `pinchtab`、`playwright`、`camoufox`、`crawlee`、`ddgs`、`youtube-comment-downloader`、`amazon-review-scraper`、`HackerNews/API`、`V2EX API`、`MediaCrawler` 基础运行链路。</p>
+          <p class="meta">Freshness: This conclusion is backed by preserved success artifacts from search, browser, and API runs.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">inference</p>
+          <p>`yt-dlp` 这轮没有像上一批那样直接给出稳定搜索结果，而是明确撞上了 YouTube 的反机器人校验；这不是工具完全不可用，而是说明它在真实环境里高度依赖 cookie、账号和风控条件。</p>
+          <p class="meta">Freshness: This limitation is backed by the preserved raw yt-dlp failure output and status JSON.</p>
+        </article>
+      
+        <article class="stack card evidence-card">
+          <p class="kicker">inference</p>
+          <p>`X / TikTok / Reddit 官方 API / Facebook 公共页 / MediaCrawler 登录态` 这些线仍然要靠账号、cookie、代理、白名单或 API 凭据来补齐，暂时不能被包装成“开箱即用”。</p>
+          <p class="meta">Freshness: This conclusion is backed by preserved limitation artifacts for Reddit, TikTok, and token-gated browser service access.</p>
+        </article>
+      
+        </div>
+      </section>
+
+      <section class="detail-grid">
+        <article class="panel stack">
+          <h2>Evidence Boundaries</h2>
+          <ul class="bullet-list">
+            <li>This page reports a preserved artifact batch, not a fresh live rerun.</li><li>Some artifacts are health checks, fallback captures, or failure logs rather than end-user content pages.</li><li>The page proves that evidence was preserved and classified, but it does not yet prove long-term SEO performance.</li>
+          </ul>
+        </article>
+        <article class="panel stack">
+          <h2>Risks</h2>
+          <ul class="bullet-list">
+            <li>Credential-gated platforms still need account, cookie, proxy, token, or allowlist setup before they can be treated as stable.</li><li>The report uses one fixed batch and does not yet model recurring updates or canonical query ownership.</li><li>Current wording is evidence-backed, but the page is still a transitional report rather than the final SEO surface.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="panel stack">
+        <h2>Update Log</h2>
+        <ul class="bullet-list">
+          <li>2026-04-07T07:15:19.589Z - Built the first HTML report directly from the preserved 2026-03-26 OpenClaw redeploy artifact batch.</li>
+        </ul>
+        
+        <details>
+          <summary>Capture Log</summary>
+          <ul class="bullet-list compact-list">
+            
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved amazon_paapi_import.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved amazon_simple_product_api_ephemeral.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved amazon_simple_product_api_import.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved facebook_page_info.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved firecrawl_import.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved firecrawl_status.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved gallery_dl_extractors.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved gallery_dl_version.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_host_health.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_nav.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved praw_without_creds.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved reddit_public_json.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved tiktokapi_status.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved twscrape_search.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved yt_dlp_search_raw.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved yt_dlp_search_status.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved ytcog_search.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved docker_ps.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_container_health.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_docker_logs_initial.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_image_digest.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved smoke_node.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved smoke_python.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved summary.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved tool_versions.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved amazon_review_summary.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved camoufox_search_meta.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved camoufox_search.html from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved camoufox_search.png from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved crawlee_ddg.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved ddddocr_input_digits.png from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved ddddocr_output_digits.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved ddgs_search.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved hackernews_topstory.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved mediacrawler_health.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved mediacrawler_help.txt from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_health.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved pinchtab_snapshot.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved playwright_search_meta.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved playwright_search.html from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved playwright_search.png from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved v2ex_hot.json from the redeploy artifact batch
+        </li>
+      
+        <li>
+          <strong>capture</strong> / success:
+          Imported preserved youtube_comments_known_openclaw.jsonl from the redeploy artifact batch
+        </li>
+      
+          </ul>
+        </details>
+      </section>
+
+      <p class="footer-note">
+        Generated from the OpenFons workbench export pipeline.
+      </p>
+    </main>
+  </body>
+</html>

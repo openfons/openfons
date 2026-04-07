@@ -224,25 +224,51 @@ export const AI_PROCUREMENT_VENDOR_CHOICE_PROFILE: AiProcurementProfile = {
     }
   ],
   report: {
-    summary: 'First evidence-backed AI procurement report.',
+    summary:
+      'Evidence-backed comparison for AI coding teams deciding between direct model APIs and OpenRouter.',
     thesis:
-      'Start from official provider pricing and availability, then caveat relay convenience versus direct compliance certainty.',
+      'Direct APIs are the safer default when a team has stable provider choices, supported-region access, and compliance needs; OpenRouter is useful when provider coverage and routing convenience outweigh fee and billing caveats.',
     sections: [
       {
         title: 'Quick Answer',
-        body: 'Use official pricing and availability pages to set the baseline, then caveat relay convenience and community pain points.'
+        body:
+          'Start with direct APIs when your team already knows which provider it needs, can buy in a supported region, and wants the cleanest pricing and account-control path. Consider OpenRouter when your team needs one routing layer across multiple providers, faster model switching, or simpler experiments, but do not assume it is automatically cheaper.'
       },
       {
-        title: 'Evidence Scope',
-        body: 'This first run covers provider pricing, relay pricing, and official region availability only.'
+        title: 'Executive Summary',
+        body:
+          'The current evidence supports a decision-page answer rather than a static price table: direct-provider pricing should anchor cost claims, relay fees and BYOK rules must stay visible, community friction shows billing signals can be unclear in integrations, and region availability can override headline price.'
+      },
+      {
+        title: 'Where Direct API Wins',
+        body:
+          'Direct APIs win when the team values official billing, fewer relay-specific fee caveats, cleaner procurement records, and first-party account boundaries. They are also the safer baseline when regional availability or account suspension risk matters more than model-switching convenience.'
+      },
+      {
+        title: 'Where OpenRouter Wins',
+        body:
+          'OpenRouter can win when a coding team needs fast provider coverage, a single routing surface, or simpler experiments across multiple models. The tradeoff is that routing convenience must be read together with credit-purchase fees, BYOK fee rules, and the practical visibility of cost and BYOK signals inside integrations.'
+      },
+      {
+        title: 'Hidden Costs and Risks',
+        body:
+          'The hidden-cost question is not only token price. Teams must also account for credit fees, BYOK thresholds, provider availability, failed calls, unclear integration-level cost signals, billing governance, and whether a relay-owned page is the only source supporting a claim.'
+      },
+      {
+        title: 'Decision Tree by Team Type',
+        body:
+          'Solo developer experimenting across many models: OpenRouter can be practical if fee caveats are acceptable. Small AI team with stable provider choices: prefer direct APIs first, then add a relay only for overflow or experiments. Team with unsupported-region risk: resolve official availability before comparing costs. Team optimizing procurement governance: keep direct billing as the baseline and treat routing as an explicit convenience layer.'
       }
     ],
     evidenceBoundaries: [
+      'Do not treat a relay as cheaper unless official pricing and fee caveats are both visible.',
       'Do not publish pricing claims without at least one official pricing capture.',
-      'Relay comparisons must preserve caveats when source terms come from relay-owned pages.'
+      'Relay comparisons must preserve caveats when source terms come from relay-owned pages.',
+      'Community pain points can corroborate workflow friction, but they cannot replace official pricing or availability terms.'
     ],
     risks: [
-      'A deterministic first run can prove the chain shape, but it does not replace later live collection.',
+      'Headline price comparisons can mislead if credit-purchase fees, BYOK rules, or integration-level cost visibility are omitted.',
+      'Region availability can change the procurement answer even when one route appears cheaper.',
       'Community pain points may corroborate workflow friction, but they do not override official pricing or availability.'
     ],
     claims: [
@@ -250,14 +276,21 @@ export const AI_PROCUREMENT_VENDOR_CHOICE_PROFILE: AiProcurementProfile = {
         id: 'claim_direct_anchor',
         label: 'Official direct-buy baseline',
         statement:
-          'Direct provider pricing must anchor comparisons before any relay premium or convenience claim.',
-        evidenceIndexes: [0]
+          'Use official pricing and availability pages to set the baseline before any routing convenience claim is made.',
+        evidenceIndexes: [0, 3]
       },
       {
         id: 'claim_relay_fee_context',
-        label: 'Relay convenience needs fee context',
+        label: 'OpenRouter is not automatically cheaper',
         statement:
-          'Relay routing can simplify coverage and provider switching, but cost comparisons must preserve platform-fee and billing-mode caveats.',
+          'OpenRouter can simplify routing and model coverage, but its cost story must preserve credit-purchase fees, BYOK thresholds, and integration-level cost-signal caveats.',
+        evidenceIndexes: [1, 2]
+      },
+      {
+        id: 'claim_relay_convenience',
+        label: 'OpenRouter wins on routing convenience',
+        statement:
+          'OpenRouter is most defensible when routing flexibility, provider coverage, or fast experiments matter more than the cleanest first-party procurement path.',
         evidenceIndexes: [1, 2]
       },
       {
