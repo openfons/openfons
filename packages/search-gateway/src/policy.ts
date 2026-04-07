@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import {
   SearchProviderIdSchema,
@@ -7,7 +8,11 @@ import {
   type SearchPurpose
 } from '@openfons/contracts';
 
-const repoRoot = path.resolve(import.meta.dirname, '../../..');
+const moduleDirname =
+  typeof import.meta.dirname === 'string'
+    ? import.meta.dirname
+    : path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(moduleDirname, '../../..');
 
 const SearchPolicySchema = z.object({
   providers: z.array(SearchProviderIdSchema),

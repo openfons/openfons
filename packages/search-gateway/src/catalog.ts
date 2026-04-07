@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   CredentialSchemaSchema,
   ProviderCapabilitySchema,
@@ -11,7 +12,11 @@ import {
   type ValidationResult
 } from '@openfons/contracts';
 
-const repoRoot = path.resolve(import.meta.dirname, '../../..');
+const moduleDirname =
+  typeof import.meta.dirname === 'string'
+    ? import.meta.dirname
+    : path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(moduleDirname, '../../..');
 const providersDir = path.join(repoRoot, 'config/search/providers');
 const credentialSchemaPath = path.join(
   repoRoot,

@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ProviderRawResult, SearchProviderAdapter } from './base.js';
 
 export type DdgSearchInput = {
@@ -12,7 +13,11 @@ export type DdgSearchImpl = (
   input: DdgSearchInput
 ) => Promise<ProviderRawResult[]>;
 
-const repoRoot = path.resolve(import.meta.dirname, '../../../..');
+const moduleDirname =
+  typeof import.meta.dirname === 'string'
+    ? import.meta.dirname
+    : path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(moduleDirname, '../../../..');
 const DEFAULT_MAX_BUFFER = 10 * 1024 * 1024;
 const DEFAULT_DDGS_TIMEOUT_MS = 60 * 1000;
 
