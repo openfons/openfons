@@ -6,6 +6,7 @@ dist/
 coverage/
 .vite/
 *.tsbuildinfo
+tmp/
 .env
 .env.*
 !.env.example
