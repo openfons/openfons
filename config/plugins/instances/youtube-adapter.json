@@ -1,0 +1,20 @@
+{
+  "id": "youtube-adapter",
+  "type": "crawler-adapter",
+  "driver": "yt-dlp",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "format": "json"
+  },
+  "secrets": {},
+  "dependencies": [
+    {
+      "type": "proxy-source",
+      "pluginId": "global-proxy-pool"
+    }
+  ],
+  "policy": {
+    "mode": "public-first"
+  }
+}

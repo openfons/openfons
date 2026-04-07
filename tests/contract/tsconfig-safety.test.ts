@@ -28,6 +28,7 @@ describe('tsconfig safety', () => {
   it.each([
     'services/control-api/tsconfig.json',
     'services/search-gateway/tsconfig.json',
+    'packages/config-center/tsconfig.json',
     'packages/domain-models/tsconfig.json',
     'packages/search-gateway/tsconfig.json'
   ])('%s is a no-emit typecheck config', (relativePath) => {
@@ -39,6 +40,7 @@ describe('tsconfig safety', () => {
   it.each([
     'services/control-api/tsconfig.build.json',
     'services/search-gateway/tsconfig.build.json',
+    'packages/config-center/tsconfig.build.json',
     'packages/domain-models/tsconfig.build.json',
     'packages/search-gateway/tsconfig.build.json'
   ])('%s re-enables emit for build output', (relativePath) => {

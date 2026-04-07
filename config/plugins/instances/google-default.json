@@ -1,0 +1,32 @@
+{
+  "id": "google-default",
+  "type": "search-provider",
+  "driver": "google",
+  "enabled": true,
+  "scope": "global",
+  "config": {
+    "endpoint": "https://customsearch.googleapis.com/customsearch/v1"
+  },
+  "secrets": {
+    "apiKeyRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "google-api-key"
+    },
+    "cxRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "google-cx"
+    }
+  },
+  "dependencies": [],
+  "policy": {
+    "defaultPurpose": "planning"
+  },
+  "healthCheck": {
+    "kind": "credential",
+    "timeoutMs": 3000
+  }
+}

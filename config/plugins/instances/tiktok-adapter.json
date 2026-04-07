@@ -1,0 +1,32 @@
+{
+  "id": "tiktok-adapter",
+  "type": "crawler-adapter",
+  "driver": "tiktok-api",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "region": "us"
+  },
+  "secrets": {},
+  "dependencies": [
+    {
+      "type": "browser-runtime",
+      "pluginId": "pinchtab-local"
+    },
+    {
+      "type": "account-source",
+      "pluginId": "tiktok-account-main"
+    },
+    {
+      "type": "cookie-source",
+      "pluginId": "tiktok-cookie-main"
+    },
+    {
+      "type": "proxy-source",
+      "pluginId": "global-proxy-pool"
+    }
+  ],
+  "policy": {
+    "mode": "requires-auth"
+  }
+}

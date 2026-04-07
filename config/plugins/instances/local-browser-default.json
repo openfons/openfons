@@ -1,0 +1,21 @@
+{
+  "id": "local-browser-default",
+  "type": "browser-runtime",
+  "driver": "local-playwright",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "headless": true,
+    "allowedDomains": [
+      "youtube.com",
+      "www.youtube.com",
+      "tiktok.com",
+      "www.tiktok.com"
+    ]
+  },
+  "secrets": {},
+  "dependencies": [],
+  "policy": {
+    "defaultPurpose": "public-capture"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "tiktok-account-main",
+  "type": "account-source",
+  "driver": "credentials-file",
+  "enabled": true,
+  "scope": "project",
+  "config": {},
+  "secrets": {
+    "accountRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "tiktok-account-main"
+    }
+  },
+  "dependencies": [],
+  "policy": {
+    "rotation": "manual"
+  }
+}

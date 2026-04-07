@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './config-center.js';
+
 export const OpportunityInputSchema = z.object({
   title: z.string().min(1),
   query: z.string().min(1),

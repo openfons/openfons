@@ -1,0 +1,41 @@
+{
+  "projectId": "openfons",
+  "enabledPlugins": [
+    "google-default",
+    "ddg-default",
+    "pinchtab-local",
+    "local-browser-default",
+    "youtube-adapter",
+    "tiktok-adapter",
+    "tiktok-account-main",
+    "tiktok-cookie-main",
+    "global-proxy-pool"
+  ],
+  "roles": {
+    "primarySearch": "google-default",
+    "fallbackSearch": ["ddg-default"],
+    "defaultBrowser": "local-browser-default",
+    "authenticatedBrowser": "pinchtab-local",
+    "defaultProxy": "global-proxy-pool",
+    "platformAccount": "tiktok-account-main",
+    "platformCookie": "tiktok-cookie-main"
+  },
+  "routes": {
+    "youtube": {
+      "discovery": ["google-default", "ddg-default"],
+      "collection": "youtube-adapter",
+      "proxy": "global-proxy-pool",
+      "mode": "public-first"
+    },
+    "tiktok": {
+      "discovery": ["google-default", "ddg-default"],
+      "browser": "pinchtab-local",
+      "collection": "tiktok-adapter",
+      "accounts": ["tiktok-account-main"],
+      "cookies": ["tiktok-cookie-main"],
+      "proxy": "global-proxy-pool",
+      "mode": "requires-auth"
+    }
+  },
+  "overrides": {}
+}

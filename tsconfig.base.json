@@ -13,7 +13,8 @@
       "@openfons/shared": ["packages/shared/src/index.ts"],
       "@openfons/domain-models": ["packages/domain-models/src/index.ts"],
       "@openfons/contracts": ["packages/contracts/src/index.ts"],
-      "@openfons/search-gateway": ["packages/search-gateway/src/index.ts"]
+      "@openfons/search-gateway": ["packages/search-gateway/src/index.ts"],
+      "@openfons/config-center": ["packages/config-center/src/index.ts"]
     }
   }
 }

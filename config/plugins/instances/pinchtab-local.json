@@ -1,0 +1,23 @@
+{
+  "id": "pinchtab-local",
+  "type": "browser-runtime",
+  "driver": "pinchtab",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "baseUrl": "http://127.0.0.1:3901",
+    "allowedDomains": ["tiktok.com", "www.tiktok.com"]
+  },
+  "secrets": {
+    "tokenRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "pinchtab-token"
+    }
+  },
+  "dependencies": [],
+  "policy": {
+    "defaultPurpose": "authenticated-capture"
+  }
+}

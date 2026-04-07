@@ -1,0 +1,22 @@
+{
+  "id": "global-proxy-pool",
+  "type": "proxy-source",
+  "driver": "static-proxy-file",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "strategy": "round-robin"
+  },
+  "secrets": {
+    "poolRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "global-proxy-pool"
+    }
+  },
+  "dependencies": [],
+  "policy": {
+    "allowSharedUse": true
+  }
+}

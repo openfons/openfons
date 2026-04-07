@@ -1,0 +1,15 @@
+{
+  "id": "ddg-default",
+  "type": "search-provider",
+  "driver": "ddg",
+  "enabled": true,
+  "scope": "global",
+  "config": {
+    "endpoint": "https://duckduckgo.com/html/"
+  },
+  "secrets": {},
+  "dependencies": [],
+  "policy": {
+    "defaultPurpose": "planning"
+  }
+}

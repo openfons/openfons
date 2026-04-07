@@ -1,0 +1,20 @@
+{
+  "id": "tiktok-cookie-main",
+  "type": "cookie-source",
+  "driver": "netscape-cookie-file",
+  "enabled": true,
+  "scope": "project",
+  "config": {},
+  "secrets": {
+    "sessionRef": {
+      "scheme": "secret",
+      "scope": "project",
+      "projectId": "openfons",
+      "name": "tiktok-cookie-main"
+    }
+  },
+  "dependencies": [],
+  "policy": {
+    "format": "raw"
+  }
+}
