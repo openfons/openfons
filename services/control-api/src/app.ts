@@ -9,17 +9,30 @@ import {
   InvalidOpportunityInputError,
   UnsupportedCompilationCaseError
 } from './compiler.js';
+import { createConfigCenterRouter } from './config-center/router.js';
 import { createMemoryStore, type MemoryStore } from './store.js';
 
 type BuildCompilationOptions = Parameters<typeof buildCompilation>[1];
 
+type CreateAppOptions = BuildCompilationOptions & {
+  configCenter?: {
+    repoRoot: string;
+    secretRoot?: string;
+  };
+};
+
 export const createApp = (
-  options: BuildCompilationOptions = {},
+  options: CreateAppOptions = {},
   store: MemoryStore = createMemoryStore()
 ) => {
   const app = new Hono();
+  const { configCenter, ...compilationOptions } = options;
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
+
+  if (configCenter) {
+    app.route('/api/v1/config', createConfigCenterRouter(configCenter));
+  }
 
   app.post('/api/v1/opportunities', async (c) => {
     let payload: unknown;
@@ -72,7 +85,7 @@ export const createApp = (
     let compiled;
 
     try {
-      compiled = await buildCompilation(opportunity, options);
+      compiled = await buildCompilation(opportunity, compilationOptions);
     } catch (error) {
       if (error instanceof CompilationPolicyError) {
         return c.json(
