@@ -807,6 +807,7 @@ export type ReportView = z.infer<typeof ReportViewSchema>;
 export type CompilationResult = z.infer<typeof CompilationResultSchema>;
 export type SearchPurpose = z.infer<typeof SearchPurposeSchema>;
 export type SearchRunStatus = z.infer<typeof SearchRunStatusSchema>;
+export type SearchIntent = z.infer<typeof SearchIntentSchema>;
 export type SearchProviderId = z.infer<typeof SearchProviderIdSchema>;
 export type SearchProviderCategory = z.infer<typeof SearchProviderCategorySchema>;
 export type SearchProviderHealth = z.infer<typeof SearchProviderHealthSchema>;
