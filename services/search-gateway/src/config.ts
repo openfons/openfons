@@ -5,170 +5,119 @@ import type {
   ValidationResult
 } from '@openfons/contracts';
 import {
-  createBaiduAdapter,
-  createBingAdapter,
-  createBraveAdapter,
+  loadConfigCenterState,
+  resolveSearchRuntime,
+  validateProjectConfig
+} from '@openfons/config-center';
+import {
   createDdgAdapter,
   createGoogleAdapter,
   createSearchGateway,
-  createTavilyAdapter,
-  getProviderStatus as getBaseProviderStatus,
   type SearchRunStore as GatewayRunStore,
   type SearchProviderAdapter
 } from '@openfons/search-gateway';
 
-type EnvShape = Record<string, string | undefined>;
-
-const DEFAULT_BING_ENDPOINT = 'https://api.bing.microsoft.com/v7.0/search';
-
-const resolveEnvValue = (
-  env: EnvShape,
-  projectId: string | undefined,
-  providerId: SearchProviderId,
-  field: string
-) =>
-  (projectId
-    ? env[
-        `${projectId.toUpperCase()}_${providerId.toUpperCase()}_${field.toUpperCase()}`
-      ]
-    : undefined) ?? env[`${providerId.toUpperCase()}_${field.toUpperCase()}`];
-
-export const loadProviderAdapters = ({
-  projectId,
-  env = process.env,
-  fetchImpl = fetch,
+const createAdapterFromResolvedPlugin = ({
+  plugin,
+  fetchImpl,
   ddgSearchImpl
 }: {
-  projectId?: string;
-  env?: EnvShape;
+  plugin: ReturnType<typeof resolveSearchRuntime>['providers'][number];
   fetchImpl?: typeof fetch;
   ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
-} = {}): Partial<Record<SearchProviderId, SearchProviderAdapter>> => {
-  const adapters: Partial<Record<SearchProviderId, SearchProviderAdapter>> = {};
-
-  const googleApiKey = resolveEnvValue(env, projectId, 'google', 'apiKey');
-  const googleCx = resolveEnvValue(env, projectId, 'google', 'cx');
-  if (googleApiKey && googleCx) {
-    adapters.google = createGoogleAdapter({
-      fetch: fetchImpl,
-      apiKey: googleApiKey,
-      cx: googleCx
-    });
+}): [SearchProviderId, SearchProviderAdapter] => {
+  switch (plugin.driver) {
+    case 'google':
+      return [
+        'google',
+        createGoogleAdapter({
+          fetch: fetchImpl ?? fetch,
+          apiKey: String(plugin.secrets.apiKeyRef.value),
+          cx: String(plugin.secrets.cxRef.value)
+        })
+      ];
+    case 'ddg':
+      return [
+        'ddg',
+        createDdgAdapter({
+          fetch: fetchImpl ?? fetch,
+          endpoint: plugin.config.endpoint as string | undefined,
+          searchImpl: ddgSearchImpl
+        })
+      ];
+    default:
+      throw new Error(`unsupported search driver ${plugin.driver}`);
   }
-
-  const bingApiKey = resolveEnvValue(env, projectId, 'bing', 'apiKey');
-  const bingEndpoint =
-    resolveEnvValue(env, projectId, 'bing', 'endpoint') ?? DEFAULT_BING_ENDPOINT;
-  if (bingApiKey) {
-    adapters.bing = createBingAdapter({
-      fetch: fetchImpl,
-      apiKey: bingApiKey,
-      endpoint: bingEndpoint
-    });
-  }
-
-  const baiduApiKey = resolveEnvValue(env, projectId, 'baidu', 'apiKey');
-  const baiduSecretKey = resolveEnvValue(env, projectId, 'baidu', 'secretKey');
-  const baiduEndpoint = resolveEnvValue(env, projectId, 'baidu', 'endpoint');
-  if (baiduApiKey && baiduSecretKey && baiduEndpoint) {
-    adapters.baidu = createBaiduAdapter({
-      fetch: fetchImpl,
-      apiKey: baiduApiKey,
-      secretKey: baiduSecretKey,
-      endpoint: baiduEndpoint
-    });
-  }
-
-  const ddgEndpoint = resolveEnvValue(env, projectId, 'ddg', 'endpoint');
-  adapters.ddg = createDdgAdapter({
-    fetch: fetchImpl,
-    endpoint: ddgEndpoint,
-    searchImpl: ddgSearchImpl
-  });
-
-  const braveApiKey = resolveEnvValue(env, projectId, 'brave', 'apiKey');
-  if (braveApiKey) {
-    adapters.brave = createBraveAdapter({
-      fetch: fetchImpl,
-      apiKey: braveApiKey
-    });
-  }
-
-  const tavilyApiKey = resolveEnvValue(env, projectId, 'tavily', 'apiKey');
-  if (tavilyApiKey) {
-    adapters.tavily = createTavilyAdapter({
-      fetch: fetchImpl,
-      apiKey: tavilyApiKey
-    });
-  }
-
-  return adapters;
-};
-
-export const loadProviderStatus = (
-  projectId?: string,
-  env: EnvShape = process.env
-): ProviderStatus[] => {
-  const baseStatuses = getBaseProviderStatus(projectId);
-  const runtimeAdapters = loadProviderAdapters({ projectId, env });
-
-  return baseStatuses.map((status) => {
-    if (runtimeAdapters[status.providerId]) {
-      return status;
-    }
-
-    if (!status.healthy) {
-      return status;
-    }
-
-    return {
-      ...status,
-      healthy: false,
-      degraded: true,
-      reason: 'missing-runtime-config'
-    };
-  });
-};
-
-export const loadValidation = (
-  projectId?: string,
-  env: EnvShape = process.env
-): ValidationResult => {
-  const resolvedProviders = loadProviderStatus(projectId, env);
-
-  return {
-    valid: resolvedProviders.every((provider) => provider.healthy),
-    errors: resolvedProviders
-      .filter((provider) => !provider.healthy)
-      .map((provider) => `${provider.providerId}: ${provider.reason ?? 'invalid'}`),
-    warnings: [],
-    resolvedProviders
-  };
 };
 
 export const createRuntimeGateway = ({
   projectId,
-  env = process.env,
+  repoRoot,
+  secretRoot,
   fetchImpl = fetch,
   ddgSearchImpl,
   dispatchCollectorRequests,
   runStore
 }: {
   projectId: string;
-  env?: EnvShape;
+  repoRoot: string;
+  secretRoot?: string;
   fetchImpl?: typeof fetch;
   ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
   dispatchCollectorRequests?: (candidates: UpgradeCandidate[]) => Promise<void>;
   runStore?: GatewayRunStore;
-}) =>
-  createSearchGateway({
+}) => {
+  const state = loadConfigCenterState({ repoRoot, secretRoot });
+  const runtime = resolveSearchRuntime({ state, projectId });
+
+  const providers = Object.fromEntries(
+    runtime.providers.map((plugin) =>
+      createAdapterFromResolvedPlugin({ plugin, fetchImpl, ddgSearchImpl })
+    )
+  ) as Partial<Record<SearchProviderId, SearchProviderAdapter>>;
+
+  return createSearchGateway({
     projectId,
-    providers: loadProviderAdapters({
-      projectId,
-      env,
-      fetchImpl,
-      ddgSearchImpl
-    }),
+    providers,
     dispatchCollectorRequests,
     runStore
   });
+};
+
+export const loadProviderStatus = (
+  projectId: string,
+  repoRoot: string,
+  secretRoot?: string
+): ProviderStatus[] => {
+  const state = loadConfigCenterState({ repoRoot, secretRoot });
+  const runtime = resolveSearchRuntime({ state, projectId });
+  const validation = validateProjectConfig({ state, projectId });
+
+  return runtime.providers.map((plugin) => ({
+    providerId: plugin.driver as SearchProviderId,
+    enabled: true,
+    healthy: validation.status !== 'invalid',
+    credentialResolvedFrom: 'project',
+    degraded: validation.status !== 'valid',
+    reason:
+      validation.status === 'invalid'
+        ? validation.errors.map((item) => item.message).join('; ')
+        : undefined
+  }));
+};
+
+export const loadValidation = (
+  projectId: string,
+  repoRoot: string,
+  secretRoot?: string
+): ValidationResult => {
+  const state = loadConfigCenterState({ repoRoot, secretRoot });
+  const validation = validateProjectConfig({ state, projectId });
+
+  return {
+    valid: validation.status === 'valid',
+    errors: validation.errors.map((item) => item.message),
+    warnings: validation.warnings.map((item) => item.message),
+    resolvedProviders: loadProviderStatus(projectId, repoRoot, secretRoot)
+  };
+};

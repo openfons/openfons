@@ -1,4 +1,7 @@
-import type { CompilationPolicyCode } from '@openfons/contracts';
+import type {
+  CompilationPolicyCode,
+  MaskedResolvedPluginRuntime
+} from '@openfons/contracts';
 import type { CapturePlan } from '../capture-runner.js';
 import {
   DEFAULT_SITE_PROFILES,
@@ -29,6 +32,7 @@ export type AuthenticatedLocalBrowserCaptureRequest = {
   title: string;
   url: string;
   siteProfile: SiteProfile;
+  browserRuntime?: MaskedResolvedPluginRuntime;
   requiresAuthenticatedSession: boolean;
   requiresOperatorApproval: boolean;
   requiredArtifacts: LocalBrowserArtifactKind[];

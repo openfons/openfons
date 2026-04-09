@@ -1,3 +1,6 @@
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { CapturePlan } from '../../services/control-api/src/collection/capture-runner.js';
 import {
@@ -6,6 +9,7 @@ import {
   planAuthenticatedLocalBrowserCapture,
   resolveSiteProfile
 } from '../../services/control-api/src/collection/authenticated-local-browser/index.js';
+import { resolveConfiguredBrowserRuntime } from '../../services/control-api/src/collection/authenticated-local-browser/runtime.js';
 
 const createPlan = (overrides: Partial<CapturePlan> = {}): CapturePlan => ({
   topicRunId: 'run_001',
@@ -129,5 +133,58 @@ describe('authenticated local-browser state machine', () => {
     expect(() =>
       nextAuthenticatedLocalBrowserState('planned', 'capture-succeeded')
     ).toThrow('invalid local-browser transition');
+  });
+});
+
+describe('authenticated local-browser configured runtime', () => {
+  it('resolves the configured browser runtime for the tiktok route', () => {
+    const secretRoot = mkdtempSync(
+      path.join(os.tmpdir(), 'openfons-browser-runtime-')
+    );
+    const dir = path.join(secretRoot, 'project', 'openfons');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, 'google-api-key'), 'google-key');
+    writeFileSync(path.join(dir, 'google-cx'), 'google-cx');
+    writeFileSync(path.join(dir, 'pinchtab-token'), 'pinchtab-token');
+    writeFileSync(path.join(dir, 'tiktok-cookie-main'), 'sessionid=abc');
+    writeFileSync(
+      path.join(dir, 'tiktok-account-main.json'),
+      JSON.stringify({ username: 'collector-bot', password: 'not-for-repo' })
+    );
+    writeFileSync(
+      path.join(dir, 'global-proxy-pool.json'),
+      JSON.stringify([{ endpoint: 'http://proxy.local:9000' }])
+    );
+
+    const runtime = resolveConfiguredBrowserRuntime({
+      projectId: 'openfons',
+      routeKey: 'tiktok',
+      repoRoot: process.cwd(),
+      secretRoot
+    });
+
+    expect(runtime.pluginId).toBe('pinchtab-local');
+    expect(runtime.driver).toBe('pinchtab');
+    expect(runtime.secrets.tokenRef.configured).toBe(true);
+  });
+
+  it('resolves browser runtime without requiring unrelated search or crawler secrets', () => {
+    const secretRoot = mkdtempSync(
+      path.join(os.tmpdir(), 'openfons-browser-scope-')
+    );
+    const dir = path.join(secretRoot, 'project', 'openfons');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, 'pinchtab-token'), 'pinchtab-token');
+
+    const runtime = resolveConfiguredBrowserRuntime({
+      projectId: 'openfons',
+      routeKey: 'tiktok',
+      repoRoot: process.cwd(),
+      secretRoot
+    });
+
+    expect(runtime.pluginId).toBe('pinchtab-local');
+    expect(runtime.driver).toBe('pinchtab');
+    expect(runtime.secrets.tokenRef.configured).toBe(true);
   });
 });

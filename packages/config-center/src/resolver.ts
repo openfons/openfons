@@ -54,6 +54,54 @@ const resolvePluginRaw = ({
   )
 });
 
+export const expandPluginDependencyClosure = ({
+  plugins,
+  seedPluginIds
+}: {
+  plugins: PluginInstance[];
+  seedPluginIds: string[];
+}) => {
+  const byId = buildPluginMap(plugins);
+  const ordered: string[] = [];
+  const visited = new Set<string>();
+
+  const visit = (pluginId: string) => {
+    if (visited.has(pluginId)) {
+      return;
+    }
+
+    visited.add(pluginId);
+    ordered.push(pluginId);
+
+    const plugin = byId.get(pluginId);
+    if (!plugin) {
+      return;
+    }
+
+    for (const dependency of plugin.dependencies) {
+      visit(dependency.pluginId);
+    }
+  };
+
+  for (const pluginId of seedPluginIds) {
+    visit(pluginId);
+  }
+
+  return ordered;
+};
+
+export const resolvePluginRuntimeById = ({
+  state,
+  pluginId
+}: {
+  state: ConfigCenterState;
+  pluginId: string;
+}) =>
+  resolvePluginRaw({
+    plugin: getPluginOrThrow(buildPluginMap(state.pluginInstances), pluginId),
+    secretRoot: state.secretRoot
+  });
+
 export const resolveProjectRuntimeConfig = ({
   state,
   projectId

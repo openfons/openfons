@@ -99,15 +99,14 @@ const validateDependency = ({
 export const collectProjectClosure = (binding: ProjectBinding) =>
   [...new Set([...binding.enabledPlugins, ...collectRoleIds(binding.roles), ...collectRouteIds(binding)])];
 
-export const validateProjectConfig = ({
+export const validatePluginSelection = ({
   state,
-  projectId
+  pluginIds
 }: {
   state: ConfigCenterState;
-  projectId: string;
+  pluginIds: string[];
 }): ConfigValidationResult => {
-  const binding = loadProjectBinding({ repoRoot: state.repoRoot, projectId });
-  const checkedPluginIds = collectProjectClosure(binding);
+  const checkedPluginIds = [...new Set(pluginIds)];
   const byId = new Map(state.pluginInstances.map((item) => [item.id, item]));
   const errors: ConfigIssue[] = [];
   const warnings: ConfigIssue[] = [];
@@ -248,4 +247,18 @@ export const validateProjectConfig = ({
     skipped,
     checkedPluginIds
   };
+};
+
+export const validateProjectConfig = ({
+  state,
+  projectId
+}: {
+  state: ConfigCenterState;
+  projectId: string;
+}): ConfigValidationResult => {
+  const binding = loadProjectBinding({ repoRoot: state.repoRoot, projectId });
+  return validatePluginSelection({
+    state,
+    pluginIds: collectProjectClosure(binding)
+  });
 };
