@@ -1,6 +1,3 @@
-import { mkdtempSync } from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   CollectionLog,
@@ -9,6 +6,8 @@ import type {
 } from '@openfons/contracts';
 import {
   createCollectionLog,
+  createEvidenceSet,
+  createTopicRun,
   createSourceCapture
 } from '@openfons/domain-models';
 import { createId, nowIso } from '@openfons/shared';
@@ -145,7 +144,18 @@ const createCaptureRunnerResult = (plans: {
 afterEach(() => {
   vi.resetModules();
   vi.doUnmock('../../services/control-api/src/cases/ai-procurement.js');
-  vi.doUnmock('../../services/control-api/src/collection/crawler-adapters/registry.js');
+  vi.doUnmock(
+    '../../services/control-api/src/collection/crawler-execution/runtime.js'
+  );
+  vi.doUnmock(
+    '../../services/control-api/src/collection/crawler-execution/dispatcher.js'
+  );
+  vi.doUnmock(
+    '../../services/control-api/src/collection/crawler-execution/yt-dlp-runner.js'
+  );
+  vi.doUnmock(
+    '../../services/control-api/src/collection/crawler-execution/tiktok-api-runner.js'
+  );
 });
 
 describe('real collection bridge follow-up behavior', () => {
@@ -320,6 +330,228 @@ describe('real collection bridge follow-up behavior', () => {
     );
   });
 
+  it('maps evidence onto live captures by canonical url instead of deterministic template order', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+
+    vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
+      const actual = await vi.importActual<
+        typeof import('../../services/control-api/src/cases/ai-procurement.js')
+      >('../../services/control-api/src/cases/ai-procurement.js');
+
+      return {
+        ...actual,
+        buildAiProcurementCase: (inputOpportunity, workflow) => {
+          const original = actual.buildAiProcurementCase(inputOpportunity, workflow);
+          const reorderedSourceCaptures = [...original.sourceCaptures].reverse();
+          const originalCaptureById = new Map(
+            original.sourceCaptures.map((capture) => [capture.id, capture])
+          );
+          const reorderedCaptureByUrl = new Map(
+            reorderedSourceCaptures.map((capture) => [capture.url, capture])
+          );
+
+          return {
+            ...original,
+            sourceCaptures: reorderedSourceCaptures,
+            evidenceSet: {
+              ...original.evidenceSet,
+              items: original.evidenceSet.items.map((item) => {
+                const primaryCapture = originalCaptureById.get(item.captureId);
+
+                if (!primaryCapture) {
+                  throw new Error(`missing template capture ${item.captureId}`);
+                }
+
+                const reorderedPrimaryCapture = reorderedCaptureByUrl.get(
+                  primaryCapture.url
+                );
+
+                if (!reorderedPrimaryCapture) {
+                  throw new Error(
+                    `missing reordered template capture ${primaryCapture.url}`
+                  );
+                }
+
+                return {
+                  ...item,
+                  captureId: reorderedPrimaryCapture.id,
+                  supportingCaptureIds: item.supportingCaptureIds.map((captureId) => {
+                    const supportingCapture = originalCaptureById.get(captureId);
+
+                    if (!supportingCapture) {
+                      throw new Error(`missing template capture ${captureId}`);
+                    }
+
+                    const reorderedSupportingCapture = reorderedCaptureByUrl.get(
+                      supportingCapture.url
+                    );
+
+                    if (!reorderedSupportingCapture) {
+                      throw new Error(
+                        `missing reordered template capture ${supportingCapture.url}`
+                      );
+                    }
+
+                    return reorderedSupportingCapture.id;
+                  })
+                };
+              })
+            }
+          };
+        }
+      };
+    });
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner: async (plans) => createCaptureRunnerResult(plans)
+    });
+
+    const result = await bridge(opportunity, {
+      id: createId('wf'),
+      opportunityId: opportunity.id,
+      taskIds: [createId('task')],
+      status: 'ready'
+    });
+    const captureUrlById = new Map(
+      result.sourceCaptures.map((capture) => [capture.id, capture.url])
+    );
+    const communityEvidence = result.evidenceSet.items.find(
+      (item) => item.kind === 'community'
+    );
+    const pricingEvidence = result.evidenceSet.items.find(
+      (item) => item.kind === 'pricing'
+    );
+
+    expect(captureUrlById.get(communityEvidence?.captureId ?? '')).toBe(
+      'https://github.com/BerriAI/litellm/issues/11626'
+    );
+    expect(
+      pricingEvidence?.supportingCaptureIds.map((captureId) =>
+        captureUrlById.get(captureId)
+      )
+    ).toEqual([
+      'https://openai.com/api/pricing/',
+      'https://ai.google.dev/gemini-api/docs/billing'
+    ]);
+  });
+
+  it('fails loudly when a deterministic template url cannot be matched to a live capture', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const missingTemplateUrl = 'https://example.com/unmapped-template-url';
+
+    vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
+      const actual = await vi.importActual<
+        typeof import('../../services/control-api/src/cases/ai-procurement.js')
+      >('../../services/control-api/src/cases/ai-procurement.js');
+
+      return {
+        ...actual,
+        buildAiProcurementCase: (inputOpportunity, workflow) => {
+          const original = actual.buildAiProcurementCase(inputOpportunity, workflow);
+
+          return {
+            ...original,
+            sourceCaptures: original.sourceCaptures.map((capture, index) =>
+              index === 0 ? { ...capture, url: missingTemplateUrl } : capture
+            )
+          };
+        }
+      };
+    });
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner: async (plans) => createCaptureRunnerResult(plans)
+    });
+
+    await expect(
+      bridge(opportunity, {
+        id: createId('wf'),
+        opportunityId: opportunity.id,
+        taskIds: [createId('task')],
+        status: 'ready'
+      })
+    ).rejects.toThrow(
+      `missing live capture for template url ${missingTemplateUrl}`
+    );
+  });
+
+  it('fails loudly when live captures contain duplicate canonical urls', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const duplicatedUrl = profileTargets[0]?.url;
+    const bridge = createAiProcurementRealCollectionBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner: async (plans) => {
+        const result = createCaptureRunnerResult(plans);
+
+        return {
+          ...result,
+          sourceCaptures: result.sourceCaptures.map((capture, index) =>
+            index === 1 && duplicatedUrl ? { ...capture, url: duplicatedUrl } : capture
+          )
+        };
+      }
+    });
+
+    await expect(
+      bridge(opportunity, {
+        id: createId('wf'),
+        opportunityId: opportunity.id,
+        taskIds: [createId('task')],
+        status: 'ready'
+      })
+    ).rejects.toThrow(`duplicate live capture url ${duplicatedUrl}`);
+  });
+
   it('does not silently fall back for unexpected bridge invariant errors', async () => {
     const opportunity = buildOpportunity(createOpportunityInput());
 
@@ -332,7 +564,148 @@ describe('real collection bridge follow-up behavior', () => {
     ).rejects.toThrow('bridge invariant mismatch');
   });
 
-  it('resolves crawler adapters for route-backed targets before capture starts', async () => {
+  it('routes youtube runtime targets to crawler execution and keeps them out of captureRunner', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const workflow = {
+      id: createId('wf'),
+      opportunityId: opportunity.id,
+      taskIds: [createId('task')],
+      status: 'ready' as const
+    };
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const youtubeRuntimeTarget = profileTargets[0];
+    const routeRuntime = {
+      routeKey: 'youtube',
+      mode: 'public-first' as const,
+      collection: {
+        pluginId: 'youtube-yt-dlp',
+        type: 'crawler-adapter' as const,
+        driver: 'yt-dlp' as const,
+        config: {},
+        secrets: {}
+      },
+      browser: undefined,
+      accounts: [],
+      cookies: [],
+      proxy: undefined
+    };
+    const resolveExecutableCrawlerRouteForUrl = vi.fn(({ url }: { url: string }) =>
+      url === youtubeRuntimeTarget.url ? routeRuntime : undefined
+    );
+    const run = vi.fn(async (plan: {
+      capturePlan: {
+        topicRunId: string;
+        title: string;
+        url: string;
+        sourceKind: SourceCapture['sourceKind'];
+        useAs: SourceCapture['useAs'];
+        reportability: SourceCapture['reportability'];
+        riskLevel: SourceCapture['riskLevel'];
+        captureType: SourceCapture['captureType'];
+        language: string;
+        region: string;
+      };
+    }) => {
+      const sourceCapture = createSourceCapture({
+        topicRunId: plan.capturePlan.topicRunId,
+        title: plan.capturePlan.title,
+        url: plan.capturePlan.url,
+        sourceKind: plan.capturePlan.sourceKind,
+        useAs: plan.capturePlan.useAs,
+        reportability: plan.capturePlan.reportability,
+        riskLevel: plan.capturePlan.riskLevel,
+        captureType: plan.capturePlan.captureType,
+        language: plan.capturePlan.language,
+        region: plan.capturePlan.region,
+        summary: `${plan.capturePlan.title} captured via yt-dlp runtime`
+      });
+
+      return {
+        sourceCapture,
+        collectionLogs: [
+          createCollectionLog({
+            topicRunId: plan.capturePlan.topicRunId,
+            captureId: sourceCapture.id,
+            step: 'capture',
+            status: 'success',
+            message: `Captured ${plan.capturePlan.title} via yt-dlp runtime`
+          })
+        ]
+      };
+    });
+
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/runtime.js',
+      () => ({
+        resolveExecutableCrawlerRouteForUrl
+      })
+    );
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/dispatcher.js',
+      () => ({
+        createCrawlerExecutionDispatcher: () => ({
+          run
+        })
+      })
+    );
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+
+    const captureRunner = vi.fn(async (plans) => createCaptureRunnerResult(plans));
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner
+    });
+
+    const result = await bridge(opportunity, workflow);
+
+    expect(resolveExecutableCrawlerRouteForUrl).toHaveBeenCalled();
+    expect(run).toHaveBeenCalledOnce();
+    expect(run.mock.calls[0]?.[0]).toMatchObject({
+      runtime: {
+        routeKey: 'youtube',
+        collection: {
+          driver: 'yt-dlp'
+        }
+      },
+      capturePlan: {
+        url: youtubeRuntimeTarget.url
+      }
+    });
+    expect(captureRunner).toHaveBeenCalledOnce();
+    const publicPlans = captureRunner.mock.calls[0]?.[0] ?? [];
+    expect(publicPlans).toHaveLength(profileTargets.length - 1);
+    expect(publicPlans.some((plan: { url: string }) => plan.url === youtubeRuntimeTarget.url)).toBe(
+      false
+    );
+
+    const routeTargetIndex = profileTargets.findIndex(
+      (target) => target.url === youtubeRuntimeTarget.url
+    );
+    expect(result.sourceCaptures[routeTargetIndex]?.summary).toContain(
+      'captured via yt-dlp runtime'
+    );
+  });
+
+  it('routes tiktok runtime targets to crawler execution and keeps them out of captureRunner', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const defaultProfileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
     const target = {
       key: 'tiktok-proof',
       title: 'TikTok proof target',
@@ -348,6 +721,7 @@ describe('real collection bridge follow-up behavior', () => {
       region: 'global',
       summary: 'TikTok route target'
     };
+    const profileTargets = [target, ...defaultProfileTargets.slice(1)];
 
     vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
       const actual = await vi.importActual<
@@ -358,7 +732,7 @@ describe('real collection bridge follow-up behavior', () => {
         ...actual,
         resolveAiProcurementProfileForOpportunity: () => ({
           family: 'vendor-choice',
-          captureTargets: [target],
+          captureTargets: profileTargets,
           evidenceTemplates: [],
           report: {
             summary: 'Test profile',
@@ -368,137 +742,168 @@ describe('real collection bridge follow-up behavior', () => {
             risks: [],
             claims: []
           }
-        })
+        }),
+        buildAiProcurementCase: (inputOpportunity, workflow) => {
+          const topicRun = createTopicRun(
+            inputOpportunity.id,
+            workflow.id,
+            'ai-procurement'
+          );
+          const sourceCaptures = profileTargets.map((captureTarget) =>
+            createSourceCapture({
+              topicRunId: topicRun.id,
+              title: captureTarget.title,
+              url: captureTarget.url,
+              sourceKind: captureTarget.sourceKind,
+              useAs: captureTarget.useAs,
+              reportability: captureTarget.reportability,
+              riskLevel: captureTarget.riskLevel,
+              captureType: captureTarget.captureType,
+              language: captureTarget.language,
+              region: captureTarget.region,
+              summary: captureTarget.summary
+            })
+          );
+          const evidenceSet = createEvidenceSet(topicRun.id);
+
+          return {
+            topicRun: {
+              ...topicRun,
+              status: 'compiled' as const,
+              updatedAt: nowIso()
+            },
+            sourceCaptures,
+            collectionLogs: sourceCaptures.map((capture) =>
+              createCollectionLog({
+                topicRunId: topicRun.id,
+                captureId: capture.id,
+                step: 'capture',
+                status: 'success',
+                message: `Captured ${capture.title}`
+              })
+            ),
+            evidenceSet: {
+              ...evidenceSet,
+              updatedAt: nowIso(),
+              items: []
+            }
+          };
+        }
       };
     });
 
-    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
-      '../../services/control-api/src/collection/real-collection-bridge.js'
-    );
-
-    const opportunity = buildOpportunity(createOpportunityInput());
-    const secretRoot = mkdtempSync(
-      path.join(os.tmpdir(), 'openfons-bridge-crawler-')
-    );
-
-    const bridge = createBridge({
-      projectId: 'openfons',
-      repoRoot: process.cwd(),
-      secretRoot,
-      searchClient: {
-        search: async () => ({
-          searchRun: {
-            id: createId('srch'),
-            projectId: 'openfons',
-            opportunityId: opportunity.id,
-            workflowId: createId('wf'),
-            taskId: createId('task'),
-            purpose: 'evidence',
-            query: target.query,
-            status: 'completed',
-            selectedProviders: ['google'],
-            degradedProviders: [],
-            startedAt: nowIso(),
-            finishedAt: nowIso()
-          },
-          results: [
-            {
-              id: createId('result'),
-              searchRunId: createId('srch'),
-              provider: 'google',
-              title: target.title,
-              url: target.url,
-              snippet: 'matched',
-              rank: 1,
-              page: 1,
-              domain: 'www.tiktok.com',
-              sourceKindGuess: 'official',
-              dedupKey: 'tiktok-proof',
-              selectedForUpgrade: false,
-              selectionReason: 'matched-target'
+    const resolveExecutableCrawlerRouteForUrl = vi.fn(({ url }: { url: string }) =>
+      url === target.url
+        ? {
+            routeKey: 'tiktok',
+            mode: 'requires-auth' as const,
+            collection: {
+              pluginId: 'tiktok-adapter',
+              type: 'crawler-adapter' as const,
+              driver: 'tiktok-api' as const,
+              config: {},
+              secrets: {}
+            },
+            browser: undefined,
+            accounts: [
+              {
+                pluginId: 'tiktok-account-main',
+                type: 'account-source' as const,
+                driver: 'credentials-file',
+                config: {},
+                secrets: {
+                  accountRef: {
+                    valueSource: 'secret' as const,
+                    configured: true as const,
+                    value: { username: 'collector-bot' }
+                  }
+                }
+              }
+            ],
+            cookies: [
+              {
+                pluginId: 'tiktok-cookie-main',
+                type: 'cookie-source' as const,
+                driver: 'netscape-cookie-file',
+                config: {},
+                secrets: {
+                  sessionRef: {
+                    valueSource: 'secret' as const,
+                    configured: true as const,
+                    value: 'ms_token=abc123'
+                  }
+                }
+              }
+            ],
+            proxy: {
+              pluginId: 'global-proxy-pool',
+              type: 'proxy-source' as const,
+              driver: 'static-proxy-file',
+              config: {},
+              secrets: {
+                poolRef: {
+                  valueSource: 'secret' as const,
+                  configured: true as const,
+                  value: [{ endpoint: 'http://proxy.local:9000' }]
+                }
+              }
             }
-          ],
-          upgradeCandidates: [],
-          diagnostics: [],
-          downgradeInfo: []
-        })
-      },
-      captureRunner: async () => {
-        throw new Error('capture runner should not start before crawler validation');
-      }
-    });
-
-    await expect(
-      bridge(opportunity, {
-        id: createId('wf'),
-        opportunityId: opportunity.id,
-        taskIds: [createId('task')],
-        status: 'ready'
-      })
-    ).rejects.toThrow(/config-center validation failed for openfons/);
-  });
-
-  it('delegates route lookup to the crawler registry for alias hosts', async () => {
-    const target = {
-      key: 'twitter-proof',
-      title: 'Twitter proof target',
-      query: 'site:x.com/openfons/status/1',
-      url: 'https://x.com/openfons/status/1',
-      urlPattern: /^https:\/\/x\.com\/openfons\/status\/1\/?(?:\?[^#]*)?$/i,
-      sourceKind: 'official' as const,
-      useAs: 'primary' as const,
-      reportability: 'reportable' as const,
-      riskLevel: 'low' as const,
-      captureType: 'community-thread' as const,
-      language: 'en',
-      region: 'global',
-      summary: 'Twitter route target'
-    };
-
-    vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
-      const actual = await vi.importActual<
-        typeof import('../../services/control-api/src/cases/ai-procurement.js')
-      >('../../services/control-api/src/cases/ai-procurement.js');
+          }
+        : undefined
+    );
+    const run = vi.fn(async (plan: {
+      capturePlan: {
+        topicRunId: string;
+        title: string;
+        url: string;
+        sourceKind: SourceCapture['sourceKind'];
+        useAs: SourceCapture['useAs'];
+        reportability: SourceCapture['reportability'];
+        riskLevel: SourceCapture['riskLevel'];
+        captureType: SourceCapture['captureType'];
+        language: string;
+        region: string;
+      };
+    }) => {
+      const sourceCapture = createSourceCapture({
+        topicRunId: plan.capturePlan.topicRunId,
+        title: plan.capturePlan.title,
+        url: plan.capturePlan.url,
+        sourceKind: plan.capturePlan.sourceKind,
+        useAs: plan.capturePlan.useAs,
+        reportability: plan.capturePlan.reportability,
+        riskLevel: plan.capturePlan.riskLevel,
+        captureType: plan.capturePlan.captureType,
+        language: plan.capturePlan.language,
+        region: plan.capturePlan.region,
+        summary: `${plan.capturePlan.title} captured via tiktok runtime`
+      });
 
       return {
-        ...actual,
-        resolveAiProcurementProfileForOpportunity: () => ({
-          family: 'vendor-choice',
-          captureTargets: [target],
-          evidenceTemplates: [],
-          report: {
-            summary: 'Test profile',
-            thesis: 'Test thesis',
-            sections: [],
-            evidenceBoundaries: [],
-            risks: [],
-            claims: []
-          }
-        })
+        sourceCapture,
+        collectionLogs: [
+          createCollectionLog({
+            topicRunId: plan.capturePlan.topicRunId,
+            captureId: sourceCapture.id,
+            step: 'capture',
+            status: 'success',
+            message: `Captured ${plan.capturePlan.title} via tiktok runtime`
+          })
+        ]
       };
     });
 
     vi.doMock(
-      '../../services/control-api/src/collection/crawler-adapters/registry.js',
+      '../../services/control-api/src/collection/crawler-execution/runtime.js',
       () => ({
-        createConfiguredCrawlerRegistry: () => ({
-          findByUrl: (url: string) => {
-            expect(url).toBe(target.url);
-            return {
-              routeKey: 'twitter',
-              pluginId: 'twitter-adapter',
-              driver: 'twscrape',
-              enabled: true,
-              requiresAuth: true,
-              accounts: ['twitter-account-main'],
-              cookies: [],
-              proxy: 'global-proxy-pool'
-            };
-          },
-          get: () => {
-            throw new Error('bridge should not resolve crawler routes via direct get');
-          },
-          list: () => []
+        resolveExecutableCrawlerRouteForUrl
+      })
+    );
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/dispatcher.js',
+      () => ({
+        createCrawlerExecutionDispatcher: () => ({
+          run
         })
       })
     );
@@ -507,59 +912,281 @@ describe('real collection bridge follow-up behavior', () => {
       '../../services/control-api/src/collection/real-collection-bridge.js'
     );
 
-    const opportunity = buildOpportunity(createOpportunityInput());
     const bridge = createBridge({
-      projectId: 'openfons',
       searchClient: {
-        search: async () => ({
-          searchRun: {
-            id: createId('srch'),
-            projectId: 'openfons',
-            opportunityId: opportunity.id,
-            workflowId: createId('wf'),
-            taskId: createId('task'),
-            purpose: 'evidence',
-            query: target.query,
-            status: 'completed',
-            selectedProviders: ['google'],
-            degradedProviders: [],
-            startedAt: nowIso(),
-            finishedAt: nowIso()
-          },
-          results: [
-            {
-              id: createId('result'),
-              searchRunId: createId('srch'),
-              provider: 'google',
-              title: target.title,
-              url: target.url,
-              snippet: 'matched',
-              rank: 1,
-              page: 1,
-              domain: 'x.com',
-              sourceKindGuess: 'official',
-              dedupKey: 'twitter-proof',
-              selectedForUpgrade: false,
-              selectionReason: 'matched-target'
-            }
-          ],
-          upgradeCandidates: [],
-          diagnostics: [],
-          downgradeInfo: []
+        search: async (request) => {
+          const matchedTarget = profileTargets.find(
+            (item) => item.query === request.query
+          );
+
+          if (!matchedTarget) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return matchedTarget.key === target.key
+            ? {
+                searchRun: {
+                  id: createId('srch'),
+                  projectId: 'openfons',
+                  opportunityId: opportunity.id,
+                  workflowId: createId('wf'),
+                  taskId: createId('task'),
+                  purpose: 'evidence',
+                  query: target.query,
+                  status: 'completed',
+                  selectedProviders: ['google'],
+                  degradedProviders: [],
+                  startedAt: nowIso(),
+                  finishedAt: nowIso()
+                },
+                results: [
+                  {
+                    id: createId('result'),
+                    searchRunId: createId('srch'),
+                    provider: 'google',
+                    title: target.title,
+                    url: target.url,
+                    snippet: 'matched',
+                    rank: 1,
+                    page: 1,
+                    domain: 'www.tiktok.com',
+                    sourceKindGuess: 'official',
+                    dedupKey: 'tiktok-proof',
+                    selectedForUpgrade: false,
+                    selectionReason: 'matched-target'
+                  }
+                ],
+                upgradeCandidates: [],
+                diagnostics: [],
+                downgradeInfo: []
+              }
+            : createSearchRunResult(
+                matchedTarget as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+              );
+        }
+      },
+      captureRunner: vi.fn(async (plans) => createCaptureRunnerResult(plans))
+    });
+
+    const result = await bridge(opportunity, {
+      id: createId('wf'),
+      opportunityId: opportunity.id,
+      taskIds: [createId('task')],
+      status: 'ready'
+    });
+
+    expect(resolveExecutableCrawlerRouteForUrl).toHaveBeenCalledTimes(
+      profileTargets.length
+    );
+    expect(run).toHaveBeenCalledOnce();
+    expect(run.mock.calls[0]?.[0]).toMatchObject({
+      runtime: {
+        routeKey: 'tiktok',
+        collection: {
+          driver: 'tiktok-api'
+        }
+      },
+      capturePlan: {
+        url: target.url
+      }
+    });
+    const routeTargetIndex = profileTargets.findIndex(
+      (item) => item.url === target.url
+    );
+    expect(result.sourceCaptures[routeTargetIndex]?.summary).toContain(
+      'captured via tiktok runtime'
+    );
+  });
+
+  it('falls back through AiProcurementRuntimeError when route-backed crawler execution fails', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const routeTarget = profileTargets[0];
+
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/runtime.js',
+      () => ({
+        resolveExecutableCrawlerRouteForUrl: ({ url }: { url: string }) =>
+          url === routeTarget.url
+            ? {
+                routeKey: 'youtube',
+                mode: 'public-first',
+                collection: {
+                  pluginId: 'youtube-yt-dlp',
+                  type: 'crawler-adapter',
+                  driver: 'yt-dlp',
+                  config: {},
+                  secrets: {}
+                },
+                browser: undefined,
+                accounts: [],
+                cookies: [],
+                proxy: undefined
+              }
+            : undefined
+      })
+    );
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/dispatcher.js',
+      () => ({
+        createCrawlerExecutionDispatcher: () => ({
+          run: async () => {
+            throw new Error('yt-dlp exited with code 1');
+          }
         })
+      })
+    );
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner: async (plans) => createCaptureRunnerResult(plans)
+    });
+
+    const compiled = await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: bridge
+    });
+
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes('yt-dlp exited with code 1')
+      )
+    ).toBe(true);
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes('deterministic fallback')
+      )
+    ).toBe(true);
+  });
+
+  it('falls back through AiProcurementRuntimeError when public capture fails', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/runtime.js',
+      () => ({
+        resolveExecutableCrawlerRouteForUrl: () => undefined
+      })
+    );
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = AI_PROCUREMENT_CAPTURE_TARGETS.find(
+            (item) => item.query === request.query
+          );
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(target);
+        }
       },
       captureRunner: async () => {
-        throw new Error('capture runner reached after url lookup');
+        throw new Error('curl 429');
       }
     });
 
-    await expect(
-      bridge(opportunity, {
-        id: createId('wf'),
-        opportunityId: opportunity.id,
-        taskIds: [createId('task')],
-        status: 'ready'
+    const compiled = await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: bridge
+    });
+
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes('Public capture failed: curl 429')
+      )
+    ).toBe(true);
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes('deterministic fallback')
+      )
+    ).toBe(true);
+  });
+
+  it('fails explicitly for unsupported resolved crawler drivers instead of silently using captureRunner', async () => {
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const profileTargets =
+      resolveAiProcurementProfileForOpportunity(opportunity).captureTargets;
+    const routeTarget = profileTargets[0];
+
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-execution/runtime.js',
+      () => ({
+        resolveExecutableCrawlerRouteForUrl: ({ url }: { url: string }) =>
+          url === routeTarget.url
+            ? {
+                routeKey: 'youtube',
+                mode: 'public-first',
+                collection: {
+                  pluginId: 'youtube-media-crawler',
+                  type: 'crawler-adapter',
+                  driver: 'media-crawler',
+                  config: {},
+                  secrets: {}
+                },
+                browser: undefined,
+                accounts: [],
+                cookies: [],
+                proxy: undefined
+              }
+            : undefined
       })
-    ).rejects.toThrow('capture runner reached after url lookup');
+    );
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+    const bridge = createBridge({
+      searchClient: {
+        search: async (request) => {
+          const target = profileTargets.find((item) => item.query === request.query);
+
+          if (!target) {
+            throw new Error(`missing target for ${request.query}`);
+          }
+
+          return createSearchRunResult(
+            target as (typeof AI_PROCUREMENT_CAPTURE_TARGETS)[number]
+          );
+        }
+      },
+      captureRunner: async (plans) => createCaptureRunnerResult(plans)
+    });
+
+    const compiled = await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: bridge
+    });
+
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes(
+          'crawler execution is not implemented for media-crawler'
+        )
+      )
+    ).toBe(true);
+    expect(
+      compiled.collectionLogs.some((log) =>
+        log.message.includes('deterministic fallback')
+      )
+    ).toBe(true);
   });
 });

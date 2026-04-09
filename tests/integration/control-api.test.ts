@@ -276,11 +276,19 @@ describe('control-api', () => {
   });
 
   it('falls back explicitly when the real collection bridge fails', async () => {
+    const runtimeLog = createCollectionLog({
+      topicRunId: createId('topic'),
+      captureId: createId('capture'),
+      step: 'capture',
+      status: 'error',
+      message: 'Crawler execution failed for youtube target: yt-dlp exited with code 1'
+    });
+
     const app = createApp({
       buildAiProcurementCaseBundle: async () => {
         throw Object.assign(new Error('search providers unavailable'), {
           name: 'AiProcurementRuntimeError',
-          logs: []
+          logs: [runtimeLog]
         });
       }
     });
@@ -317,6 +325,34 @@ describe('control-api', () => {
         log.message.includes('search providers unavailable')
       )
     ).toBe(true);
+    expect(
+      compiled.collectionLogs.some((log: { message: string }) =>
+        log.message.includes(
+          'Crawler execution failed for youtube target: yt-dlp exited with code 1'
+        )
+      )
+    ).toBe(true);
+    expect(
+      compiled.collectionLogs.every(
+        (log: { topicRunId: string }) => log.topicRunId === compiled.topicRun.id
+      )
+    ).toBe(true);
+    const finalCaptureIds = new Set(
+      compiled.sourceCaptures.map((capture: { id: string }) => capture.id)
+    );
+    expect(
+      compiled.collectionLogs.every(
+        (log: { captureId?: string }) =>
+          !log.captureId || finalCaptureIds.has(log.captureId)
+      )
+    ).toBe(true);
+    const runtimeFailureLog = compiled.collectionLogs.find(
+      (log: { message: string }) =>
+        log.message.includes(
+          'Crawler execution failed for youtube target: yt-dlp exited with code 1'
+        )
+    );
+    expect(runtimeFailureLog?.captureId).toBeUndefined();
   });
 
   it('rejects invalid opportunity payloads', async () => {

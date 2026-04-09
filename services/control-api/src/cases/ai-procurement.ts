@@ -155,16 +155,28 @@ export const addAiProcurementFallbackWarning = (
   bundle: AiProcurementCaseBundle,
   reason: string,
   logs: CollectionLog[] = []
-): AiProcurementCaseBundle => ({
-  ...bundle,
-  collectionLogs: [
-    ...logs,
-    createCollectionLog({
-      topicRunId: bundle.topicRun.id,
-      step: 'discover',
-      status: 'warning',
-      message: `Real collection bridge used deterministic fallback: ${reason}`
-    }),
-    ...bundle.collectionLogs
-  ]
-});
+): AiProcurementCaseBundle => {
+  const fallbackCaptureIds = new Set(bundle.sourceCaptures.map((capture) => capture.id));
+  const normalizedRuntimeLogs = logs.map((log) => ({
+    ...log,
+    topicRunId: bundle.topicRun.id,
+    captureId:
+      log.captureId && fallbackCaptureIds.has(log.captureId)
+        ? log.captureId
+        : undefined
+  }));
+
+  return {
+    ...bundle,
+    collectionLogs: [
+      ...normalizedRuntimeLogs,
+      createCollectionLog({
+        topicRunId: bundle.topicRun.id,
+        step: 'discover',
+        status: 'warning',
+        message: `Real collection bridge used deterministic fallback: ${reason}`
+      }),
+      ...bundle.collectionLogs
+    ]
+  };
+};

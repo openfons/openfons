@@ -2,7 +2,8 @@ import type {
   CollectionLog,
   SearchRequest,
   SearchRunResult,
-  SearchResult
+  SearchResult,
+  SourceCapture
 } from '@openfons/contracts';
 import {
   createCollectionLog,
@@ -25,7 +26,10 @@ import {
   createRuntimeSearchClient,
   type SearchClient
 } from './search-client.js';
-import { createConfiguredCrawlerRegistry } from './crawler-adapters/registry.js';
+import { resolveExecutableCrawlerRouteForUrl } from './crawler-execution/runtime.js';
+import { createCrawlerExecutionDispatcher } from './crawler-execution/dispatcher.js';
+import { createYtDlpRunner } from './crawler-execution/yt-dlp-runner.js';
+import { createTikTokApiRunner } from './crawler-execution/tiktok-api-runner.js';
 
 type SelectedTarget = AiProcurementCaptureTarget & {
   result: SearchResult;
@@ -79,6 +83,65 @@ const createRuntimeError = (
   logs: CollectionLog[],
   cause?: unknown
 ) => new AiProcurementRuntimeError(message, logs, cause);
+
+const mapTemplateCaptureIdsToLiveIds = (
+  deterministicCaptures: SourceCapture[],
+  liveCaptures: SourceCapture[]
+) => {
+  const liveCaptureByUrl = new Map<string, SourceCapture>();
+
+  for (const capture of liveCaptures) {
+    if (liveCaptureByUrl.has(capture.url)) {
+      throw new Error(`duplicate live capture url ${capture.url}`);
+    }
+
+    liveCaptureByUrl.set(capture.url, capture);
+  }
+
+  return new Map(
+    deterministicCaptures.map((capture) => {
+      const liveCapture = liveCaptureByUrl.get(capture.url);
+
+      if (!liveCapture) {
+        throw new Error(`missing live capture for template url ${capture.url}`);
+      }
+
+      return [capture.id, liveCapture.id];
+    })
+  );
+};
+
+const resolveMappedCaptureId = (
+  captureIdMap: Map<string, string>,
+  captureId: string
+) => {
+  const mappedCaptureId = captureIdMap.get(captureId);
+
+  if (!mappedCaptureId) {
+    throw new Error(`missing mapped capture id for template capture ${captureId}`);
+  }
+
+  return mappedCaptureId;
+};
+
+const toCapturePlan = (
+  topicRunId: string,
+  target: SelectedTarget
+): CapturePlan => ({
+  topicRunId,
+  title: target.title,
+  // Search proves the target was discovered; capture uses the canonical URL
+  // so query params, locale variants, or anti-bot wrappers don't degrade the run.
+  url: target.url,
+  snippet: target.result.snippet,
+  sourceKind: target.sourceKind,
+  useAs: target.useAs,
+  reportability: target.reportability,
+  riskLevel: target.riskLevel,
+  captureType: target.captureType,
+  language: target.language,
+  region: target.region
+});
 
 const createSearchTraceLogs = ({
   topicRunId,
@@ -143,20 +206,17 @@ export const createAiProcurementRealCollectionBridge = ({
   searchClient?: SearchClient;
   captureRunner?: CaptureRunner;
 } = {}): BuildAiProcurementCaseBundle => {
-  let crawlerRegistry:
-    | ReturnType<typeof createConfiguredCrawlerRegistry>
+  let crawlerExecutionDispatcher:
+    | ReturnType<typeof createCrawlerExecutionDispatcher>
     | undefined;
-  const getCrawlerRegistry = () => {
-    crawlerRegistry ??= createConfiguredCrawlerRegistry({
-      projectId,
-      repoRoot,
-      secretRoot
+  const getCrawlerExecutionDispatcher = () => {
+    crawlerExecutionDispatcher ??= createCrawlerExecutionDispatcher({
+      ytDlpRunner: createYtDlpRunner(),
+      tiktokApiRunner: createTikTokApiRunner({ repoRoot })
     });
 
-    return crawlerRegistry;
+    return crawlerExecutionDispatcher;
   };
-  const resolveCrawlerAdapterForUrl = (url: string) =>
-    getCrawlerRegistry().findByUrl(url);
 
   return async (opportunity, workflow) => {
     const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');
@@ -231,56 +291,136 @@ export const createAiProcurementRealCollectionBridge = ({
           searchRun
         })
       );
+    }
 
-      const crawlerAdapter = resolveCrawlerAdapterForUrl(target.url);
-      if (crawlerAdapter) {
-        discoveryLogs.push(
-          createCollectionLog({
-            topicRunId: topicRun.id,
-            step: 'capture',
-            status: 'success',
-            message: `Resolved crawler adapter ${crawlerAdapter.driver} for ${target.key} via route ${crawlerAdapter.routeKey}`
-          })
+    const publicPlanIndices: number[] = [];
+    const publicCapturePlans: CapturePlan[] = [];
+    const captureBySelectedIndex = new Map<number, SourceCapture>();
+    const captureLogs: CollectionLog[] = [];
+
+    for (const [index, target] of selectedTargets.entries()) {
+      const capturePlan = toCapturePlan(topicRun.id, target);
+      let runtime = undefined;
+
+      try {
+        runtime = resolveExecutableCrawlerRouteForUrl({
+          projectId,
+          repoRoot,
+          secretRoot,
+          url: target.url
+        });
+      } catch (error) {
+        const details = error instanceof Error ? error.message : 'unknown error';
+
+        throw createRuntimeError(
+          `crawler runtime resolution failed for ${target.key}: ${details}`,
+          [
+            ...discoveryLogs,
+            ...captureLogs,
+            createCollectionLog({
+              topicRunId: topicRun.id,
+              step: 'capture',
+              status: 'error',
+              message: `Crawler runtime resolution failed for ${target.key}: ${details}`
+            })
+          ],
+          error
+        );
+      }
+
+      if (!runtime) {
+        publicPlanIndices.push(index);
+        publicCapturePlans.push(capturePlan);
+        continue;
+      }
+
+      discoveryLogs.push(
+        createCollectionLog({
+          topicRunId: topicRun.id,
+          step: 'capture',
+          status: 'success',
+          message: `Resolved crawler runtime ${runtime.collection.driver} for ${target.key} via route ${runtime.routeKey}`
+        })
+      );
+
+      try {
+        const routeExecution = await getCrawlerExecutionDispatcher().run({
+          capturePlan,
+          runtime
+        });
+        captureBySelectedIndex.set(index, routeExecution.sourceCapture);
+        captureLogs.push(...routeExecution.collectionLogs);
+      } catch (error) {
+        const details = error instanceof Error ? error.message : 'unknown error';
+
+        throw createRuntimeError(
+          `crawler execution failed for ${target.key}: ${details}`,
+          [
+            ...discoveryLogs,
+            ...captureLogs,
+            createCollectionLog({
+              topicRunId: topicRun.id,
+              step: 'capture',
+              status: 'error',
+              message: `Crawler execution failed for ${target.key}: ${details}`
+            })
+          ],
+          error
         );
       }
     }
 
-    const capturePlans: CapturePlan[] = selectedTargets.map((target) => ({
-      topicRunId: topicRun.id,
-      title: target.title,
-      // Search proves the target was discovered; capture uses the canonical URL
-      // so query params, locale variants, or anti-bot wrappers don't degrade the run.
-      url: target.url,
-      snippet: target.result.snippet,
-      sourceKind: target.sourceKind,
-      useAs: target.useAs,
-      reportability: target.reportability,
-      riskLevel: target.riskLevel,
-      captureType: target.captureType,
-      language: target.language,
-      region: target.region
-    }));
+    if (publicCapturePlans.length > 0) {
+      try {
+        const publicCaptureResult = await captureRunner(publicCapturePlans);
 
-    let sourceCaptures: Awaited<ReturnType<CaptureRunner>>['sourceCaptures'];
-    let collectionLogs: Awaited<ReturnType<CaptureRunner>>['collectionLogs'];
+        if (publicCaptureResult.sourceCaptures.length !== publicCapturePlans.length) {
+          throw new Error(
+            `public capture count mismatch: expected ${publicCapturePlans.length}, got ${publicCaptureResult.sourceCaptures.length}`
+          );
+        }
 
-    try {
-      ({ sourceCaptures, collectionLogs } = await captureRunner(capturePlans));
-    } catch (error) {
-      throw createRuntimeError(
-        error instanceof Error ? error.message : 'capture runner failed',
-        [
-          ...discoveryLogs,
-          createCollectionLog({
-            topicRunId: topicRun.id,
-            step: 'capture',
-            status: 'error',
-            message: `Capture run failed: ${error instanceof Error ? error.message : 'unknown error'}`
-          })
-        ],
-        error
-      );
+        publicPlanIndices.forEach((selectedIndex, publicIndex) => {
+          const sourceCapture = publicCaptureResult.sourceCaptures[publicIndex];
+
+          if (!sourceCapture) {
+            throw new Error(
+              `missing public capture result at index ${publicIndex}`
+            );
+          }
+
+          captureBySelectedIndex.set(selectedIndex, sourceCapture);
+        });
+        captureLogs.push(...publicCaptureResult.collectionLogs);
+      } catch (error) {
+        const details = error instanceof Error ? error.message : 'unknown error';
+
+        throw createRuntimeError(
+          `public capture failed: ${details}`,
+          [
+            ...discoveryLogs,
+            ...captureLogs,
+            createCollectionLog({
+              topicRunId: topicRun.id,
+              step: 'capture',
+              status: 'error',
+              message: `Public capture failed: ${details}`
+            })
+          ],
+          error
+        );
+      }
     }
+
+    const sourceCaptures = selectedTargets.map((target, index) => {
+      const sourceCapture = captureBySelectedIndex.get(index);
+
+      if (!sourceCapture) {
+        throw new Error(`missing capture result for selected target ${target.key}`);
+      }
+
+      return sourceCapture;
+    });
 
     const deterministicTemplate = buildAiProcurementCase(opportunity, workflow);
     const deterministicCaptures = deterministicTemplate.sourceCaptures;
@@ -289,8 +429,9 @@ export const createAiProcurementRealCollectionBridge = ({
       throw new Error('real bridge capture count did not match the template');
     }
 
-    const captureIdMap = new Map(
-      deterministicCaptures.map((capture, index) => [capture.id, sourceCaptures[index].id])
+    const captureIdMap = mapTemplateCaptureIdsToLiveIds(
+      deterministicCaptures,
+      sourceCaptures
     );
     const evidenceSet = createEvidenceSet(topicRun.id);
 
@@ -301,7 +442,7 @@ export const createAiProcurementRealCollectionBridge = ({
         updatedAt: nowIso()
       },
       sourceCaptures,
-      collectionLogs: [...discoveryLogs, ...collectionLogs],
+      collectionLogs: [...discoveryLogs, ...captureLogs],
       evidenceSet: {
         ...evidenceSet,
         updatedAt: nowIso(),
@@ -309,10 +450,10 @@ export const createAiProcurementRealCollectionBridge = ({
           ...item,
           id: createId('evi'),
           topicRunId: topicRun.id,
-          captureId: captureIdMap.get(item.captureId) ?? item.captureId,
+          captureId: resolveMappedCaptureId(captureIdMap, item.captureId),
           freshnessNote: 'Verified against live captures during this run.',
-          supportingCaptureIds: item.supportingCaptureIds.map(
-            (captureId) => captureIdMap.get(captureId) ?? captureId
+          supportingCaptureIds: item.supportingCaptureIds.map((captureId) =>
+            resolveMappedCaptureId(captureIdMap, captureId)
           )
         }))
       }
