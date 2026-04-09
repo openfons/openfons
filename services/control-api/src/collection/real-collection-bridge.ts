@@ -26,7 +26,6 @@ import {
   type SearchClient
 } from './search-client.js';
 import { createConfiguredCrawlerRegistry } from './crawler-adapters/registry.js';
-import { resolveSiteProfile } from './authenticated-local-browser/site-profiles.js';
 
 type SelectedTarget = AiProcurementCaptureTarget & {
   result: SearchResult;
@@ -80,9 +79,6 @@ const createRuntimeError = (
   logs: CollectionLog[],
   cause?: unknown
 ) => new AiProcurementRuntimeError(message, logs, cause);
-
-const hasHostnameMatch = (hostname: string, candidate: string) =>
-  hostname === candidate || hostname.endsWith(`.${candidate}`);
 
 const createSearchTraceLogs = ({
   topicRunId,
@@ -159,27 +155,8 @@ export const createAiProcurementRealCollectionBridge = ({
 
     return crawlerRegistry;
   };
-  const resolveCrawlerAdapterForUrl = (url: string) => {
-    const siteProfile = resolveSiteProfile(url);
-
-    if (siteProfile) {
-      const adapter = getCrawlerRegistry().get(siteProfile.id);
-
-      if (adapter) {
-        return adapter;
-      }
-    }
-
-    const hostname = new URL(url).hostname.toLowerCase();
-    if (
-      hasHostnameMatch(hostname, 'youtube.com') ||
-      hasHostnameMatch(hostname, 'youtu.be')
-    ) {
-      return getCrawlerRegistry().get('youtube');
-    }
-
-    return undefined;
-  };
+  const resolveCrawlerAdapterForUrl = (url: string) =>
+    getCrawlerRegistry().findByUrl(url);
 
   return async (opportunity, workflow) => {
     const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');

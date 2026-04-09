@@ -145,6 +145,7 @@ const createCaptureRunnerResult = (plans: {
 afterEach(() => {
   vi.resetModules();
   vi.doUnmock('../../services/control-api/src/cases/ai-procurement.js');
+  vi.doUnmock('../../services/control-api/src/collection/crawler-adapters/registry.js');
 });
 
 describe('real collection bridge follow-up behavior', () => {
@@ -435,5 +436,130 @@ describe('real collection bridge follow-up behavior', () => {
         status: 'ready'
       })
     ).rejects.toThrow(/config-center validation failed for openfons/);
+  });
+
+  it('delegates route lookup to the crawler registry for alias hosts', async () => {
+    const target = {
+      key: 'twitter-proof',
+      title: 'Twitter proof target',
+      query: 'site:x.com/openfons/status/1',
+      url: 'https://x.com/openfons/status/1',
+      urlPattern: /^https:\/\/x\.com\/openfons\/status\/1\/?(?:\?[^#]*)?$/i,
+      sourceKind: 'official' as const,
+      useAs: 'primary' as const,
+      reportability: 'reportable' as const,
+      riskLevel: 'low' as const,
+      captureType: 'community-thread' as const,
+      language: 'en',
+      region: 'global',
+      summary: 'Twitter route target'
+    };
+
+    vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
+      const actual = await vi.importActual<
+        typeof import('../../services/control-api/src/cases/ai-procurement.js')
+      >('../../services/control-api/src/cases/ai-procurement.js');
+
+      return {
+        ...actual,
+        resolveAiProcurementProfileForOpportunity: () => ({
+          family: 'vendor-choice',
+          captureTargets: [target],
+          evidenceTemplates: [],
+          report: {
+            summary: 'Test profile',
+            thesis: 'Test thesis',
+            sections: [],
+            evidenceBoundaries: [],
+            risks: [],
+            claims: []
+          }
+        })
+      };
+    });
+
+    vi.doMock(
+      '../../services/control-api/src/collection/crawler-adapters/registry.js',
+      () => ({
+        createConfiguredCrawlerRegistry: () => ({
+          findByUrl: (url: string) => {
+            expect(url).toBe(target.url);
+            return {
+              routeKey: 'twitter',
+              pluginId: 'twitter-adapter',
+              driver: 'twscrape',
+              enabled: true,
+              requiresAuth: true,
+              accounts: ['twitter-account-main'],
+              cookies: [],
+              proxy: 'global-proxy-pool'
+            };
+          },
+          get: () => {
+            throw new Error('bridge should not resolve crawler routes via direct get');
+          },
+          list: () => []
+        })
+      })
+    );
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const bridge = createBridge({
+      projectId: 'openfons',
+      searchClient: {
+        search: async () => ({
+          searchRun: {
+            id: createId('srch'),
+            projectId: 'openfons',
+            opportunityId: opportunity.id,
+            workflowId: createId('wf'),
+            taskId: createId('task'),
+            purpose: 'evidence',
+            query: target.query,
+            status: 'completed',
+            selectedProviders: ['google'],
+            degradedProviders: [],
+            startedAt: nowIso(),
+            finishedAt: nowIso()
+          },
+          results: [
+            {
+              id: createId('result'),
+              searchRunId: createId('srch'),
+              provider: 'google',
+              title: target.title,
+              url: target.url,
+              snippet: 'matched',
+              rank: 1,
+              page: 1,
+              domain: 'x.com',
+              sourceKindGuess: 'official',
+              dedupKey: 'twitter-proof',
+              selectedForUpgrade: false,
+              selectionReason: 'matched-target'
+            }
+          ],
+          upgradeCandidates: [],
+          diagnostics: [],
+          downgradeInfo: []
+        })
+      },
+      captureRunner: async () => {
+        throw new Error('capture runner reached after url lookup');
+      }
+    });
+
+    await expect(
+      bridge(opportunity, {
+        id: createId('wf'),
+        opportunityId: opportunity.id,
+        taskIds: [createId('task')],
+        status: 'ready'
+      })
+    ).rejects.toThrow('capture runner reached after url lookup');
   });
 });

@@ -4,7 +4,8 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildConfiguredCrawlerAdapter,
-  createConfiguredCrawlerRegistry
+  createConfiguredCrawlerRegistry,
+  resolveCrawlerRouteKeyForUrl
 } from '../../services/control-api/src/collection/crawler-adapters/registry.js';
 
 describe('crawler adapters from config center', () => {
@@ -39,6 +40,40 @@ describe('crawler adapters from config center', () => {
     expect(tiktok?.driver).toBe('tiktok-api');
     expect(tiktok?.requiresAuth).toBe(true);
     expect(tiktok?.browserRuntime?.pluginId).toBe('pinchtab-local');
+  });
+
+  it('resolves a requested route without requiring unrelated crawler secrets', () => {
+    const secretRoot = mkdtempSync(path.join(os.tmpdir(), 'openfons-crawlers-scope-'));
+    const dir = path.join(secretRoot, 'project', 'openfons');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      path.join(dir, 'global-proxy-pool.json'),
+      JSON.stringify([{ endpoint: 'http://proxy.local:9000' }])
+    );
+
+    const registry = createConfiguredCrawlerRegistry({
+      projectId: 'openfons',
+      repoRoot: process.cwd(),
+      secretRoot
+    });
+
+    expect(registry.get('youtube')?.driver).toBe('yt-dlp');
+  });
+
+  it('maps url aliases to configured route keys instead of assuming routeKey equals siteProfile id', () => {
+    expect(
+      resolveCrawlerRouteKeyForUrl({
+        routeKeys: ['twitter'],
+        url: 'https://x.com/openfons/status/1'
+      })
+    ).toBe('twitter');
+
+    expect(
+      resolveCrawlerRouteKeyForUrl({
+        routeKeys: ['youtube'],
+        url: 'https://youtu.be/demo123'
+      })
+    ).toBe('youtube');
   });
 
   it('maps non-openfons drivers from resolved route runtime instead of hardcoded route ids', () => {
