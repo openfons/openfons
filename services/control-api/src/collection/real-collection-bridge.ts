@@ -25,6 +25,8 @@ import {
   createRuntimeSearchClient,
   type SearchClient
 } from './search-client.js';
+import { createConfiguredCrawlerRegistry } from './crawler-adapters/registry.js';
+import { resolveSiteProfile } from './authenticated-local-browser/site-profiles.js';
 
 type SelectedTarget = AiProcurementCaptureTarget & {
   result: SearchResult;
@@ -79,6 +81,9 @@ const createRuntimeError = (
   cause?: unknown
 ) => new AiProcurementRuntimeError(message, logs, cause);
 
+const hasHostnameMatch = (hostname: string, candidate: string) =>
+  hostname === candidate || hostname.endsWith(`.${candidate}`);
+
 const createSearchTraceLogs = ({
   topicRunId,
   targetKey,
@@ -131,13 +136,51 @@ export type BuildAiProcurementCaseBundle = (
 
 export const createAiProcurementRealCollectionBridge = ({
   projectId = 'openfons',
-  searchClient = createRuntimeSearchClient({ projectId }),
+  repoRoot = process.cwd(),
+  secretRoot,
+  searchClient = createRuntimeSearchClient({ projectId, repoRoot, secretRoot }),
   captureRunner = createCaptureRunner()
 }: {
   projectId?: string;
+  repoRoot?: string;
+  secretRoot?: string;
   searchClient?: SearchClient;
   captureRunner?: CaptureRunner;
 } = {}): BuildAiProcurementCaseBundle => {
+  let crawlerRegistry:
+    | ReturnType<typeof createConfiguredCrawlerRegistry>
+    | undefined;
+  const getCrawlerRegistry = () => {
+    crawlerRegistry ??= createConfiguredCrawlerRegistry({
+      projectId,
+      repoRoot,
+      secretRoot
+    });
+
+    return crawlerRegistry;
+  };
+  const resolveCrawlerAdapterForUrl = (url: string) => {
+    const siteProfile = resolveSiteProfile(url);
+
+    if (siteProfile) {
+      const adapter = getCrawlerRegistry().get(siteProfile.id);
+
+      if (adapter) {
+        return adapter;
+      }
+    }
+
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (
+      hasHostnameMatch(hostname, 'youtube.com') ||
+      hasHostnameMatch(hostname, 'youtu.be')
+    ) {
+      return getCrawlerRegistry().get('youtube');
+    }
+
+    return undefined;
+  };
+
   return async (opportunity, workflow) => {
     const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');
     const profile = resolveAiProcurementProfileForOpportunity(opportunity);
@@ -211,6 +254,18 @@ export const createAiProcurementRealCollectionBridge = ({
           searchRun
         })
       );
+
+      const crawlerAdapter = resolveCrawlerAdapterForUrl(target.url);
+      if (crawlerAdapter) {
+        discoveryLogs.push(
+          createCollectionLog({
+            topicRunId: topicRun.id,
+            step: 'capture',
+            status: 'success',
+            message: `Resolved crawler adapter ${crawlerAdapter.driver} for ${target.key} via route ${crawlerAdapter.routeKey}`
+          })
+        );
+      }
     }
 
     const capturePlans: CapturePlan[] = selectedTargets.map((target) => ({

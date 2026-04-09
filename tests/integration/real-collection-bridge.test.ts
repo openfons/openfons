@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtempSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type {
   CollectionLog,
   SearchRunResult,
@@ -138,6 +141,11 @@ const createCaptureRunnerResult = (plans: {
 
   return { sourceCaptures, collectionLogs };
 };
+
+afterEach(() => {
+  vi.resetModules();
+  vi.doUnmock('../../services/control-api/src/cases/ai-procurement.js');
+});
 
 describe('real collection bridge follow-up behavior', () => {
   it('preserves search provider selection and downgrade traces in collection logs', async () => {
@@ -321,5 +329,111 @@ describe('real collection bridge follow-up behavior', () => {
         }
       })
     ).rejects.toThrow('bridge invariant mismatch');
+  });
+
+  it('resolves crawler adapters for route-backed targets before capture starts', async () => {
+    const target = {
+      key: 'tiktok-proof',
+      title: 'TikTok proof target',
+      query: 'site:tiktok.com/@openfons',
+      url: 'https://www.tiktok.com/@openfons',
+      urlPattern: /^https:\/\/www\.tiktok\.com\/@openfons\/?(?:\?[^#]*)?$/i,
+      sourceKind: 'official' as const,
+      useAs: 'primary' as const,
+      reportability: 'reportable' as const,
+      riskLevel: 'low' as const,
+      captureType: 'doc-page' as const,
+      language: 'en',
+      region: 'global',
+      summary: 'TikTok route target'
+    };
+
+    vi.doMock('../../services/control-api/src/cases/ai-procurement.js', async () => {
+      const actual = await vi.importActual<
+        typeof import('../../services/control-api/src/cases/ai-procurement.js')
+      >('../../services/control-api/src/cases/ai-procurement.js');
+
+      return {
+        ...actual,
+        resolveAiProcurementProfileForOpportunity: () => ({
+          family: 'vendor-choice',
+          captureTargets: [target],
+          evidenceTemplates: [],
+          report: {
+            summary: 'Test profile',
+            thesis: 'Test thesis',
+            sections: [],
+            evidenceBoundaries: [],
+            risks: [],
+            claims: []
+          }
+        })
+      };
+    });
+
+    const { createAiProcurementRealCollectionBridge: createBridge } = await import(
+      '../../services/control-api/src/collection/real-collection-bridge.js'
+    );
+
+    const opportunity = buildOpportunity(createOpportunityInput());
+    const secretRoot = mkdtempSync(
+      path.join(os.tmpdir(), 'openfons-bridge-crawler-')
+    );
+
+    const bridge = createBridge({
+      projectId: 'openfons',
+      repoRoot: process.cwd(),
+      secretRoot,
+      searchClient: {
+        search: async () => ({
+          searchRun: {
+            id: createId('srch'),
+            projectId: 'openfons',
+            opportunityId: opportunity.id,
+            workflowId: createId('wf'),
+            taskId: createId('task'),
+            purpose: 'evidence',
+            query: target.query,
+            status: 'completed',
+            selectedProviders: ['google'],
+            degradedProviders: [],
+            startedAt: nowIso(),
+            finishedAt: nowIso()
+          },
+          results: [
+            {
+              id: createId('result'),
+              searchRunId: createId('srch'),
+              provider: 'google',
+              title: target.title,
+              url: target.url,
+              snippet: 'matched',
+              rank: 1,
+              page: 1,
+              domain: 'www.tiktok.com',
+              sourceKindGuess: 'official',
+              dedupKey: 'tiktok-proof',
+              selectedForUpgrade: false,
+              selectionReason: 'matched-target'
+            }
+          ],
+          upgradeCandidates: [],
+          diagnostics: [],
+          downgradeInfo: []
+        })
+      },
+      captureRunner: async () => {
+        throw new Error('capture runner should not start before crawler validation');
+      }
+    });
+
+    await expect(
+      bridge(opportunity, {
+        id: createId('wf'),
+        opportunityId: opportunity.id,
+        taskIds: [createId('task')],
+        status: 'ready'
+      })
+    ).rejects.toThrow(/config-center validation failed for openfons/);
   });
 });
