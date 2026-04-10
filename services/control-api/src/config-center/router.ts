@@ -36,6 +36,15 @@ export const createConfigCenterRouter = (options: {
     c.json(service.getProjectValidation(c.req.param('projectId')))
   );
 
+  app.post('/projects/:projectId/routes/:routeKey/preflight', (c) =>
+    c.json(
+      service.getCrawlerRoutePreflight({
+        projectId: c.req.param('projectId'),
+        routeKey: c.req.param('routeKey')
+      })
+    )
+  );
+
   app.post('/projects/:projectId/resolve', (c) =>
     c.json(service.resolveProject(c.req.param('projectId')))
   );

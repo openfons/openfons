@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type {
+  CrawlerRoutePreflightReport,
   ConfigValidationResult,
   MaskedResolvedPluginRuntime,
   PluginType,
@@ -15,6 +16,7 @@ import {
   resolveMaskedProjectRuntimeConfig,
   validateProjectConfig
 } from '@openfons/config-center';
+import { createCrawlerRoutePreflightReport } from '../collection/crawler-execution/preflight.js';
 
 const flattenRuntimePlugins = (
   projectRuntime: ReturnType<typeof resolveMaskedProjectRuntimeConfig>
@@ -45,6 +47,10 @@ export type ConfigCenterService = {
     }>;
   };
   getProjectValidation: (projectId: string) => ConfigValidationResult;
+  getCrawlerRoutePreflight: (args: {
+    projectId: string;
+    routeKey: string;
+  }) => CrawlerRoutePreflightReport;
   resolveProject: (
     projectId: string
   ) => ReturnType<typeof resolveMaskedProjectRuntimeConfig>;
@@ -102,6 +108,13 @@ export const createConfigCenterService = ({
     },
     getProjectValidation: (projectId) =>
       validateProjectConfig({ state: loadState(), projectId }),
+    getCrawlerRoutePreflight: ({ projectId, routeKey }) =>
+      createCrawlerRoutePreflightReport({
+        projectId,
+        routeKey,
+        repoRoot,
+        secretRoot
+      }),
     resolveProject: (projectId) =>
       resolveMaskedProjectRuntimeConfig({ state: loadState(), projectId }),
     resolvePlugin: ({ projectId, pluginId }) =>

@@ -86,6 +86,20 @@ describe('control-api config center routes', () => {
     );
     expect(validateResponse.status).toBe(200);
 
+    const preflightResponse = await incompleteApp.request(
+      '/api/v1/config/projects/openfons/routes/youtube/preflight',
+      { method: 'POST' }
+    );
+    expect(preflightResponse.status).toBe(200);
+    const preflight = await preflightResponse.json();
+    expect(preflight).toMatchObject({
+      projectId: 'openfons',
+      routeKey: 'youtube',
+      status: 'blocked'
+    });
+    expect(JSON.stringify(preflight)).toContain('global-proxy-pool');
+    expect(JSON.stringify(preflight)).not.toContain('not-for-repo');
+
     const resolveProjectResponse = await fullApp.request(
       '/api/v1/config/projects/openfons/resolve',
       { method: 'POST' }
