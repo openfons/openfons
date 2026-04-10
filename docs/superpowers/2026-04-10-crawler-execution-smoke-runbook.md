@@ -103,3 +103,13 @@ Success signal: the JSON output contains `"status": "success"` and the runtime s
 - `uv` and `yt-dlp` prerequisite guidance matches `services/control-api/src/collection/crawler-execution/tiktok-api-runner.ts` and `services/control-api/src/collection/crawler-execution/tooling.ts`: `OPENFONS_UV_PATH` overrides `uv`/`uv.exe`, and `OPENFONS_YT_DLP_PATH` overrides `yt-dlp`/`yt-dlp.exe`.
 - Secret guidance matches `config/projects/openfons/plugins/bindings.json`, the related plugin instances, and `packages/config-center/src/secret-store.ts`: bindings reference logical secret names, while the secret store probes `<name>`, `<name>.txt`, and `<name>.json`.
 - Both smoke commands target the Task 1 CLI entrypoint at `scripts/workbench/smoke-crawler-execution.ts`, which wraps `services/control-api/src/collection/crawler-execution/smoke.ts`.
+
+## Latest recorded result
+
+### YouTube
+
+- Date: 2026-04-10
+- Status: error
+- Driver: unresolved
+- Capture summary: unavailable
+- Blockers: config-center validation failed for openfons: global-proxy-pool secret poolRef was not found

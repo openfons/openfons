@@ -1,0 +1,6 @@
+{
+  "status": "error",
+  "route": "youtube",
+  "runtime": null,
+  "error": "config-center validation failed for openfons: global-proxy-pool secret poolRef was not found"
+}
