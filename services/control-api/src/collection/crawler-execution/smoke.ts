@@ -8,6 +8,28 @@ import { createTikTokApiRunner } from './tiktok-api-runner.js'
 import { createYtDlpRunner } from './yt-dlp-runner.js'
 
 export type SmokeRoute = 'youtube' | 'tiktok'
+type ResolvedSmokeRuntime = NonNullable<
+  ReturnType<typeof resolveExecutableCrawlerRouteForUrl>
+>
+type SmokeRuntimeSummary = {
+  routeKey: string
+  driver: string
+  mode: string
+}
+type SmokeSuccessPayload = {
+  status: 'success'
+  route: SmokeRoute
+  runtime: SmokeRuntimeSummary
+  sourceCapture: unknown
+  collectionLogs: unknown[]
+}
+type SmokeErrorPayload = {
+  status: 'error'
+  route: SmokeRoute
+  runtime: SmokeRuntimeSummary | null
+  error: string
+}
+type SmokePayload = SmokeSuccessPayload | SmokeErrorPayload
 
 type SmokeTarget = Omit<CapturePlan, 'topicRunId' | 'snippet'>
 type SmokeTargetMetadata = Omit<SmokeTarget, 'url'>
@@ -55,6 +77,20 @@ const buildSmokeTarget = (route: SmokeRoute): SmokeTarget => ({
 
 type DispatcherFactory = () => ReturnType<typeof createCrawlerExecutionDispatcher>
 
+const summarizeRuntime = (
+  runtime: ResolvedSmokeRuntime | undefined
+): SmokeRuntimeSummary | null => {
+  if (!runtime) {
+    return null
+  }
+
+  return {
+    routeKey: runtime.routeKey,
+    driver: runtime.collection.driver,
+    mode: runtime.mode
+  }
+}
+
 export const runCrawlerExecutionSmoke = async ({
   route,
   repoRoot = process.cwd(),
@@ -74,65 +110,44 @@ export const runCrawlerExecutionSmoke = async ({
   resolveRuntime?: typeof resolveExecutableCrawlerRouteForUrl
   createDispatcher?: DispatcherFactory
 }) => {
-  if (!secretRoot) {
-    throw new Error('OPENFONS_SECRET_ROOT is required for crawler smoke validation')
-  }
-
   const target = buildSmokeTarget(route)
-  const runtime = resolveRuntime({
-    projectId: 'openfons',
-    repoRoot,
-    secretRoot,
-    url: target.url
-  })
-
-  if (!runtime) {
-    throw new Error(`no executable crawler runtime resolved for ${route} (${target.url})`)
-  }
-
-  if (runtime.routeKey !== route) {
-    throw new Error(`resolved route mismatch: expected ${route}, got ${runtime.routeKey}`)
-  }
-
-  const dispatcher = createDispatcher()
-  let payload:
-    | {
-        status: 'success'
-        route: SmokeRoute
-        runtime: {
-          routeKey: string
-          driver: string
-          mode: string
-        }
-        sourceCapture: unknown
-        collectionLogs: unknown[]
-      }
-    | {
-        status: 'error'
-        route: SmokeRoute
-        runtime: {
-          routeKey: string
-          driver: string
-          mode: string
-        }
-        error: string
-      }
-
-  const capturePlan: CapturePlan = {
-    topicRunId: createId('topic'),
-    title: target.title,
-    url: target.url,
-    snippet: `${route} smoke validation`,
-    sourceKind: target.sourceKind,
-    useAs: target.useAs,
-    reportability: target.reportability,
-    riskLevel: target.riskLevel,
-    captureType: target.captureType,
-    language: target.language,
-    region: target.region
-  }
+  let payload: SmokePayload
+  let runtime: ResolvedSmokeRuntime | undefined
 
   try {
+    if (!secretRoot) {
+      throw new Error('OPENFONS_SECRET_ROOT is required for crawler smoke validation')
+    }
+
+    runtime = resolveRuntime({
+      projectId: 'openfons',
+      repoRoot,
+      secretRoot,
+      url: target.url
+    })
+
+    if (!runtime) {
+      throw new Error(`no executable crawler runtime resolved for ${route} (${target.url})`)
+    }
+
+    if (runtime.routeKey !== route) {
+      throw new Error(`resolved route mismatch: expected ${route}, got ${runtime.routeKey}`)
+    }
+
+    const dispatcher = createDispatcher()
+    const capturePlan: CapturePlan = {
+      topicRunId: createId('topic'),
+      title: target.title,
+      url: target.url,
+      snippet: `${route} smoke validation`,
+      sourceKind: target.sourceKind,
+      useAs: target.useAs,
+      reportability: target.reportability,
+      riskLevel: target.riskLevel,
+      captureType: target.captureType,
+      language: target.language,
+      region: target.region
+    }
     const result = await dispatcher.run({
       capturePlan,
       runtime
@@ -141,11 +156,7 @@ export const runCrawlerExecutionSmoke = async ({
     payload = {
       status: 'success',
       route,
-      runtime: {
-        routeKey: runtime.routeKey,
-        driver: runtime.collection.driver,
-        mode: runtime.mode
-      },
+      runtime: summarizeRuntime(runtime) as SmokeRuntimeSummary,
       sourceCapture: result.sourceCapture,
       collectionLogs: result.collectionLogs
     }
@@ -153,11 +164,7 @@ export const runCrawlerExecutionSmoke = async ({
     payload = {
       status: 'error',
       route,
-      runtime: {
-        routeKey: runtime.routeKey,
-        driver: runtime.collection.driver,
-        mode: runtime.mode
-      },
+      runtime: summarizeRuntime(runtime),
       error: error instanceof Error ? error.message : String(error)
     }
   }

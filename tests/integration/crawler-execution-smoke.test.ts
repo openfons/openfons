@@ -150,6 +150,39 @@ describe('crawler execution smoke harness', () => {
     expect(run).toHaveBeenCalledOnce()
   })
 
+  it('writes an error payload when runtime resolution fails before dispatch', async () => {
+    const resolveRuntime = vi.fn(() => {
+      throw new Error(
+        'config-center validation failed for openfons: global-proxy-pool secret poolRef was not found'
+      )
+    })
+    const outputPath = createOutputPath()
+    const runCrawlerExecutionSmoke = await loadSmokeHarness()
+
+    try {
+      const result = await runCrawlerExecutionSmoke({
+        route: 'youtube',
+        repoRoot: process.cwd(),
+        secretRoot: 'C:/secrets',
+        outputPath,
+        resolveRuntime
+      })
+
+      const diskPayload = JSON.parse(await fs.readFile(outputPath, 'utf8'))
+
+      expect(result).toEqual(diskPayload)
+      expect(result).toMatchObject({
+        status: 'error',
+        route: 'youtube',
+        runtime: null,
+        error:
+          'config-center validation failed for openfons: global-proxy-pool secret poolRef was not found'
+      })
+    } finally {
+      await fs.rm(outputPath, { force: true })
+    }
+  })
+
   it('honors OPENFONS_SMOKE_YOUTUBE_URL overrides', async () => {
     const overrideUrl = 'https://override.test/the-smoke'
 
