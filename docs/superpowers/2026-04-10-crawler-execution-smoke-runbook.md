@@ -113,3 +113,11 @@ Success signal: the JSON output contains `"status": "success"` and the runtime s
 - Driver: unresolved
 - Capture summary: unavailable
 - Blockers: config-center validation failed for openfons: global-proxy-pool secret poolRef was not found
+
+### TikTok
+
+- Date: 2026-04-10
+- Status: error
+- Driver: unresolved
+- Capture summary: unavailable
+- Blockers: config-center validation failed for openfons: pinchtab-local secret tokenRef was not found; tiktok-account-main secret accountRef was not found; tiktok-cookie-main secret sessionRef was not found; global-proxy-pool secret poolRef was not found
