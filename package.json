@@ -14,6 +14,7 @@
     "export:workbench:direct-api-vs-openrouter": "tsx scripts/workbench/export-direct-api-vs-openrouter.ts",
     "export:workbench:direct-api-vs-openrouter-deck": "tsx scripts/workbench/export-direct-api-vs-openrouter-deck.ts",
     "export:workbench:openclaw-real-artifact-report": "tsx scripts/workbench/export-openclaw-real-artifact-report.ts",
+    "doctor:crawler-runtime": "tsx scripts/workbench/doctor-crawler-runtime.ts",
     "smoke:crawler-execution": "tsx scripts/workbench/smoke-crawler-execution.ts"
   },
   "devDependencies": {
