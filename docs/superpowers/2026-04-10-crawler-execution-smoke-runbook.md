@@ -67,6 +67,34 @@ Route-specific minimums:
 - TikTok smoke: `pinchtab-token`, `tiktok-account-main.json`, `tiktok-cookie-main`, and `global-proxy-pool.json`
 - The current smoke runner consumes account/cookie/proxy directly, but the `tiktok` route binding still includes `pinchtab-local`, so keep the browser token in the same project secret inventory
 
+## Runtime preflight
+
+Run these before smoke:
+
+```powershell
+pnpm --silent doctor:crawler-runtime -- --route youtube `
+  --secret-root "$env:OPENFONS_SECRET_ROOT" `
+  > docs/workbench/generated/crawler-runtime-preflight-youtube.json
+
+pnpm --silent doctor:crawler-runtime -- --route tiktok `
+  --secret-root "$env:OPENFONS_SECRET_ROOT" `
+  > docs/workbench/generated/crawler-runtime-preflight-tiktok.json
+```
+
+If a route reports `"status": "blocked"`, fix the listed `hostChecks` and
+`secretChecks` before running smoke.
+
+To create missing placeholder secret files:
+
+```powershell
+pnpm --silent doctor:crawler-runtime -- --route tiktok `
+  --secret-root "$env:OPENFONS_SECRET_ROOT" `
+  --bootstrap-missing
+```
+
+Placeholder files are intentionally still reported as blocked until replaced
+with real operator-managed material.
+
 ## YouTube smoke
 
 ```powershell
