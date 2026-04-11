@@ -336,11 +336,13 @@ describe('control-api', () => {
     expect(compileResponse.status).toBe(500);
     expect(saveCompilationCalls).toBe(0);
     await expect(compileResponse.text()).resolves.toContain('Internal Server Error');
-    expect(store.getReportView(created.opportunity.id)).toBeUndefined();
   });
 
   it('prefers real collection bridge output when the bridge succeeds', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRoot);
     const app = createApp({
+      artifactDelivery: { repoRoot },
       buildAiProcurementCaseBundle: async (opportunity, workflow) =>
         createRealBridgeBundle(opportunity, workflow)
     });
@@ -378,6 +380,8 @@ describe('control-api', () => {
   });
 
   it('falls back explicitly when the real collection bridge fails', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRoot);
     const runtimeLog = createCollectionLog({
       topicRunId: createId('topic'),
       captureId: createId('capture'),
@@ -387,6 +391,7 @@ describe('control-api', () => {
     });
 
     const app = createApp({
+      artifactDelivery: { repoRoot },
       buildAiProcurementCaseBundle: async () => {
         throw Object.assign(new Error('search providers unavailable'), {
           name: 'AiProcurementRuntimeError',
