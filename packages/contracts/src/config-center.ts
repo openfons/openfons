@@ -51,6 +51,11 @@ export const PluginSpecSchema = z.object({
   healthCheckKinds: z.array(z.string().min(1))
 });
 
+const ConfigRecordMetaSchema = z.object({
+  updatedAt: z.string().datetime(),
+  updatedBy: z.string().min(1).optional()
+});
+
 export const PluginInstanceSchema = z.object({
   id: z.string().min(1),
   type: PluginTypeIdSchema,
@@ -61,6 +66,7 @@ export const PluginInstanceSchema = z.object({
   secrets: z.record(z.string(), SecretRefSchema).default({}),
   dependencies: z.array(PluginDependencySchema).default([]),
   policy: z.record(z.string(), z.unknown()).default({}),
+  meta: ConfigRecordMetaSchema.optional(),
   healthCheck: z
     .object({
       kind: z.string().min(1),
@@ -87,7 +93,8 @@ export const ProjectBindingSchema = z.object({
     z.union([z.string().min(1), z.array(z.string().min(1))])
   ),
   routes: z.record(z.string(), ProjectRouteBindingSchema),
-  overrides: z.record(z.string(), z.unknown()).default({})
+  overrides: z.record(z.string(), z.unknown()).default({}),
+  meta: ConfigRecordMetaSchema.optional()
 });
 
 export const ConfigIssueSchema = z.object({
