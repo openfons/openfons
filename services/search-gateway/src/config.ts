@@ -5,9 +5,11 @@ import type {
   ValidationResult
 } from '@openfons/contracts';
 import {
+  expandPluginDependencyClosure,
   loadConfigCenterState,
+  loadProjectBinding,
   resolveSearchRuntime,
-  validateProjectConfig
+  validatePluginSelection
 } from '@openfons/config-center';
 import {
   createDdgAdapter,
@@ -50,6 +52,84 @@ const createAdapterFromResolvedPlugin = ({
   }
 };
 
+const asArray = <T>(value: T | T[] | undefined) =>
+  !value ? [] : Array.isArray(value) ? value : [value];
+
+const unique = <T>(items: T[]) =>
+  items.filter((item, index) => items.indexOf(item) === index);
+
+const collectSearchProviderIds = ({
+  state,
+  projectId
+}: {
+  state: ReturnType<typeof loadConfigCenterState>;
+  projectId: string;
+}) => {
+  const binding = loadProjectBinding({ repoRoot: state.repoRoot, projectId });
+
+  return unique([
+    ...asArray(binding.roles.primarySearch),
+    ...asArray(binding.roles.fallbackSearch),
+    ...Object.values(binding.routes).flatMap((route) => route.discovery ?? [])
+  ]);
+};
+
+const buildSearchValidation = ({
+  state,
+  providerIds
+}: {
+  state: ReturnType<typeof loadConfigCenterState>;
+  providerIds: string[];
+}) => {
+  const pluginIds = expandPluginDependencyClosure({
+    plugins: state.pluginInstances,
+    seedPluginIds: providerIds
+  });
+
+  return {
+    pluginIds,
+    validation: validatePluginSelection({ state, pluginIds })
+  };
+};
+
+const buildSearchProviderStatuses = ({
+  state,
+  projectId
+}: {
+  state: ReturnType<typeof loadConfigCenterState>;
+  projectId: string;
+}): ProviderStatus[] => {
+  const providerIds = collectSearchProviderIds({ state, projectId });
+  const pluginMap = new Map(state.pluginInstances.map((plugin) => [plugin.id, plugin]));
+
+  return providerIds.flatMap((pluginId) => {
+    const plugin = pluginMap.get(pluginId);
+    if (!plugin || plugin.type !== 'search-provider') {
+      return [];
+    }
+
+    const { validation } = buildSearchValidation({
+      state,
+      providerIds: [pluginId]
+    });
+    const messages =
+      validation.status === 'invalid'
+        ? validation.errors.map((item) => item.message)
+        : validation.warnings.map((item) => item.message);
+
+    return [
+      {
+        providerId: plugin.driver as SearchProviderId,
+        enabled: plugin.enabled,
+        healthy: validation.status !== 'invalid',
+        credentialResolvedFrom: 'project',
+        degraded: validation.status !== 'valid',
+        reason: messages.length > 0 ? messages.join('; ') : undefined
+      }
+    ];
+  });
+};
+
 export const createRuntimeGateway = ({
   projectId,
   repoRoot,
@@ -88,23 +168,11 @@ export const loadProviderStatus = (
   projectId: string,
   repoRoot: string,
   secretRoot?: string
-): ProviderStatus[] => {
-  const state = loadConfigCenterState({ repoRoot, secretRoot });
-  const runtime = resolveSearchRuntime({ state, projectId });
-  const validation = validateProjectConfig({ state, projectId });
-
-  return runtime.providers.map((plugin) => ({
-    providerId: plugin.driver as SearchProviderId,
-    enabled: true,
-    healthy: validation.status !== 'invalid',
-    credentialResolvedFrom: 'project',
-    degraded: validation.status !== 'valid',
-    reason:
-      validation.status === 'invalid'
-        ? validation.errors.map((item) => item.message).join('; ')
-        : undefined
-  }));
-};
+): ProviderStatus[] =>
+  buildSearchProviderStatuses({
+    state: loadConfigCenterState({ repoRoot, secretRoot }),
+    projectId
+  });
 
 export const loadValidation = (
   projectId: string,
@@ -112,12 +180,13 @@ export const loadValidation = (
   secretRoot?: string
 ): ValidationResult => {
   const state = loadConfigCenterState({ repoRoot, secretRoot });
-  const validation = validateProjectConfig({ state, projectId });
+  const providerIds = collectSearchProviderIds({ state, projectId });
+  const { validation } = buildSearchValidation({ state, providerIds });
 
   return {
     valid: validation.status === 'valid',
     errors: validation.errors.map((item) => item.message),
     warnings: validation.warnings.map((item) => item.message),
-    resolvedProviders: loadProviderStatus(projectId, repoRoot, secretRoot)
+    resolvedProviders: buildSearchProviderStatuses({ state, projectId })
   };
 };

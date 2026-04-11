@@ -2,7 +2,10 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { createRuntimeGateway } from '../../services/search-gateway/src/config';
+import {
+  createRuntimeGateway,
+  loadProviderStatus
+} from '../../services/search-gateway/src/config';
 import { createMemoryStore } from '../../services/search-gateway/src/store';
 
 describe('search-gateway runtime wiring', () => {
@@ -98,6 +101,24 @@ describe('search-gateway runtime wiring', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(result.results[0].provider).toBe('google');
+  });
+
+  it('keeps provider status healthy when only search provider secrets are configured', () => {
+    const secretRoot = mkdtempSync(
+      path.join(os.tmpdir(), 'openfons-search-status-scope-')
+    );
+    const dir = path.join(secretRoot, 'project', 'openfons');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, 'google-api-key'), 'google-key');
+    writeFileSync(path.join(dir, 'google-cx'), 'google-cx');
+
+    const statuses = loadProviderStatus('openfons', process.cwd(), secretRoot);
+
+    expect(statuses.find((item) => item.providerId === 'google')?.healthy).toBe(true);
+    expect(statuses.find((item) => item.providerId === 'google')?.degraded).toBe(
+      false
+    );
+    expect(statuses.find((item) => item.providerId === 'ddg')?.healthy).toBe(true);
   });
 
   it('still supports shared run storage when gateways are created from config-center', async () => {

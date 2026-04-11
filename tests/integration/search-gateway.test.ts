@@ -1,5 +1,12 @@
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../services/search-gateway/src/app';
+import {
+  loadProviderStatus,
+  loadValidation
+} from '../../services/search-gateway/src/config';
 
 describe('search-gateway service', () => {
   it('creates a search run and exposes provider diagnostics', async () => {
@@ -272,5 +279,43 @@ describe('search-gateway service', () => {
 
     expect(response.status).toBe(400);
     await expect(response.text()).resolves.toBe('Invalid JSON payload');
+  });
+
+  it('returns structured invalid validation instead of 500 when search secrets are incomplete', async () => {
+    const secretRoot = mkdtempSync(path.join(os.tmpdir(), 'openfons-search-validate-'));
+    const dir = path.join(secretRoot, 'project', 'openfons');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(path.join(dir, 'google-api-key'), 'google-key');
+
+    const app = createApp({
+      search: async () => {
+        throw new Error('should not be called');
+      },
+      providerStatus: (projectId?: string) =>
+        loadProviderStatus(projectId ?? 'openfons', process.cwd(), secretRoot),
+      validate: (projectId?: string) =>
+        loadValidation(projectId ?? 'openfons', process.cwd(), secretRoot)
+    });
+
+    const response = await app.request('/api/v1/search/config/validate', {
+      method: 'POST'
+    });
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.valid).toBe(false);
+    expect(payload.errors).toContain(
+      'google-default secret cxRef was not found'
+    );
+    expect(
+      payload.resolvedProviders.find(
+        (item: { providerId: string }) => item.providerId === 'google'
+      )?.healthy
+    ).toBe(false);
+    expect(
+      payload.resolvedProviders.find(
+        (item: { providerId: string }) => item.providerId === 'ddg'
+      )?.healthy
+    ).toBe(true);
   });
 });
