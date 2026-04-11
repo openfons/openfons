@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import {
   applyPluginInstanceWrite,
   applyProjectBindingWrite,
-  listPluginInstanceRecords
+  listPluginInstanceRecords,
+  loadProjectBindingRecord
 } from '@openfons/config-center';
 
 const cloneRepoFixture = () => {
@@ -122,5 +123,68 @@ describe('config-center writes', () => {
         dryRun: false
       })
     ).rejects.toThrow(/invalid/i);
+  });
+
+  it('treats unchanged plugin and binding writes as no-op', async () => {
+    const { repoRoot, secretRoot } = cloneRepoFixture();
+    const currentPlugin = listPluginInstanceRecords({ repoRoot }).find(
+      (item) => item.plugin.id === 'google-default'
+    )!;
+    const currentBinding = loadProjectBindingRecord({
+      repoRoot,
+      projectId: 'openfons'
+    });
+
+    const pluginDryRun = await applyPluginInstanceWrite({
+      repoRoot,
+      secretRoot,
+      projectId: 'openfons',
+      plugin: currentPlugin.plugin,
+      expectedRevision: currentPlugin.revision.etag,
+      dryRun: true
+    });
+
+    expect(pluginDryRun.changed).toBe(false);
+    expect(pluginDryRun.revision).toEqual(currentPlugin.revision);
+
+    const pluginApply = await applyPluginInstanceWrite({
+      repoRoot,
+      secretRoot,
+      projectId: 'openfons',
+      plugin: currentPlugin.plugin,
+      expectedRevision: currentPlugin.revision.etag,
+      dryRun: false
+    });
+
+    expect(pluginApply.changed).toBe(false);
+    expect(pluginApply.revision).toEqual(currentPlugin.revision);
+    expect(pluginApply.backupFile).toBeUndefined();
+    expect(readFileSync(currentPlugin.filePath, 'utf8')).toBe(currentPlugin.rawContent);
+
+    const bindingDryRun = await applyProjectBindingWrite({
+      repoRoot,
+      secretRoot,
+      projectId: 'openfons',
+      binding: currentBinding.binding,
+      expectedRevision: currentBinding.revision.etag,
+      dryRun: true
+    });
+
+    expect(bindingDryRun.changed).toBe(false);
+    expect(bindingDryRun.revision).toEqual(currentBinding.revision);
+
+    const bindingApply = await applyProjectBindingWrite({
+      repoRoot,
+      secretRoot,
+      projectId: 'openfons',
+      binding: currentBinding.binding,
+      expectedRevision: currentBinding.revision.etag,
+      dryRun: false
+    });
+
+    expect(bindingApply.changed).toBe(false);
+    expect(bindingApply.revision).toEqual(currentBinding.revision);
+    expect(bindingApply.backupFile).toBeUndefined();
+    expect(readFileSync(currentBinding.filePath, 'utf8')).toBe(currentBinding.rawContent);
   });
 });

@@ -126,5 +126,43 @@ describe('control-api config center routes', () => {
     );
     expect(resolvePluginResponse.status).toBe(200);
     expect(await resolvePluginResponse.text()).not.toContain('google-key');
+
+    const missingValidateResponse = await incompleteApp.request(
+      '/api/v1/config/projects/missing/validate',
+      {
+        method: 'POST'
+      }
+    );
+    expect(missingValidateResponse.status).toBe(404);
+    expect(await missingValidateResponse.json()).toMatchObject({
+      error: 'not-found'
+    });
+
+    const missingResolveResponse = await incompleteApp.request(
+      '/api/v1/config/projects/missing/resolve',
+      { method: 'POST' }
+    );
+    expect(missingResolveResponse.status).toBe(404);
+    expect(await missingResolveResponse.json()).toMatchObject({
+      error: 'not-found'
+    });
+
+    const missingPreflightResponse = await incompleteApp.request(
+      '/api/v1/config/projects/missing/routes/youtube/preflight',
+      { method: 'POST' }
+    );
+    expect(missingPreflightResponse.status).toBe(404);
+    expect(await missingPreflightResponse.json()).toMatchObject({
+      error: 'not-found'
+    });
+
+    const missingResolvePluginResponse = await incompleteApp.request(
+      '/api/v1/config/plugins/google-default/resolve?projectId=missing',
+      { method: 'POST' }
+    );
+    expect(missingResolvePluginResponse.status).toBe(404);
+    expect(await missingResolvePluginResponse.json()).toMatchObject({
+      error: 'not-found'
+    });
   });
 });

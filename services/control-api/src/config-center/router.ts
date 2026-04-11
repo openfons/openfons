@@ -2,7 +2,7 @@ import {
   PluginWriteRequestSchema,
   ProjectBindingWriteRequestSchema
 } from '@openfons/contracts';
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { createConfigCenterService } from './service.js';
 
 export const createConfigCenterRouter = (options: {
@@ -11,8 +11,39 @@ export const createConfigCenterRouter = (options: {
 }) => {
   const service = createConfigCenterService(options);
   const app = new Hono();
+  const isMissingPathError = (error: unknown): error is NodeJS.ErrnoException =>
+    error instanceof Error && 'code' in error && error.code === 'ENOENT';
+  const notFoundBody = { error: 'not-found' } as const;
+  const readWithNotFound = <T>(fn: () => T) => {
+    try {
+      return {
+        missing: false as const,
+        value: fn()
+      };
+    } catch (error) {
+      if (isMissingPathError(error)) {
+        return {
+          missing: true as const
+        };
+      }
+
+      throw error;
+    }
+  };
+  const jsonWithNotFound = <T>(c: Context, fn: () => T) => {
+    const result = readWithNotFound(fn);
+    return result.missing ? c.json(notFoundBody, 404) : c.json(result.value);
+  };
+
   const mapWriteError = (error: unknown) => {
     const message = error instanceof Error ? error.message : 'config write failed';
+
+    if (isMissingPathError(error)) {
+      return {
+        status: 404 as const,
+        body: { error: 'not-found', message }
+      };
+    }
 
     if (message.startsWith('revision conflict')) {
       return {
@@ -60,20 +91,44 @@ export const createConfigCenterRouter = (options: {
   });
 
   app.get('/projects/:projectId/bindings', (c) =>
-    c.json(service.getProjectBindings(c.req.param('projectId')))
+    jsonWithNotFound(c, () => service.getProjectBindings(c.req.param('projectId')))
   );
 
   app.put('/plugins/:pluginId', async (c) => {
-    const payload = PluginWriteRequestSchema.parse(await c.req.json());
+    let payload: unknown;
+
+    try {
+      payload = await c.req.json();
+    } catch {
+      return c.json(
+        {
+          error: 'invalid-request',
+          message: 'Invalid JSON payload'
+        },
+        400
+      );
+    }
+
+    const parsed = PluginWriteRequestSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return c.json(
+        {
+          error: 'invalid-request',
+          message: parsed.error.message
+        },
+        400
+      );
+    }
 
     try {
       return c.json(
         await service.writePlugin({
           projectId: c.req.query('projectId') ?? 'openfons',
           pluginId: c.req.param('pluginId'),
-          expectedRevision: payload.expectedRevision,
-          dryRun: c.req.query('dryRun') === 'true' || payload.dryRun,
-          plugin: payload.plugin
+          expectedRevision: parsed.data.expectedRevision,
+          dryRun: c.req.query('dryRun') === 'true' || parsed.data.dryRun,
+          plugin: parsed.data.plugin
         })
       );
     } catch (error) {
@@ -83,15 +138,39 @@ export const createConfigCenterRouter = (options: {
   });
 
   app.put('/projects/:projectId/bindings', async (c) => {
-    const payload = ProjectBindingWriteRequestSchema.parse(await c.req.json());
+    let payload: unknown;
+
+    try {
+      payload = await c.req.json();
+    } catch {
+      return c.json(
+        {
+          error: 'invalid-request',
+          message: 'Invalid JSON payload'
+        },
+        400
+      );
+    }
+
+    const parsed = ProjectBindingWriteRequestSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return c.json(
+        {
+          error: 'invalid-request',
+          message: parsed.error.message
+        },
+        400
+      );
+    }
 
     try {
       return c.json(
         await service.writeProjectBindings({
           projectId: c.req.param('projectId'),
-          expectedRevision: payload.expectedRevision,
-          dryRun: c.req.query('dryRun') === 'true' || payload.dryRun,
-          binding: payload.binding
+          expectedRevision: parsed.data.expectedRevision,
+          dryRun: c.req.query('dryRun') === 'true' || parsed.data.dryRun,
+          binding: parsed.data.binding
         })
       );
     } catch (error) {
@@ -103,11 +182,11 @@ export const createConfigCenterRouter = (options: {
   app.post('/validate', (c) => c.json(service.validateAll()));
 
   app.post('/projects/:projectId/validate', (c) =>
-    c.json(service.getProjectValidation(c.req.param('projectId')))
+    jsonWithNotFound(c, () => service.getProjectValidation(c.req.param('projectId')))
   );
 
   app.post('/projects/:projectId/routes/:routeKey/preflight', (c) =>
-    c.json(
+    jsonWithNotFound(c, () =>
       service.getCrawlerRoutePreflight({
         projectId: c.req.param('projectId'),
         routeKey: c.req.param('routeKey')
@@ -116,7 +195,7 @@ export const createConfigCenterRouter = (options: {
   );
 
   app.post('/projects/:projectId/resolve', (c) =>
-    c.json(service.resolveProject(c.req.param('projectId')))
+    jsonWithNotFound(c, () => service.resolveProject(c.req.param('projectId')))
   );
 
   app.post('/plugins/:pluginId/resolve', (c) => {
@@ -126,12 +205,18 @@ export const createConfigCenterRouter = (options: {
       return c.json({ error: 'projectId is required' }, 400);
     }
 
-    const plugin = service.resolvePlugin({
-      projectId,
-      pluginId: c.req.param('pluginId')
-    });
+    const result = readWithNotFound(() =>
+      service.resolvePlugin({
+        projectId,
+        pluginId: c.req.param('pluginId')
+      })
+    );
 
-    return plugin ? c.json(plugin) : c.json({ error: 'not-found' }, 404);
+    if (result.missing) {
+      return c.json(notFoundBody, 404);
+    }
+
+    return result.value ? c.json(result.value) : c.json(notFoundBody, 404);
   });
 
   return app;

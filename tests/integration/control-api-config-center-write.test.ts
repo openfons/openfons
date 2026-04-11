@@ -71,4 +71,34 @@ describe('control-api config center write routes', () => {
       error: 'revision-conflict'
     });
   });
+
+  it('returns structured 400 responses for invalid write payloads', async () => {
+    const { repoRoot, secretRoot } = cloneRepoFixture();
+    const app = createApp({ configCenter: { repoRoot, secretRoot } });
+
+    const invalid = await app.request('/api/v1/config/plugins/google-default', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        expectedRevision: 'sha256:stale'
+      })
+    });
+
+    expect(invalid.status).toBe(400);
+    expect(await invalid.json()).toMatchObject({
+      error: 'invalid-request'
+    });
+  });
+
+  it('returns not-found for missing project bindings', async () => {
+    const { repoRoot, secretRoot } = cloneRepoFixture();
+    const app = createApp({ configCenter: { repoRoot, secretRoot } });
+
+    const missing = await app.request('/api/v1/config/projects/missing/bindings');
+
+    expect(missing.status).toBe(404);
+    expect(await missing.json()).toMatchObject({
+      error: 'not-found'
+    });
+  });
 });

@@ -15,6 +15,20 @@ import { writeConfigBackup } from '../persistence/backup.js';
 import { withRepoConfigLock } from '../persistence/lockfile.js';
 import { buildRepoConfigRevision } from '../persistence/revision.js';
 
+const toComparablePluginShape = (plugin: PluginInstance) =>
+  JSON.stringify({
+    id: plugin.id,
+    type: plugin.type,
+    driver: plugin.driver,
+    enabled: plugin.enabled,
+    scope: plugin.scope,
+    config: plugin.config,
+    secrets: plugin.secrets,
+    dependencies: plugin.dependencies,
+    policy: plugin.policy,
+    healthCheck: plugin.healthCheck
+  });
+
 export const applyPluginInstanceWrite = async ({
   repoRoot,
   secretRoot,
@@ -43,16 +57,20 @@ export const applyPluginInstanceWrite = async ({
       }
 
       const nextUpdatedAt = new Date().toISOString();
-      const nextPlugin: PluginInstance = {
-        ...plugin,
-        meta: {
-          ...plugin.meta,
-          updatedAt: nextUpdatedAt,
-          updatedBy: 'control-api'
-        }
-      };
-      const changed =
-        JSON.stringify(current?.plugin ?? null) !== JSON.stringify(nextPlugin);
+      const changed = current
+        ? toComparablePluginShape(current.plugin) !== toComparablePluginShape(plugin)
+        : true;
+      const nextPlugin: PluginInstance =
+        changed || !current
+          ? {
+              ...plugin,
+              meta: {
+                ...plugin.meta,
+                updatedAt: nextUpdatedAt,
+                updatedBy: 'control-api'
+              }
+            }
+          : current.plugin;
 
       const nextState = loadConfigCenterState({ repoRoot, secretRoot });
       const nextPlugins = nextState.pluginInstances
@@ -68,10 +86,13 @@ export const applyPluginInstanceWrite = async ({
         throw new Error(`invalid plugin write for ${plugin.id}`);
       }
 
-      const revision = buildRepoConfigRevision({
-        rawContent: `${JSON.stringify(nextPlugin, null, 2)}\n`,
-        updatedAt: nextUpdatedAt
-      });
+      const revision =
+        !changed && current
+          ? current.revision
+          : buildRepoConfigRevision({
+              rawContent: `${JSON.stringify(nextPlugin, null, 2)}\n`,
+              updatedAt: nextPlugin.meta?.updatedAt ?? nextUpdatedAt
+            });
 
       if (dryRun) {
         return {
@@ -81,6 +102,19 @@ export const applyPluginInstanceWrite = async ({
           changed,
           revision,
           previousRevision: current?.revision,
+          validation,
+          lockWaitMs
+        };
+      }
+
+      if (!changed && current) {
+        return {
+          status: 'applied',
+          resource: 'plugin-instance',
+          resourceId: plugin.id,
+          changed: false,
+          revision: current.revision,
+          previousRevision: current.revision,
           validation,
           lockWaitMs
         };
@@ -107,7 +141,7 @@ export const applyPluginInstanceWrite = async ({
         changed,
         revision: buildRepoConfigRevision({
           rawContent: persistedContent,
-          updatedAt: nextUpdatedAt
+          updatedAt: nextPlugin.meta?.updatedAt ?? nextUpdatedAt
         }),
         previousRevision: current?.revision,
         validation,

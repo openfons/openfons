@@ -10,6 +10,15 @@ import { writeConfigBackup } from '../persistence/backup.js';
 import { withRepoConfigLock } from '../persistence/lockfile.js';
 import { buildRepoConfigRevision } from '../persistence/revision.js';
 
+const toComparableBindingShape = (binding: ProjectBinding) =>
+  JSON.stringify({
+    projectId: binding.projectId,
+    enabledPlugins: binding.enabledPlugins,
+    roles: binding.roles,
+    routes: binding.routes,
+    overrides: binding.overrides
+  });
+
 export const applyProjectBindingWrite = async ({
   repoRoot,
   secretRoot,
@@ -36,16 +45,20 @@ export const applyProjectBindingWrite = async ({
       }
 
       const nextUpdatedAt = new Date().toISOString();
-      const nextBinding: ProjectBinding = {
-        ...binding,
-        projectId,
-        meta: {
-          ...binding.meta,
-          updatedAt: nextUpdatedAt,
-          updatedBy: 'control-api'
-        }
-      };
-      const changed = JSON.stringify(current.binding) !== JSON.stringify(nextBinding);
+      const changed =
+        toComparableBindingShape(current.binding) !==
+        toComparableBindingShape({ ...binding, projectId });
+      const nextBinding: ProjectBinding = changed
+        ? {
+            ...binding,
+            projectId,
+            meta: {
+              ...binding.meta,
+              updatedAt: nextUpdatedAt,
+              updatedBy: 'control-api'
+            }
+          }
+        : current.binding;
       const state = loadConfigCenterState({ repoRoot, secretRoot });
       const validation = validatePluginSelection({
         state,
@@ -56,10 +69,12 @@ export const applyProjectBindingWrite = async ({
         throw new Error(`invalid project binding write for ${projectId}`);
       }
 
-      const revision = buildRepoConfigRevision({
-        rawContent: `${JSON.stringify(nextBinding, null, 2)}\n`,
-        updatedAt: nextUpdatedAt
-      });
+      const revision = !changed
+        ? current.revision
+        : buildRepoConfigRevision({
+            rawContent: `${JSON.stringify(nextBinding, null, 2)}\n`,
+            updatedAt: nextBinding.meta?.updatedAt ?? nextUpdatedAt
+          });
 
       if (dryRun) {
         return {
@@ -68,6 +83,19 @@ export const applyProjectBindingWrite = async ({
           resourceId: projectId,
           changed,
           revision,
+          previousRevision: current.revision,
+          validation,
+          lockWaitMs
+        };
+      }
+
+      if (!changed) {
+        return {
+          status: 'applied',
+          resource: 'project-binding',
+          resourceId: projectId,
+          changed: false,
+          revision: current.revision,
           previousRevision: current.revision,
           validation,
           lockWaitMs
@@ -90,7 +118,7 @@ export const applyProjectBindingWrite = async ({
         changed,
         revision: buildRepoConfigRevision({
           rawContent: persistedContent,
-          updatedAt: nextUpdatedAt
+          updatedAt: nextBinding.meta?.updatedAt ?? nextUpdatedAt
         }),
         previousRevision: current.revision,
         validation,
