@@ -9,12 +9,16 @@ import {
   InvalidOpportunityInputError,
   UnsupportedCompilationCaseError
 } from './compiler.js';
+import { deliverAiProcurementCompilation } from './artifacts/delivery.js';
 import { createConfigCenterRouter } from './config-center/router.js';
 import { createMemoryStore, type MemoryStore } from './store.js';
 
 type BuildCompilationOptions = Parameters<typeof buildCompilation>[1];
 
 type CreateAppOptions = BuildCompilationOptions & {
+  artifactDelivery?: {
+    repoRoot?: string;
+  };
   configCenter?: {
     repoRoot: string;
     secretRoot?: string;
@@ -26,7 +30,8 @@ export const createApp = (
   store: MemoryStore = createMemoryStore()
 ) => {
   const app = new Hono();
-  const { configCenter, ...compilationOptions } = options;
+  const { configCenter, artifactDelivery, ...compilationOptions } = options;
+  const artifactRepoRoot = artifactDelivery?.repoRoot ?? process.cwd();
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
@@ -106,9 +111,13 @@ export const createApp = (
       throw error;
     }
 
-    store.saveCompilation(compiled);
+    const finalized = await deliverAiProcurementCompilation(compiled, {
+      repoRoot: artifactRepoRoot
+    });
 
-    return c.json(compiled);
+    store.saveCompilation(finalized);
+
+    return c.json(finalized);
   });
 
   app.get('/api/v1/reports/:reportId', (c) => {

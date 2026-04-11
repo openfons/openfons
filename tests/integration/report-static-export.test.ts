@@ -9,6 +9,9 @@ import {
   buildDirectApiVsOpenRouterReportView,
   exportDirectApiVsOpenRouterWorkbenchHtml
 } from '../../services/control-api/src/report-export/static-html.js';
+import { buildAiProcurementCase } from '../../services/control-api/src/cases/ai-procurement.js';
+import { buildCompilation, buildOpportunity } from '../../services/control-api/src/compiler.js';
+import { DIRECT_API_VS_OPENROUTER_INPUT } from '../../services/control-api/src/report-export/static-html.js';
 import {
   buildDirectApiVsOpenRouterDeckHtml,
   exportDirectApiVsOpenRouterWorkbenchDeckHtml
@@ -69,6 +72,20 @@ describe('static report export', () => {
     expect(reportView.report.evidenceBoundaries).toContain(
       'Do not treat a relay as cheaper unless official pricing and fee caveats are both visible.'
     );
+  });
+
+  it('keeps the workbench export path builder-pure with memory-backed report artifacts', async () => {
+    const opportunity = buildOpportunity(DIRECT_API_VS_OPENROUTER_INPUT);
+    const compilation = await buildCompilation(opportunity, {
+      buildAiProcurementCaseBundle: async (nextOpportunity, workflow) =>
+        buildAiProcurementCase(nextOpportunity, workflow)
+    });
+    const reportArtifact = compilation.artifacts.find(
+      (artifact) => artifact.type === 'report'
+    );
+
+    expect(reportArtifact?.storage).toBe('memory');
+    expect(reportArtifact?.uri).toBe(`memory://report/${compilation.report.id}`);
   });
 
   it('writes a standalone html file for the workbench case', async () => {

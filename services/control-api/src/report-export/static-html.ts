@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { OpportunityInput, ReportView } from '@openfons/contracts';
+import { buildReportView } from '../artifacts/report-view.js';
 import { buildAiProcurementCase } from '../cases/ai-procurement.js';
 import { buildCompilation, buildOpportunity } from '../compiler.js';
 
@@ -525,12 +526,7 @@ export const buildDirectApiVsOpenRouterReportView = async (): Promise<ReportView
       buildAiProcurementCase(nextOpportunity, workflow)
   });
 
-  return {
-    report: compiled.report,
-    evidenceSet: compiled.evidenceSet,
-    sourceCaptures: compiled.sourceCaptures,
-    collectionLogs: compiled.collectionLogs
-  };
+  return buildReportView(compiled);
 };
 
 export const exportDirectApiVsOpenRouterWorkbenchHtml = async (

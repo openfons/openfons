@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import type {
   Evidence,
   OpportunitySpec,
@@ -13,6 +16,7 @@ import {
 } from '@openfons/domain-models';
 import { createId, nowIso } from '@openfons/shared';
 import { createApp } from '../../services/control-api/src/app';
+import { createMemoryStore } from '../../services/control-api/src/store';
 
 const createOpportunityInput = () => ({
   title: 'Direct API vs OpenRouter for AI Coding Teams',
@@ -23,6 +27,14 @@ const createOpportunityInput = () => ({
   outcome: 'Produce a source-backed report',
   geo: 'global',
   language: 'English'
+});
+
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    tempDirs.splice(0).map((dir) => rm(dir, { recursive: true, force: true }))
+  );
 });
 
 const createRealBridgeBundle = (
@@ -187,7 +199,10 @@ const createRealBridgeBundle = (
 
 describe('control-api', () => {
   it('compiles an opportunity into a report view backed by evidence', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRoot);
     const app = createApp({
+      artifactDelivery: { repoRoot },
       buildAiProcurementCaseBundle: async (opportunity, workflow) =>
         createRealBridgeBundle(opportunity, workflow)
     });
@@ -225,6 +240,15 @@ describe('control-api', () => {
     expect(compiled.opportunity.pageCandidates[0].slug).toBe(
       'direct-api-vs-openrouter-for-ai-coding-teams'
     );
+    const reportArtifact = compiled.artifacts.find(
+      (artifact: { type: string }) => artifact.type === 'report'
+    );
+    expect(reportArtifact?.storage).toBe('file');
+    expect(reportArtifact?.uri).toMatch(
+      /^artifacts\/generated\/ai-procurement\/.+\/report\.html$/
+    );
+    const artifactHtml = await readFile(join(repoRoot, reportArtifact!.uri), 'utf8');
+    expect(artifactHtml).toContain(compiled.report.title);
 
     const reportResponse = await app.request(
       `/api/v1/reports/${compiled.report.id}`
@@ -235,6 +259,84 @@ describe('control-api', () => {
     expect(reportView.report.id).toBe(compiled.report.id);
     expect(reportView.evidenceSet.id).toBe(compiled.evidenceSet.id);
     expect(reportView.sourceCaptures[0].title).toContain('pricing');
+  });
+
+  it('retains finalized compilation metadata queryable by report id', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRoot);
+    const store = createMemoryStore();
+    const app = createApp(
+      {
+        artifactDelivery: { repoRoot },
+        buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+          createRealBridgeBundle(opportunity, workflow)
+      },
+      store
+    );
+
+    const createResponse = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(createOpportunityInput())
+    });
+    const created = await createResponse.json();
+
+    const compileResponse = await app.request(
+      `/api/v1/opportunities/${created.opportunity.id}/compile`,
+      { method: 'POST' }
+    );
+    const compiled = await compileResponse.json();
+
+    const stored = store.getCompilationByReportId(compiled.report.id);
+
+    expect(stored).toBeDefined();
+    expect(stored?.report.id).toBe(compiled.report.id);
+    expect(
+      stored?.artifacts.find((artifact) => artifact.type === 'report')?.storage
+    ).toBe('file');
+  });
+
+  it('fails compile delivery before persistence when artifact write fails', async () => {
+    const repoRootParent = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRootParent);
+    const blockedRepoRoot = join(repoRootParent, 'blocked-root');
+    await writeFile(blockedRepoRoot, 'blocked', 'utf8');
+    const store = createMemoryStore();
+    const saveCompilation = store.saveCompilation;
+    let saveCompilationCalls = 0;
+    store.saveCompilation = (result) => {
+      saveCompilationCalls += 1;
+      saveCompilation(result);
+    };
+    const app = createApp(
+      {
+        artifactDelivery: { repoRoot: blockedRepoRoot },
+        buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+          createRealBridgeBundle(opportunity, workflow)
+      },
+      store
+    );
+
+    const createResponse = await app.request('/api/v1/opportunities', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify(createOpportunityInput())
+    });
+    const created = await createResponse.json();
+
+    const compileResponse = await app.request(
+      `/api/v1/opportunities/${created.opportunity.id}/compile`,
+      { method: 'POST' }
+    );
+
+    expect(compileResponse.status).toBe(500);
+    expect(saveCompilationCalls).toBe(0);
+    await expect(compileResponse.text()).resolves.toContain('Internal Server Error');
+    expect(store.getReportView(created.opportunity.id)).toBeUndefined();
   });
 
   it('prefers real collection bridge output when the bridge succeeds', async () => {

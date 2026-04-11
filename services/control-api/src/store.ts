@@ -3,16 +3,19 @@ import type {
   OpportunitySpec,
   ReportView
 } from '@openfons/contracts';
+import { buildReportView } from './artifacts/report-view.js';
 
 export type MemoryStore = {
   getOpportunity: (id: string) => OpportunitySpec | undefined;
   saveOpportunity: (opportunity: OpportunitySpec) => void;
   saveCompilation: (result: CompilationResult) => void;
+  getCompilationByReportId: (reportId: string) => CompilationResult | undefined;
   getReportView: (id: string) => ReportView | undefined;
 };
 
 export const createMemoryStore = (): MemoryStore => {
   const opportunities = new Map<string, OpportunitySpec>();
+  const compilations = new Map<string, CompilationResult>();
   const reportViews = new Map<string, ReportView>();
 
   return {
@@ -22,13 +25,10 @@ export const createMemoryStore = (): MemoryStore => {
     },
     saveCompilation: (result) => {
       opportunities.set(result.opportunity.id, result.opportunity);
-      reportViews.set(result.report.id, {
-        report: result.report,
-        evidenceSet: result.evidenceSet,
-        sourceCaptures: result.sourceCaptures,
-        collectionLogs: result.collectionLogs
-      });
+      compilations.set(result.report.id, result);
+      reportViews.set(result.report.id, buildReportView(result));
     },
+    getCompilationByReportId: (reportId) => compilations.get(reportId),
     getReportView: (id) => reportViews.get(id)
   };
 };
