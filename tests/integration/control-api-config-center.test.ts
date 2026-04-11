@@ -59,19 +59,32 @@ describe('control-api config center routes', () => {
     expect(JSON.stringify(pluginsBody)).not.toContain('google-key');
     expect(
       pluginsBody.plugins.find(
-        (item: { pluginId: string }) => item.pluginId === 'pinchtab-local'
-      ).secrets.tokenRef.configured
+        (item: { plugin: { pluginId: string } }) =>
+          item.plugin.pluginId === 'pinchtab-local'
+      ).plugin.secrets.tokenRef.configured
     ).toBe(false);
+    expect(
+      pluginsBody.plugins.find(
+        (item: { plugin: { pluginId: string } }) =>
+          item.plugin.pluginId === 'pinchtab-local'
+      ).revision.etag.startsWith('sha256:')
+    ).toBe(true);
 
     const pluginDetail = await incompleteApp.request(
       '/api/v1/config/plugins/google-default'
     );
     expect(pluginDetail.status).toBe(200);
+    expect((await pluginDetail.json()).revision.etag.startsWith('sha256:')).toBe(
+      true
+    );
 
     const bindingResponse = await incompleteApp.request(
       '/api/v1/config/projects/openfons/bindings'
     );
     expect(bindingResponse.status).toBe(200);
+    expect((await bindingResponse.json()).revision.etag.startsWith('sha256:')).toBe(
+      true
+    );
 
     const validateAllResponse = await incompleteApp.request('/api/v1/config/validate', {
       method: 'POST'

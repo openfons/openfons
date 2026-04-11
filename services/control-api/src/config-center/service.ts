@@ -3,16 +3,22 @@ import path from 'node:path';
 import type {
   CrawlerRoutePreflightReport,
   ConfigValidationResult,
+  ConfigWriteResult,
   MaskedResolvedPluginRuntime,
+  PluginInstance,
   PluginType,
-  ProjectBinding
+  ProjectBinding,
+  RepoConfigRevision
 } from '@openfons/contracts';
 import {
+  applyPluginInstanceWrite,
+  applyProjectBindingWrite,
   buildMaskedPluginInstanceView,
   getPluginType,
   listPluginTypes,
   loadConfigCenterState,
-  loadProjectBinding,
+  listPluginInstanceRecords,
+  loadProjectBindingRecord,
   resolveMaskedProjectRuntimeConfig,
   validateProjectConfig
 } from '@openfons/config-center';
@@ -37,9 +43,31 @@ const flattenRuntimePlugins = (
 export type ConfigCenterService = {
   listPluginTypes: () => PluginType[];
   getPluginType: (typeId: string) => PluginType | undefined;
-  listPlugins: () => MaskedResolvedPluginRuntime[];
-  getPlugin: (pluginId: string) => MaskedResolvedPluginRuntime | undefined;
-  getProjectBindings: (projectId: string) => ProjectBinding;
+  listPlugins: () => Array<{
+    plugin: MaskedResolvedPluginRuntime;
+    revision: RepoConfigRevision;
+  }>;
+  getPlugin: (pluginId: string) => {
+    plugin: PluginInstance;
+    revision: RepoConfigRevision;
+  } | undefined;
+  getProjectBindings: (projectId: string) => {
+    binding: ProjectBinding;
+    revision: RepoConfigRevision;
+  };
+  writePlugin: (args: {
+    projectId: string;
+    pluginId: string;
+    expectedRevision?: string;
+    dryRun: boolean;
+    plugin: PluginInstance;
+  }) => Promise<ConfigWriteResult>;
+  writeProjectBindings: (args: {
+    projectId: string;
+    expectedRevision?: string;
+    dryRun: boolean;
+    binding: ProjectBinding;
+  }) => Promise<ConfigWriteResult>;
   validateAll: () => {
     projects: Array<{
       projectId: string;
@@ -84,19 +112,52 @@ export const createConfigCenterService = ({
     getPluginType: (typeId) => getPluginType(typeId as PluginType['id']),
     listPlugins: () => {
       const state = loadState();
-      return state.pluginInstances.map((plugin) =>
-        buildMaskedPluginInstanceView({ plugin, secretRoot: state.secretRoot })
-      );
+      return listPluginInstanceRecords({ repoRoot }).map((record) => ({
+        plugin: buildMaskedPluginInstanceView({
+          plugin: record.plugin,
+          secretRoot: state.secretRoot
+        }),
+        revision: record.revision
+      }));
     },
     getPlugin: (pluginId) => {
       const state = loadState();
-      const plugin = state.pluginInstances.find((item) => item.id === pluginId);
+      const record = listPluginInstanceRecords({ repoRoot }).find(
+        (item) => item.plugin.id === pluginId
+      );
 
-      return plugin
-        ? buildMaskedPluginInstanceView({ plugin, secretRoot: state.secretRoot })
+      return record
+        ? {
+            plugin: record.plugin,
+            revision: record.revision
+          }
         : undefined;
     },
-    getProjectBindings: (projectId) => loadProjectBinding({ repoRoot, projectId }),
+    getProjectBindings: (projectId) => {
+      const record = loadProjectBindingRecord({ repoRoot, projectId });
+      return {
+        binding: record.binding,
+        revision: record.revision
+      };
+    },
+    writePlugin: ({ projectId, pluginId, expectedRevision, dryRun, plugin }) =>
+      applyPluginInstanceWrite({
+        repoRoot,
+        secretRoot,
+        projectId,
+        expectedRevision,
+        dryRun,
+        plugin: { ...plugin, id: pluginId }
+      }),
+    writeProjectBindings: ({ projectId, expectedRevision, dryRun, binding }) =>
+      applyProjectBindingWrite({
+        repoRoot,
+        secretRoot,
+        projectId,
+        expectedRevision,
+        dryRun,
+        binding: { ...binding, projectId }
+      }),
     validateAll: () => {
       const state = loadState();
       return {

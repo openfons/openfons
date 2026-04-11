@@ -1,3 +1,7 @@
+import {
+  PluginWriteRequestSchema,
+  ProjectBindingWriteRequestSchema
+} from '@openfons/contracts';
 import { Hono } from 'hono';
 import { createConfigCenterService } from './service.js';
 
@@ -7,6 +11,35 @@ export const createConfigCenterRouter = (options: {
 }) => {
   const service = createConfigCenterService(options);
   const app = new Hono();
+  const mapWriteError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : 'config write failed';
+
+    if (message.startsWith('revision conflict')) {
+      return {
+        status: 409 as const,
+        body: { error: 'revision-conflict', message }
+      };
+    }
+
+    if (message.startsWith('lock unavailable')) {
+      return {
+        status: 423 as const,
+        body: { error: 'lock-unavailable', message }
+      };
+    }
+
+    if (message.startsWith('invalid ')) {
+      return {
+        status: 400 as const,
+        body: { error: 'invalid-config', message }
+      };
+    }
+
+    return {
+      status: 500 as const,
+      body: { error: 'config-write-failed', message }
+    };
+  };
 
   app.get('/plugin-types', (c) =>
     c.json({
@@ -29,6 +62,43 @@ export const createConfigCenterRouter = (options: {
   app.get('/projects/:projectId/bindings', (c) =>
     c.json(service.getProjectBindings(c.req.param('projectId')))
   );
+
+  app.put('/plugins/:pluginId', async (c) => {
+    const payload = PluginWriteRequestSchema.parse(await c.req.json());
+
+    try {
+      return c.json(
+        await service.writePlugin({
+          projectId: c.req.query('projectId') ?? 'openfons',
+          pluginId: c.req.param('pluginId'),
+          expectedRevision: payload.expectedRevision,
+          dryRun: c.req.query('dryRun') === 'true' || payload.dryRun,
+          plugin: payload.plugin
+        })
+      );
+    } catch (error) {
+      const mapped = mapWriteError(error);
+      return c.json(mapped.body, mapped.status);
+    }
+  });
+
+  app.put('/projects/:projectId/bindings', async (c) => {
+    const payload = ProjectBindingWriteRequestSchema.parse(await c.req.json());
+
+    try {
+      return c.json(
+        await service.writeProjectBindings({
+          projectId: c.req.param('projectId'),
+          expectedRevision: payload.expectedRevision,
+          dryRun: c.req.query('dryRun') === 'true' || payload.dryRun,
+          binding: payload.binding
+        })
+      );
+    } catch (error) {
+      const mapped = mapWriteError(error);
+      return c.json(mapped.body, mapped.status);
+    }
+  });
 
   app.post('/validate', (c) => c.json(service.validateAll()));
 
