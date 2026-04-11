@@ -232,17 +232,22 @@ export const addEvidence = (
   items: [...evidenceSet.items, evidence]
 });
 
+type CreateArtifactOptions = {
+  storage?: ArtifactStorage;
+};
+
 export const createArtifact = (
   topicRunId: string,
   type: ArtifactType,
   uri: string,
-  reportId?: string
+  reportId?: string,
+  options: CreateArtifactOptions = {}
 ): Artifact => ({
   id: createId('art'),
   topicRunId,
   reportId,
   type,
-  storage: 'memory',
+  storage: options.storage ?? 'memory',
   uri,
   createdAt: nowIso()
 });

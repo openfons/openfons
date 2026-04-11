@@ -202,8 +202,8 @@ function createValidCompilationResult() {
         topicRunId: 'run_001',
         reportId: 'report_001',
         type: 'report' as const,
-        storage: 'memory' as const,
-        uri: 'memory://report/report_001',
+        storage: 'file' as const,
+        uri: 'artifacts/generated/ai-procurement/direct-api-vs-openrouter-ai-coding-report_001/report.html',
         createdAt: '2026-03-30T08:10:00.000Z'
       }
     ]

@@ -66,4 +66,26 @@ describe('@openfons/domain-models', () => {
     expect(next.items).toHaveLength(1);
     expect(artifact.reportId).toBe('report_001');
   });
+
+  it('creates both memory and file-backed artifacts explicitly', () => {
+    const topicRun = createTopicRun('opp_001', 'wf_001', 'ai-procurement');
+
+    const memoryArtifact = createArtifact(
+      topicRun.id,
+      'report',
+      `memory://report/report_001`,
+      'report_001'
+    );
+
+    const fileArtifact = createArtifact(
+      topicRun.id,
+      'report',
+      'artifacts/generated/ai-procurement/direct-api-vs-openrouter-report_001/report.html',
+      'report_001',
+      { storage: 'file' }
+    );
+
+    expect(memoryArtifact.storage).toBe('memory');
+    expect(fileArtifact.storage).toBe('file');
+  });
 });
