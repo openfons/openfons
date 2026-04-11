@@ -16,3 +16,4 @@ __pycache__/
 data/temp/
 .superpowers/
 accounts.db
+artifacts/generated/

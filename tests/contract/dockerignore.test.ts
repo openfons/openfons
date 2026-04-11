@@ -16,5 +16,6 @@ describe('.dockerignore', () => {
     expect(entries).toContain('Memory/');
     expect(entries).toContain('labs/');
     expect(entries).toContain('accounts.db');
+    expect(entries).toContain('artifacts/generated/');
   });
 });

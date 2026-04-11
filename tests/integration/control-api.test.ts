@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type {
   Evidence,
@@ -30,6 +30,8 @@ const createOpportunityInput = () => ({
 });
 
 const tempDirs: string[] = [];
+const repoRoot = resolve(__dirname, '..', '..');
+const controlApiRoot = resolve(repoRoot, 'services', 'control-api');
 
 afterEach(async () => {
   await Promise.all(
@@ -336,6 +338,66 @@ describe('control-api', () => {
     expect(compileResponse.status).toBe(500);
     expect(saveCompilationCalls).toBe(0);
     await expect(compileResponse.text()).resolves.toContain('Internal Server Error');
+  });
+
+  it('anchors default artifact delivery to the repository root instead of process cwd', async () => {
+    const originalCwd = process.cwd();
+    let artifactDirRelative: string | undefined;
+
+    try {
+      process.chdir(controlApiRoot);
+
+      const app = createApp({
+        buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+          createRealBridgeBundle(opportunity, workflow)
+      });
+
+      const createResponse = await app.request('/api/v1/opportunities', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(createOpportunityInput())
+      });
+      const created = await createResponse.json();
+
+      const compileResponse = await app.request(
+        `/api/v1/opportunities/${created.opportunity.id}/compile`,
+        { method: 'POST' }
+      );
+      const compiled = await compileResponse.json();
+      const reportArtifact = compiled.artifacts.find(
+        (artifact: { type: string }) => artifact.type === 'report'
+      );
+
+      expect(reportArtifact?.uri).toMatch(
+        /^artifacts\/generated\/ai-procurement\/.+\/report\.html$/
+      );
+
+      artifactDirRelative = reportArtifact!.uri.replace(/\/report\.html$/, '');
+
+      await expect(readFile(resolve(repoRoot, reportArtifact!.uri), 'utf8')).resolves.toContain(
+        compiled.report.title
+      );
+      await expect(
+        readFile(resolve(controlApiRoot, reportArtifact!.uri), 'utf8')
+      ).rejects.toThrow();
+    } finally {
+      process.chdir(originalCwd);
+
+      if (artifactDirRelative) {
+        await Promise.all([
+          rm(resolve(repoRoot, artifactDirRelative), {
+            recursive: true,
+            force: true
+          }),
+          rm(resolve(controlApiRoot, artifactDirRelative), {
+            recursive: true,
+            force: true
+          })
+        ]);
+      }
+    }
   });
 
   it('prefers real collection bridge output when the bridge succeeds', async () => {

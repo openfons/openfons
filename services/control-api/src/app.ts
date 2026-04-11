@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { ApiErrorSchema, OpportunityInputSchema } from '@openfons/contracts';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -25,13 +26,15 @@ type CreateAppOptions = BuildCompilationOptions & {
   };
 };
 
+const DEFAULT_ARTIFACT_REPO_ROOT = fileURLToPath(new URL('../../..', import.meta.url));
+
 export const createApp = (
   options: CreateAppOptions = {},
   store: MemoryStore = createMemoryStore()
 ) => {
   const app = new Hono();
   const { configCenter, artifactDelivery, ...compilationOptions } = options;
-  const artifactRepoRoot = artifactDelivery?.repoRoot ?? process.cwd();
+  const artifactRepoRoot = artifactDelivery?.repoRoot ?? DEFAULT_ARTIFACT_REPO_ROOT;
 
   app.get('/health', (c) => c.json({ status: 'ok' }));
 
