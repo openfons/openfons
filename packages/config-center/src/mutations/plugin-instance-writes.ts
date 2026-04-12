@@ -12,6 +12,7 @@ import {
 import { collectProjectClosure, validatePluginSelection } from '../validator.js';
 import { writeJsonAtomically } from '../persistence/atomic-json.js';
 import { writeConfigBackup } from '../persistence/backup.js';
+import { appendConfigBackupHistoryEntry } from '../persistence/backup-history.js';
 import { withRepoConfigLock } from '../persistence/lockfile.js';
 import { buildRepoConfigRevision } from '../persistence/revision.js';
 
@@ -133,16 +134,33 @@ export const applyPluginInstanceWrite = async ({
 
       writeJsonAtomically({ targetPath, value: nextPlugin });
       const persistedContent = readFileSync(targetPath, 'utf8');
+      const persistedRevision = buildRepoConfigRevision({
+        rawContent: persistedContent,
+        updatedAt: nextPlugin.meta?.updatedAt ?? nextUpdatedAt
+      });
+
+      if (changed && backupFile) {
+        appendConfigBackupHistoryEntry({
+          repoRoot,
+          entry: {
+            resource: 'plugin-instance',
+            resourceId: plugin.id,
+            projectId,
+            changed: true,
+            createdAt: new Date().toISOString(),
+            backupFile,
+            revision: persistedRevision,
+            previousRevision: current?.revision
+          }
+        });
+      }
 
       return {
         status: 'applied',
         resource: 'plugin-instance',
         resourceId: plugin.id,
         changed,
-        revision: buildRepoConfigRevision({
-          rawContent: persistedContent,
-          updatedAt: nextPlugin.meta?.updatedAt ?? nextUpdatedAt
-        }),
+        revision: persistedRevision,
         previousRevision: current?.revision,
         validation,
         backupFile,

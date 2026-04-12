@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type {
   CrawlerRoutePreflightReport,
+  ConfigBackupHistoryEntry,
+  ConfigDoctorReport,
   ConfigValidationResult,
   ConfigWriteResult,
   MaskedResolvedPluginRuntime,
@@ -14,7 +16,9 @@ import {
   applyPluginInstanceWrite,
   applyProjectBindingWrite,
   buildMaskedPluginInstanceView,
+  createProjectConfigDoctorReport,
   getPluginType,
+  listConfigBackupHistoryEntries,
   listPluginTypes,
   loadConfigCenterState,
   listPluginInstanceRecords,
@@ -68,6 +72,11 @@ export type ConfigCenterService = {
     dryRun: boolean;
     binding: ProjectBinding;
   }) => Promise<ConfigWriteResult>;
+  listBackupHistory: (args: {
+    resource?: string;
+    resourceId?: string;
+    projectId?: string;
+  }) => ConfigBackupHistoryEntry[];
   validateAll: () => {
     projects: Array<{
       projectId: string;
@@ -79,6 +88,7 @@ export type ConfigCenterService = {
     projectId: string;
     routeKey: string;
   }) => CrawlerRoutePreflightReport;
+  getProjectDoctor: (projectId: string) => ConfigDoctorReport;
   resolveProject: (
     projectId: string
   ) => ReturnType<typeof resolveMaskedProjectRuntimeConfig>;
@@ -158,6 +168,13 @@ export const createConfigCenterService = ({
         dryRun,
         binding: { ...binding, projectId }
       }),
+    listBackupHistory: ({ resource, resourceId, projectId }) =>
+      listConfigBackupHistoryEntries({
+        repoRoot,
+        resource,
+        resourceId,
+        projectId
+      }),
     validateAll: () => {
       const state = loadState();
       return {
@@ -176,6 +193,43 @@ export const createConfigCenterService = ({
         repoRoot,
         secretRoot
       }),
+    getProjectDoctor: (projectId) => {
+      const binding = loadProjectBindingRecord({ repoRoot, projectId }).binding;
+      const routes = Object.entries(binding.routes).map(([routeKey, route]) => {
+        const preflight = createCrawlerRoutePreflightReport({
+          projectId,
+          routeKey,
+          repoRoot,
+          secretRoot
+        });
+        const hasPlaceholder = [
+          ...preflight.hostChecks,
+          ...preflight.secretChecks
+        ].some((item) => item.status === 'placeholder');
+
+        return {
+          routeKey,
+          mode: route.mode,
+          status:
+            preflight.status === 'ready'
+              ? 'ready'
+              : hasPlaceholder
+                ? 'degraded'
+                : 'blocked',
+          reason:
+            preflight.status === 'ready'
+              ? 'all required runtime inputs are configured'
+              : preflight.nextSteps[0] ?? 'route preflight reported blockers'
+        } as const;
+      });
+
+      return createProjectConfigDoctorReport({
+        repoRoot,
+        secretRoot,
+        projectId,
+        routes
+      });
+    },
     resolveProject: (projectId) =>
       resolveMaskedProjectRuntimeConfig({ state: loadState(), projectId }),
     resolvePlugin: ({ projectId, pluginId }) =>

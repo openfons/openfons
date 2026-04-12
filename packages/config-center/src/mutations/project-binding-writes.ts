@@ -7,6 +7,7 @@ import { loadConfigCenterState, loadProjectBindingRecord } from '../loader.js';
 import { collectProjectClosure, validatePluginSelection } from '../validator.js';
 import { writeJsonAtomically } from '../persistence/atomic-json.js';
 import { writeConfigBackup } from '../persistence/backup.js';
+import { appendConfigBackupHistoryEntry } from '../persistence/backup-history.js';
 import { withRepoConfigLock } from '../persistence/lockfile.js';
 import { buildRepoConfigRevision } from '../persistence/revision.js';
 
@@ -110,16 +111,33 @@ export const applyProjectBindingWrite = async ({
 
       writeJsonAtomically({ targetPath: current.filePath, value: nextBinding });
       const persistedContent = readFileSync(current.filePath, 'utf8');
+      const persistedRevision = buildRepoConfigRevision({
+        rawContent: persistedContent,
+        updatedAt: nextBinding.meta?.updatedAt ?? nextUpdatedAt
+      });
+
+      if (changed && backupFile) {
+        appendConfigBackupHistoryEntry({
+          repoRoot,
+          entry: {
+            resource: 'project-binding',
+            resourceId: projectId,
+            projectId,
+            changed: true,
+            createdAt: new Date().toISOString(),
+            backupFile,
+            revision: persistedRevision,
+            previousRevision: current.revision
+          }
+        });
+      }
 
       return {
         status: 'applied',
         resource: 'project-binding',
         resourceId: projectId,
         changed,
-        revision: buildRepoConfigRevision({
-          rawContent: persistedContent,
-          updatedAt: nextBinding.meta?.updatedAt ?? nextUpdatedAt
-        }),
+        revision: persistedRevision,
         previousRevision: current.revision,
         validation,
         backupFile,

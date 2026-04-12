@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export * from './config-center.js';
 export * from './config-center-write.js';
+export * from './config-center-ops.js';
 export * from './runtime-diagnostics.js';
 
 export const OpportunityInputSchema = z.object({
