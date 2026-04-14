@@ -4,6 +4,7 @@ import type {
   CrawlerRoutePreflightReport,
   ConfigBackupHistoryEntry,
   ConfigDoctorReport,
+  ProjectReadinessReport,
   ConfigValidationResult,
   ConfigWriteResult,
   MaskedResolvedPluginRuntime,
@@ -16,6 +17,7 @@ import {
   applyPluginInstanceWrite,
   applyProjectBindingWrite,
   buildMaskedPluginInstanceView,
+  buildProjectReadiness,
   createProjectConfigDoctorReport,
   getPluginType,
   listConfigBackupHistoryEntries,
@@ -84,6 +86,7 @@ export type ConfigCenterService = {
     }>;
   };
   getProjectValidation: (projectId: string) => ConfigValidationResult;
+  getProjectReadiness: (projectId: string) => ProjectReadinessReport;
   getCrawlerRoutePreflight: (args: {
     projectId: string;
     routeKey: string;
@@ -186,6 +189,12 @@ export const createConfigCenterService = ({
     },
     getProjectValidation: (projectId) =>
       validateProjectConfig({ state: loadState(), projectId }),
+    getProjectReadiness: (projectId) =>
+      buildProjectReadiness({
+        repoRoot,
+        secretRoot,
+        projectId
+      }),
     getCrawlerRoutePreflight: ({ projectId, routeKey }) =>
       createCrawlerRoutePreflightReport({
         projectId,

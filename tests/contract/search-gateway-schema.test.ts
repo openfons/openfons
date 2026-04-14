@@ -218,6 +218,21 @@ describe('search gateway contracts', () => {
     expect(parsed.taskId).toBeUndefined();
   });
 
+  it('accepts SearchRun with empty selectedProviders when no provider executed', () => {
+    const parsed = SearchRunSchema.parse({
+      id: 'run_003',
+      projectId: 'openfons',
+      purpose: 'evidence',
+      query: 'open source browser automation tools',
+      status: 'completed',
+      selectedProviders: [],
+      degradedProviders: ['google'],
+      startedAt: '2026-03-31T02:00:00.000Z'
+    });
+
+    expect(parsed.selectedProviders).toEqual([]);
+  });
+
   it('requires SearchRunResult to include all top-level payload groups and downgradeInfo as array', () => {
     const missingDiagnostics = {
       ...createSearchRunResultInput()

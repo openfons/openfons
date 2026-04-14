@@ -10,6 +10,7 @@ export * from './persistence/backup.js';
 export * from './persistence/backup-history.js';
 export * from './persistence/lockfile.js';
 export * from './persistence/revision.js';
+export * from './readiness.js';
 export * from './resolver.js';
 export * from './runtime/browser.js';
 export * from './runtime/crawler.js';

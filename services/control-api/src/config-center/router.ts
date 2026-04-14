@@ -203,6 +203,18 @@ export const createConfigCenterRouter = (options: {
     )
   );
 
+  app.get('/projects/:projectId/readiness', (c) =>
+    jsonWithConfigCenterError(
+      c,
+      () => service.getProjectReadiness(c.req.param('projectId')),
+      {
+        resource: 'project-binding',
+        resourceId: c.req.param('projectId'),
+        projectId: c.req.param('projectId')
+      }
+    )
+  );
+
   app.put('/plugins/:pluginId', async (c) => {
     let payload: unknown;
 

@@ -1,4 +1,7 @@
-import type { ResolvedPluginRuntime } from '@openfons/contracts';
+import type {
+  ResolvedPluginRuntime,
+  SourceReadiness
+} from '@openfons/contracts';
 import type { ConfigCenterState } from '../loader.js';
 import { loadProjectBinding } from '../loader.js';
 import {
@@ -6,6 +9,7 @@ import {
   resolvePluginRuntimeById
 } from '../resolver.js';
 import { validatePluginSelection } from '../validator.js';
+import { buildProjectReadiness } from '../readiness.js';
 
 const asArray = <T>(value: T | T[] | undefined) =>
   !value ? [] : Array.isArray(value) ? value : [value];
@@ -64,4 +68,25 @@ export const resolveSearchRuntime = ({
   );
 
   return { providers };
+};
+
+export const resolveSearchSourceReadiness = ({
+  state,
+  projectId
+}: {
+  state: ConfigCenterState;
+  projectId: string;
+}): SourceReadiness => {
+  const report = buildProjectReadiness({
+    repoRoot: state.repoRoot,
+    secretRoot: state.secretRoot,
+    projectId
+  });
+  const searchSource = report.sources.find((source) => source.sourceId === 'search');
+
+  if (!searchSource) {
+    throw new Error(`search readiness not found for ${projectId}`);
+  }
+
+  return searchSource;
 };

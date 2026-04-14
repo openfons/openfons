@@ -1,5 +1,6 @@
 import type {
   CollectionLog,
+  EvidenceAcquisitionMeta,
   SearchRequest,
   SearchRunResult,
   SearchResult,
@@ -83,6 +84,62 @@ const createRuntimeError = (
   logs: CollectionLog[],
   cause?: unknown
 ) => new AiProcurementRuntimeError(message, logs, cause);
+
+const buildSearchAcquisitionMeta = (
+  searchRun: SearchRunResult,
+  selected: SearchResult
+): EvidenceAcquisitionMeta => {
+  const selectedRouteKey =
+    searchRun.retrievalOutcome?.selectedRoute ?? selected.provider;
+  const selectedAttempt = searchRun.retrievalOutcome?.attempts.find(
+    (attempt) =>
+      attempt.result === 'succeeded' && attempt.routeKey === selectedRouteKey
+  );
+  const selectedCandidate = searchRun.retrievalPlan?.candidates.find(
+    (candidate) => candidate.routeKey === selectedRouteKey
+  );
+  const warnings = selectedCandidate?.penaltyReason
+    ? [
+        {
+          code: 'penalty_reason',
+          message: selectedCandidate.penaltyReason
+        }
+      ]
+    : [];
+  const blockers = (searchRun.retrievalOutcome?.omissions ??
+    searchRun.retrievalPlan?.omissions ??
+    []
+  ).map((omission) => ({
+    code: `omission:${omission.routeKey}`,
+    message: omission.reason
+  }));
+
+  if (selectedCandidate) {
+    return {
+      sourceId: 'search',
+      routeKey: selectedRouteKey,
+      qualityTier: selectedCandidate.qualityTier,
+      routeStatusAtAttempt: selectedCandidate.status,
+      retrievalStatus: selectedAttempt?.result ?? 'succeeded',
+      attemptedAt: selectedAttempt?.finishedAt ?? searchRun.searchRun.finishedAt ?? nowIso(),
+      decisionReason: selectedAttempt?.decisionBasis ?? 'search-result-selected',
+      warnings,
+      blockers
+    };
+  }
+
+  return {
+    sourceId: 'search',
+    routeKey: selectedRouteKey,
+    qualityTier: 'primary',
+    routeStatusAtAttempt: 'ready',
+    retrievalStatus: selectedAttempt?.result ?? 'succeeded',
+    attemptedAt: selectedAttempt?.finishedAt ?? searchRun.searchRun.finishedAt ?? nowIso(),
+    decisionReason: selectedAttempt?.decisionBasis ?? 'search-result-selected',
+    warnings,
+    blockers
+  };
+};
 
 const mapTemplateCaptureIdsToLiveIds = (
   deterministicCaptures: SourceCapture[],
@@ -222,6 +279,7 @@ export const createAiProcurementRealCollectionBridge = ({
     const topicRun = createTopicRun(opportunity.id, workflow.id, 'ai-procurement');
     const profile = resolveAiProcurementProfileForOpportunity(opportunity);
     const selectedTargets: SelectedTarget[] = [];
+    const acquisitionMetaByUrl = new Map<string, EvidenceAcquisitionMeta>();
     const discoveryLogs: CollectionLog[] = [];
 
     for (const [index, target] of profile.captureTargets.entries()) {
@@ -283,6 +341,7 @@ export const createAiProcurementRealCollectionBridge = ({
         ...target,
         result: selected
       });
+      acquisitionMetaByUrl.set(target.url, buildSearchAcquisitionMeta(searchRun, selected));
       discoveryLogs.push(
         ...createSearchTraceLogs({
           topicRunId: topicRun.id,
@@ -433,6 +492,9 @@ export const createAiProcurementRealCollectionBridge = ({
       deterministicCaptures,
       sourceCaptures
     );
+    const deterministicCaptureUrlById = new Map(
+      deterministicCaptures.map((capture) => [capture.id, capture.url])
+    );
     const evidenceSet = createEvidenceSet(topicRun.id);
 
     return {
@@ -452,6 +514,9 @@ export const createAiProcurementRealCollectionBridge = ({
           topicRunId: topicRun.id,
           captureId: resolveMappedCaptureId(captureIdMap, item.captureId),
           freshnessNote: 'Verified against live captures during this run.',
+          acquisitionMeta: acquisitionMetaByUrl.get(
+            deterministicCaptureUrlById.get(item.captureId) ?? ''
+          ),
           supportingCaptureIds: item.supportingCaptureIds.map((captureId) =>
             resolveMappedCaptureId(captureIdMap, captureId)
           )

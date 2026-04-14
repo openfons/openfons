@@ -1,5 +1,6 @@
 import type {
   ProviderStatus,
+  ResolvedPluginRuntime,
   SearchProviderId,
   UpgradeCandidate,
   ValidationResult
@@ -8,7 +9,8 @@ import {
   expandPluginDependencyClosure,
   loadConfigCenterState,
   loadProjectBinding,
-  resolveSearchRuntime,
+  resolvePluginRuntimeById,
+  resolveSearchSourceReadiness,
   validatePluginSelection
 } from '@openfons/config-center';
 import {
@@ -24,7 +26,7 @@ const createAdapterFromResolvedPlugin = ({
   fetchImpl,
   ddgSearchImpl
 }: {
-  plugin: ReturnType<typeof resolveSearchRuntime>['providers'][number];
+  plugin: ResolvedPluginRuntime;
   fetchImpl?: typeof fetch;
   ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
 }): [SearchProviderId, SearchProviderAdapter] => {
@@ -50,6 +52,39 @@ const createAdapterFromResolvedPlugin = ({
     default:
       throw new Error(`unsupported search driver ${plugin.driver}`);
   }
+};
+
+const buildRuntimeProviders = ({
+  projectId,
+  repoRoot,
+  secretRoot,
+  fetchImpl,
+  ddgSearchImpl
+}: {
+  projectId: string;
+  repoRoot: string;
+  secretRoot?: string;
+  fetchImpl?: typeof fetch;
+  ddgSearchImpl?: Parameters<typeof createDdgAdapter>[0]['searchImpl'];
+}) => {
+  const state = loadConfigCenterState({ repoRoot, secretRoot });
+  const searchSource = resolveSearchSourceReadiness({ state, projectId });
+  const providers = Object.fromEntries(
+    searchSource.routes
+      .filter((route) => route.status !== 'blocked')
+      .map((route) => {
+        const pluginId = String(route.detail.pluginId);
+        const plugin = resolvePluginRuntimeById({ state, pluginId });
+
+        return createAdapterFromResolvedPlugin({
+          plugin,
+          fetchImpl,
+          ddgSearchImpl
+        });
+      })
+  ) as Partial<Record<SearchProviderId, SearchProviderAdapter>>;
+
+  return { providers, searchSource };
 };
 
 const asArray = <T>(value: T | T[] | undefined) =>
@@ -147,19 +182,19 @@ export const createRuntimeGateway = ({
   dispatchCollectorRequests?: (candidates: UpgradeCandidate[]) => Promise<void>;
   runStore?: GatewayRunStore;
 }) => {
-  const state = loadConfigCenterState({ repoRoot, secretRoot });
-  const runtime = resolveSearchRuntime({ state, projectId });
-
-  const providers = Object.fromEntries(
-    runtime.providers.map((plugin) =>
-      createAdapterFromResolvedPlugin({ plugin, fetchImpl, ddgSearchImpl })
-    )
-  ) as Partial<Record<SearchProviderId, SearchProviderAdapter>>;
+  const { providers, searchSource } = buildRuntimeProviders({
+    projectId,
+    repoRoot,
+    secretRoot,
+    fetchImpl,
+    ddgSearchImpl
+  });
 
   return createSearchGateway({
     projectId,
     providers,
     dispatchCollectorRequests,
+    resolveSourceReadiness: () => searchSource,
     runStore
   });
 };

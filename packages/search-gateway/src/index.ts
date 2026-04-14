@@ -1,6 +1,7 @@
 export * from './catalog.js';
 export * from './policy.js';
 export * from './gateway.js';
+export * from './retrieval.js';
 export * from './providers/base.js';
 export * from './providers/google.js';
 export * from './providers/bing.js';

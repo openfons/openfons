@@ -3,7 +3,14 @@ import { z } from 'zod';
 export * from './config-center.js';
 export * from './config-center-write.js';
 export * from './config-center-ops.js';
+export * from './retrieval-orchestration.js';
 export * from './runtime-diagnostics.js';
+
+import {
+  EvidenceAcquisitionMetaSchema,
+  RetrievalOutcomeSchema,
+  RetrievalPlanSchema
+} from './retrieval-orchestration.js';
 
 export const OpportunityInputSchema = z.object({
   title: z.string().min(1),
@@ -98,7 +105,7 @@ export const SearchRunSchema = z.object({
   purpose: SearchPurposeSchema,
   query: z.string().min(1),
   status: SearchRunStatusSchema,
-  selectedProviders: z.array(SearchProviderIdSchema).min(1),
+  selectedProviders: z.array(SearchProviderIdSchema),
   degradedProviders: z.array(SearchProviderIdSchema),
   startedAt: z.string().datetime(),
   finishedAt: z.string().datetime().optional()
@@ -217,7 +224,9 @@ export const SearchRunResultSchema = z.object({
   results: z.array(SearchResultSchema),
   upgradeCandidates: z.array(UpgradeCandidateSchema),
   diagnostics: z.array(ProviderDiagnosticSchema),
-  downgradeInfo: z.array(DowngradeInfoSchema)
+  downgradeInfo: z.array(DowngradeInfoSchema),
+  retrievalPlan: RetrievalPlanSchema.optional(),
+  retrievalOutcome: RetrievalOutcomeSchema.optional()
 });
 
 export const PageCandidateSchema = z.object({
@@ -466,7 +475,8 @@ export const EvidenceSchema = z.object({
   reportability: ReportabilitySchema,
   riskLevel: RiskLevelSchema,
   freshnessNote: z.string().min(1),
-  supportingCaptureIds: z.array(z.string().min(1)).min(1)
+  supportingCaptureIds: z.array(z.string().min(1)).min(1),
+  acquisitionMeta: EvidenceAcquisitionMetaSchema.optional()
 });
 
 export const EvidenceSetSchema = z.object({
