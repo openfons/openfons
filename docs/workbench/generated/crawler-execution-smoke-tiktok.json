@@ -1,6 +1,10 @@
 {
   "status": "error",
   "route": "tiktok",
-  "runtime": null,
-  "error": "config-center validation failed for openfons: pinchtab-local secret tokenRef was not found; tiktok-account-main secret accountRef was not found; tiktok-cookie-main secret sessionRef was not found; global-proxy-pool secret poolRef was not found"
+  "runtime": {
+    "routeKey": "tiktok",
+    "driver": "tiktok-api",
+    "mode": "requires-auth"
+  },
+  "error": "tiktok-api bridge failed for https://www.tiktok.com/@scout2015: invalid bridge input: cookie file must provide ms_token/msToken"
 }

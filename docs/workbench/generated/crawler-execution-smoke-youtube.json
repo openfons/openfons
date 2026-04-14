@@ -1,6 +1,10 @@
 {
   "status": "error",
   "route": "youtube",
-  "runtime": null,
-  "error": "config-center validation failed for openfons: global-proxy-pool secret poolRef was not found"
+  "runtime": {
+    "routeKey": "youtube",
+    "driver": "yt-dlp",
+    "mode": "public-first"
+  },
+  "error": "yt-dlp execution failed for https://www.youtube.com/watch?v=aqz-KE-bpKQ: yt-dlp.exe failed: spawn yt-dlp.exe ENOENT"
 }

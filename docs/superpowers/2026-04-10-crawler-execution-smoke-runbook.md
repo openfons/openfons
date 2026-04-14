@@ -12,20 +12,16 @@ $uvCommand = if ($env:OPENFONS_UV_PATH) {
 } else {
   (Get-Command uv -ErrorAction Stop).Source
 }
-$ytDlpCommand = if ($env:OPENFONS_YT_DLP_PATH) {
-  $env:OPENFONS_YT_DLP_PATH
-} else {
-  (Get-Command yt-dlp -ErrorAction Stop).Source
-}
 & $uvCommand --version
-& $ytDlpCommand --version
 if (-not (Test-Path '.\\.env_uv\\Scripts\\python.exe')) {
   & $uvCommand venv .env_uv
 }
 & $uvCommand sync --python .\\.env_uv\\Scripts\\python.exe
 ```
 
-The smoke harness relies on the same bridge that `services/control-api/src/collection/crawler-execution/tiktok-api-runner.ts` uses, so the repo-root `.env_uv` must expose a Windows Python interpreter at `repoRoot\\.env_uv\\Scripts\\python.exe` (non-Windows clients read `repoRoot/.env_uv/bin/python`).  `uv` is resolved via `OPENFONS_UV_PATH` before falling back to `uv`/`uv.exe`, and `yt-dlp` is resolved via `OPENFONS_YT_DLP_PATH` before `yt-dlp`/`yt-dlp.exe`.
+The smoke harness relies on the same bridge that `services/control-api/src/collection/crawler-execution/tiktok-api-runner.ts` uses, so the repo-root `.env_uv` must expose a Windows Python interpreter at `repoRoot\\.env_uv\\Scripts\\python.exe` (non-Windows clients read `repoRoot/.env_uv/bin/python`). `uv` is resolved via `OPENFONS_UV_PATH` before falling back to `uv`/`uv.exe`.
+
+Do not hard-require `yt-dlp` in this prerequisite block. The runtime preflight below is intentionally responsible for diagnosing missing `yt-dlp` on the current machine.
 
 ## Environment variables
 
@@ -98,6 +94,11 @@ with real operator-managed material.
 ## YouTube smoke
 
 ```powershell
+if ($env:OPENFONS_YT_DLP_PATH) {
+  & $env:OPENFONS_YT_DLP_PATH --version
+} else {
+  Get-Command yt-dlp -ErrorAction Stop | Out-Null
+}
 pnpm exec tsx scripts/workbench/smoke-crawler-execution.ts `
   --route youtube `
   --out docs/workbench/generated/crawler-execution-smoke-youtube.json
@@ -136,16 +137,18 @@ Success signal: the JSON output contains `"status": "success"` and the runtime s
 
 ### YouTube
 
-- Date: 2026-04-10
+- Date: 2026-04-14
 - Status: error
-- Driver: unresolved
+- Driver: yt-dlp
 - Capture summary: unavailable
-- Blockers: config-center validation failed for openfons: global-proxy-pool secret poolRef was not found
+- Blockers: yt-dlp execution failed for https://www.youtube.com/watch?v=aqz-KE-bpKQ: yt-dlp.exe failed: spawn yt-dlp.exe ENOENT
+- Preflight blockers: `yt-dlp` missing from PATH / `OPENFONS_YT_DLP_PATH`; `global-proxy-pool.json` still contains placeholder proxy endpoints
 
 ### TikTok
 
-- Date: 2026-04-10
+- Date: 2026-04-14
 - Status: error
-- Driver: unresolved
+- Driver: tiktok-api
 - Capture summary: unavailable
-- Blockers: config-center validation failed for openfons: pinchtab-local secret tokenRef was not found; tiktok-account-main secret accountRef was not found; tiktok-cookie-main secret sessionRef was not found; global-proxy-pool secret poolRef was not found
+- Blockers: tiktok-api bridge failed for https://www.tiktok.com/@scout2015: invalid bridge input: cookie file must provide ms_token/msToken
+- Preflight blockers: `pinchtab-token`, `tiktok-account-main.json`, `tiktok-cookie-main`, and `global-proxy-pool.json` still contain placeholder material
