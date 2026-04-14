@@ -206,6 +206,17 @@ export const buildCompilation = async (
     buildAiProcurementCaseBundle?: BuildAiProcurementCaseBundle;
   } = {}
 ): Promise<CompilationResult> => {
+  if (
+    opportunity.planning &&
+    opportunity.planning.approval.status !== 'confirmed'
+  ) {
+    throw new CompilationPolicyError(
+      'needs_user_confirmation',
+      409,
+      'Opportunity must be confirmed before compilation.'
+    );
+  }
+
   const policy = classifyAiProcurementOpportunity(opportunity);
 
   if (!policy.supported) {

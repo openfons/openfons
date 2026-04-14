@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { OpportunityPlanningBundleSchema } from './opportunity-planning.js';
 
 export * from './config-center.js';
 export * from './config-center-write.js';
 export * from './config-center-ops.js';
+export * from './opportunity-planning.js';
 export * from './retrieval-orchestration.js';
 export * from './runtime-diagnostics.js';
 
@@ -29,7 +31,8 @@ export const CompilationPolicyCodeSchema = z.enum([
   'missing_official_targets',
   'insufficient_public_evidence',
   'needs_authenticated_capture',
-  'underspecified_buyer_decision'
+  'underspecified_buyer_decision',
+  'needs_user_confirmation'
 ]);
 export const TaskKindSchema = z.enum([
   'collect-evidence',
@@ -338,7 +341,8 @@ export const OpportunitySpecSchema = z.object({
   evidenceRequirements: z.array(EvidenceRequirementSchema).min(1),
   productOpportunityHints: z.array(ProductOpportunityHintSchema),
   planningSignalBrief: PlanningSignalBriefSchema.optional(),
-  intakeProfile: OpportunityIntakeProfileSchema.optional()
+  intakeProfile: OpportunityIntakeProfileSchema.optional(),
+  planning: OpportunityPlanningBundleSchema.optional()
 });
 
 export const TaskSpecSchema = z.object({

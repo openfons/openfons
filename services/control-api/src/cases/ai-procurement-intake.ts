@@ -111,5 +111,7 @@ export const formatAiProcurementPolicyMessage = (
       return 'The current AI procurement compile path does not have enough public evidence for this request.';
     case 'needs_authenticated_capture':
       return 'This AI procurement request needs authenticated capture that is outside the current public run boundary.';
+    case 'needs_user_confirmation':
+      return 'Opportunity must be confirmed before compilation.';
   }
 };

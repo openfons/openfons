@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildOpportunity } from '../../services/control-api/src/compiler.js';
+import {
+  buildCompilation,
+  buildOpportunity
+} from '../../services/control-api/src/compiler.js';
 import {
   buildOpportunityIntakeProfile,
   buildPlanningSignalBrief
 } from '../../services/control-api/src/planning/signal-brief.js';
+import { planOpportunityFromQuestion } from '../../services/control-api/src/planning/pipeline.js';
 
 describe('opportunity planning signal brief', () => {
   it('builds a comparison-oriented signal brief for ai procurement inputs', () => {
@@ -93,5 +97,100 @@ describe('opportunity planning signal brief', () => {
       researchMode: 'last30days-brief'
     });
     expect(opportunity.searchIntent).toBe('evaluation');
+  });
+
+  it('turns one raw AI procurement question into a pending OpportunitySpec', () => {
+    const opportunity = planOpportunityFromQuestion({
+      question:
+        'For AI coding agents, should my small team buy OpenAI directly or use OpenRouter?',
+      geoHint: 'US',
+      languageHint: 'English',
+      audienceHint: 'small AI teams'
+    });
+
+    expect(opportunity.input.query).toContain('OpenRouter');
+    expect(opportunity.searchIntent).toBe('comparison');
+    expect(opportunity.planning?.approval.status).toBe(
+      'pending_user_confirmation'
+    );
+    expect(opportunity.planning?.roleBriefs.map((item) => item.role)).toContain(
+      'opportunity-judge'
+    );
+  });
+
+  it('blocks compile for raw-question opportunities before user confirmation', async () => {
+    const opportunity = planOpportunityFromQuestion({
+      question:
+        'Should a small AI team buy model APIs directly or through a router?'
+    });
+
+    await expect(buildCompilation(opportunity)).rejects.toMatchObject({
+      code: 'needs_user_confirmation',
+      status: 409
+    });
+  });
+
+  it('preserves non-ai questions instead of rewriting them into ai procurement', () => {
+    const opportunity = planOpportunityFromQuestion({
+      question: 'best CRM for dental clinics',
+      audienceHint: 'dental clinic owners',
+      geoHint: 'US',
+      languageHint: 'English'
+    });
+
+    expect(opportunity.title.toLowerCase()).toContain('crm');
+    expect(opportunity.input.query.toLowerCase()).toContain('crm');
+    expect(opportunity.title).not.toContain('AI Coding Teams');
+    expect(opportunity.input.query).not.toContain('Direct API');
+    expect(opportunity.planning?.intent.caseKey).toBe('general-opportunity');
+  });
+
+  it('uses neutral audience defaults for non-ai questions without hints', () => {
+    const opportunity = planOpportunityFromQuestion({
+      question: 'best CRM for dental clinics'
+    });
+
+    expect(opportunity.audience).toBe('general audience');
+    expect(opportunity.planning?.intent.audienceCandidates[0]).toBe(
+      'general audience'
+    );
+  });
+
+  it('does not classify generic api questions as ai procurement', () => {
+    const opportunity = planOpportunityFromQuestion({
+      question: 'best api gateway for fintech',
+      geoHint: 'US',
+      languageHint: 'English'
+    });
+
+    expect(opportunity.title).toBe('Best api gateway for fintech');
+    expect(opportunity.input.query).toBe('best api gateway for fintech');
+    expect(opportunity.planning?.intent.caseKey).toBe('general-opportunity');
+    expect(
+      opportunity.planning?.trace.steps[0]?.summary.toLowerCase()
+    ).not.toContain('ai procurement');
+    expect(
+      opportunity.planning?.trace.openQuestions.join(' ').toLowerCase()
+    ).not.toContain('pricing');
+  });
+
+  it('records planning trace steps and source coverage without turning them into final evidence', () => {
+    const opportunity = planOpportunityFromQuestion({
+      question:
+        'Can OpenRouter beat direct APIs for a small AI coding team in the US?'
+    });
+
+    expect(opportunity.planning?.trace.steps.map((item) => item.step)).toEqual(
+      expect.arrayContaining([
+        'structure_intent',
+        'run_demand_analysis',
+        'run_competition_analysis',
+        'run_monetization_analysis',
+        'judge_opportunity'
+      ])
+    );
+    expect(opportunity.planning?.trace.sourceCoverage.length).toBeGreaterThan(0);
+    expect(opportunity.planning?.trace.searchRunIds).toEqual([]);
+    expect(opportunity).not.toHaveProperty('evidenceSet');
   });
 });

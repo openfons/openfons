@@ -200,6 +200,122 @@ const createRealBridgeBundle = (
 };
 
 describe('control-api', () => {
+  it('plans, confirms, and compiles an opportunity from a raw question', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
+    tempDirs.push(repoRoot);
+    const app = createApp({
+      artifactDelivery: { repoRoot },
+      buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+        createRealBridgeBundle(opportunity, workflow)
+    });
+
+    const planResponse = await app.request('/api/v1/opportunities/plan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        question:
+          'For AI coding agents, should my team buy direct APIs or use OpenRouter?'
+      })
+    });
+
+    expect(planResponse.status).toBe(201);
+    const planned = await planResponse.json();
+    expect(planned.opportunity.planning.approval.status).toBe(
+      'pending_user_confirmation'
+    );
+
+    const blockedCompile = await app.request(
+      `/api/v1/opportunities/${planned.opportunity.id}/compile`,
+      { method: 'POST' }
+    );
+    expect(blockedCompile.status).toBe(409);
+    await expect(blockedCompile.json()).resolves.toMatchObject({
+      code: 'needs_user_confirmation'
+    });
+
+    const confirmResponse = await app.request(
+      `/api/v1/opportunities/${planned.opportunity.id}/confirm`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          selectedOptionId: planned.opportunity.planning.recommendedOptionId,
+          confirmationNotes: 'Proceed with the recommended comparison page.'
+        })
+      }
+    );
+
+    expect(confirmResponse.status).toBe(200);
+    const confirmed = await confirmResponse.json();
+    expect(confirmed.opportunity.planning.approval.status).toBe('confirmed');
+
+    const compileResponse = await app.request(
+      `/api/v1/opportunities/${planned.opportunity.id}/compile`,
+      { method: 'POST' }
+    );
+    expect(compileResponse.status).toBe(200);
+  });
+
+  it('rejects confirming an already confirmed opportunity', async () => {
+    const app = createApp();
+
+    const planResponse = await app.request('/api/v1/opportunities/plan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        question:
+          'For AI coding agents, should my team buy direct APIs or use OpenRouter?'
+      })
+    });
+
+    expect(planResponse.status).toBe(201);
+    const planned = await planResponse.json();
+
+    const firstConfirm = await app.request(
+      `/api/v1/opportunities/${planned.opportunity.id}/confirm`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          selectedOptionId: planned.opportunity.planning.recommendedOptionId
+        })
+      }
+    );
+
+    expect(firstConfirm.status).toBe(200);
+
+    const secondConfirm = await app.request(
+      `/api/v1/opportunities/${planned.opportunity.id}/confirm`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          selectedOptionId: planned.opportunity.planning.recommendedOptionId
+        })
+      }
+    );
+
+    expect(secondConfirm.status).toBe(409);
+    await expect(secondConfirm.text()).resolves.toBe(
+      'Opportunity is already confirmed'
+    );
+  });
+
+  it('rejects punctuation-only questions at the planning api boundary', async () => {
+    const app = createApp();
+
+    const response = await app.request('/api/v1/opportunities/plan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        question: '!!!'
+      })
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toContain('question');
+  });
+
   it('compiles an opportunity into a report view backed by evidence', async () => {
     const repoRoot = await mkdtemp(join(tmpdir(), 'openfons-control-api-'));
     tempDirs.push(repoRoot);

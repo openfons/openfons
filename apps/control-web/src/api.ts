@@ -2,11 +2,18 @@ import {
   ApiErrorSchema,
   type CompilationPolicyCode,
   type CompilationResult,
+  type ConfirmOpportunityRequest,
   type OpportunityInput,
+  type OpportunityQuestion,
   type OpportunitySpec
 } from '@openfons/contracts';
 
 export type ControlApi = {
+  planOpportunity: (question: OpportunityQuestion) => Promise<OpportunitySpec>;
+  confirmOpportunity: (
+    opportunityId: string,
+    request: ConfirmOpportunityRequest
+  ) => Promise<OpportunitySpec>;
   createOpportunity: (input: OpportunityInput) => Promise<OpportunitySpec>;
   compileOpportunity: (opportunityId: string) => Promise<CompilationResult>;
 };
@@ -44,35 +51,59 @@ const readApiError = async (
   return new ControlApiError(message || fallback, response.status);
 };
 
-export const createControlApi = (baseUrl: string): ControlApi => ({
-  async createOpportunity(input) {
-    const response = await fetch(`${baseUrl}/api/v1/opportunities`, {
+export const createControlApi = (baseUrl: string): ControlApi => {
+  const postJson = async (url: string, body: unknown, fallback: string) => {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(input)
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {
-      throw await readApiError(response, 'Failed to create opportunity');
+      throw await readApiError(response, fallback);
     }
 
     const parsed = (await response.json()) as { opportunity: OpportunitySpec };
     return parsed.opportunity;
-  },
-  async compileOpportunity(opportunityId) {
-    const response = await fetch(
-      `${baseUrl}/api/v1/opportunities/${opportunityId}/compile`,
-      {
-        method: 'POST'
+  };
+
+  return {
+    planOpportunity(question) {
+      return postJson(
+        `${baseUrl}/api/v1/opportunities/plan`,
+        question,
+        'Failed to plan opportunity'
+      );
+    },
+    confirmOpportunity(opportunityId, request) {
+      return postJson(
+        `${baseUrl}/api/v1/opportunities/${opportunityId}/confirm`,
+        request,
+        'Failed to confirm opportunity'
+      );
+    },
+    createOpportunity(input) {
+      return postJson(
+        `${baseUrl}/api/v1/opportunities`,
+        input,
+        'Failed to create opportunity'
+      );
+    },
+    async compileOpportunity(opportunityId) {
+      const response = await fetch(
+        `${baseUrl}/api/v1/opportunities/${opportunityId}/compile`,
+        {
+          method: 'POST'
+        }
+      );
+
+      if (!response.ok) {
+        throw await readApiError(response, 'Failed to compile opportunity');
       }
-    );
 
-    if (!response.ok) {
-      throw await readApiError(response, 'Failed to compile opportunity');
+      return (await response.json()) as CompilationResult;
     }
-
-    return (await response.json()) as CompilationResult;
-  }
-});
+  };
+};

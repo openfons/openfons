@@ -1,5 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import type { CompilationResult, OpportunityInput } from '@openfons/contracts';
+import type {
+  CompilationResult,
+  OpportunityQuestion,
+  OpportunitySpec
+} from '@openfons/contracts';
 import {
   ControlApiError,
   createControlApi,
@@ -11,27 +15,25 @@ type Props = {
   reportBaseUrl?: string;
 };
 
-const initialForm: OpportunityInput = {
-  title: '',
-  query: '',
-  market: '',
-  audience: '',
-  problem: '',
-  outcome: '',
-  geo: '',
-  language: ''
+const initialQuestionForm: OpportunityQuestion = {
+  question: '',
+  marketHint: '',
+  audienceHint: '',
+  geoHint: '',
+  languageHint: ''
 };
 
 export const OpportunityPage = ({
   api = createControlApi(import.meta.env.VITE_CONTROL_API_BASE_URL ?? 'http://localhost:3001'),
   reportBaseUrl = import.meta.env.VITE_REPORT_WEB_BASE_URL ?? 'http://localhost:3002'
 }: Props) => {
-  const [form, setForm] = useState<OpportunityInput>(initialForm);
+  const [form, setForm] = useState<OpportunityQuestion>(initialQuestionForm);
+  const [opportunity, setOpportunity] = useState<OpportunitySpec | null>(null);
   const [result, setResult] = useState<CompilationResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const updateField = (key: keyof OpportunityInput, value: string) => {
+  const updateField = (key: keyof OpportunityQuestion, value: string) => {
     setForm((current) => ({
       ...current,
       [key]: value
@@ -43,10 +45,38 @@ export const OpportunityPage = ({
     setSubmitting(true);
     setError(null);
     setResult(null);
+    setOpportunity(null);
 
     try {
-      const opportunity = await api.createOpportunity(form);
-      const compiled = await api.compileOpportunity(opportunity.id);
+      const planned = await api.planOpportunity(form);
+      setOpportunity(planned);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught : new Error('Unknown error')
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const confirmAndCompile = async () => {
+    if (!opportunity?.planning) {
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const confirmed =
+        opportunity.planning.approval.status === 'pending_user_confirmation'
+          ? await api.confirmOpportunity(opportunity.id, {
+              selectedOptionId: opportunity.planning.recommendedOptionId
+            })
+          : opportunity;
+      setOpportunity(confirmed);
+
+      const compiled = await api.compileOpportunity(confirmed.id);
       setResult(compiled);
     } catch (caught) {
       setError(
@@ -66,9 +96,9 @@ export const OpportunityPage = ({
     <main className="page-shell">
       <section className="panel">
         <p className="eyebrow">OpenFons Control Plane</p>
-        <h1>Compile the first report shell</h1>
+        <h1>Plan the first report shell</h1>
         <p className="lede">
-          Submit one bounded AI procurement question and compile a source-backed report.
+          Submit one bounded AI procurement question, review the recommended page angle, then compile a source-backed report.
         </p>
         <ul className="summary-list">
           <li>Vendor choice</li>
@@ -77,44 +107,73 @@ export const OpportunityPage = ({
         </ul>
         <form className="stack" onSubmit={submit}>
           <label>
-            Title
-            <input value={form.title} onChange={(event) => updateField('title', event.target.value)} />
-          </label>
-          <label>
-            Query
-            <input value={form.query} onChange={(event) => updateField('query', event.target.value)} />
-          </label>
-          <label>
-            Market
-            <input value={form.market} onChange={(event) => updateField('market', event.target.value)} />
+            Question
+            <textarea
+              value={form.question}
+              onChange={(event) => updateField('question', event.target.value)}
+            />
           </label>
           <label>
             Audience
-            <input value={form.audience} onChange={(event) => updateField('audience', event.target.value)} />
+            <input
+              value={form.audienceHint ?? ''}
+              onChange={(event) => updateField('audienceHint', event.target.value)}
+            />
           </label>
           <label>
             Geo
-            <input value={form.geo} onChange={(event) => updateField('geo', event.target.value)} />
+            <input
+              value={form.geoHint ?? ''}
+              onChange={(event) => updateField('geoHint', event.target.value)}
+            />
           </label>
           <label>
             Language
-            <input value={form.language} onChange={(event) => updateField('language', event.target.value)} />
+            <input
+              value={form.languageHint ?? ''}
+              onChange={(event) => updateField('languageHint', event.target.value)}
+            />
           </label>
           <label>
-            Problem
-            <textarea value={form.problem} onChange={(event) => updateField('problem', event.target.value)} />
-          </label>
-          <label>
-            Outcome
-            <textarea value={form.outcome} onChange={(event) => updateField('outcome', event.target.value)} />
+            Market
+            <input
+              value={form.marketHint ?? ''}
+              onChange={(event) => updateField('marketHint', event.target.value)}
+            />
           </label>
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Compiling...' : 'Compile report shell'}
+            {submitting ? 'Planning...' : 'Plan opportunity'}
           </button>
         </form>
         {error ? <p className="error">{error.message}</p> : null}
         {scopeGuidance ? <p className="error">{scopeGuidance}</p> : null}
       </section>
+      {opportunity?.planning ? (
+        <section className="panel result-card">
+          <h2>{opportunity.title}</h2>
+          <p>{opportunity.angle}</p>
+          <ul className="summary-list">
+            <li>Search intent: {opportunity.searchIntent}</li>
+            <li>
+              Recommendation:{' '}
+              {opportunity.planning.options.find(
+                (item) => item.id === opportunity.planning?.recommendedOptionId
+              )?.primaryKeyword ?? 'Pending'}
+            </li>
+            <li>Approval: {opportunity.planning.approval.status}</li>
+          </ul>
+          {!result ? (
+            <button type="button" disabled={submitting} onClick={confirmAndCompile}>
+              {submitting
+                ? 'Compiling...'
+                : opportunity.planning.approval.status ===
+                    'pending_user_confirmation'
+                  ? 'Confirm and compile'
+                  : 'Compile confirmed opportunity'}
+            </button>
+          ) : null}
+        </section>
+      ) : null}
 
       {result ? (
         <section className="panel result-card">
