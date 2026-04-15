@@ -5,6 +5,7 @@ import {
 } from '@openfons/config-center';
 import { resolveSiteProfile } from '../authenticated-local-browser/site-profiles.js';
 import { createMediaCrawlerBridgeAdapter } from './media-crawler-bridge.js';
+import { createHackerNewsApiAdapter } from './hacker-news-api.js';
 import { createRedditPrawAdapter } from './reddit-praw.js';
 import { createTikTokApiAdapter } from './tiktok-api.js';
 import { createTwitterTwscrapeAdapter } from './twitter-twscrape.js';
@@ -13,7 +14,9 @@ import { createYoutubeYtDlpAdapter } from './youtube-yt-dlp.js';
 
 const URL_ROUTE_ALIASES: Record<string, string[]> = {
   'youtu.be': ['youtube'],
-  youtu: ['youtube']
+  youtu: ['youtube'],
+  'news.ycombinator.com': ['hacker-news'],
+  'hacker-news.firebaseio.com': ['hacker-news']
 };
 
 const pushUnique = (
@@ -99,6 +102,8 @@ export const buildConfiguredCrawlerAdapter = (
       return createYoutubeYtDlpAdapter(route);
     case 'tiktok-api':
       return createTikTokApiAdapter(route);
+    case 'hacker-news-api':
+      return createHackerNewsApiAdapter(route);
     case 'twscrape':
       return createTwitterTwscrapeAdapter(route);
     case 'praw':

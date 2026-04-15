@@ -4,10 +4,11 @@ import type { CapturePlan } from '../capture-runner.js'
 import { createId } from '@openfons/shared'
 import { createCrawlerExecutionDispatcher } from './dispatcher.js'
 import { resolveExecutableCrawlerRouteForUrl } from './runtime.js'
+import { createHackerNewsApiRunner } from './hacker-news-api-runner.js'
 import { createTikTokApiRunner } from './tiktok-api-runner.js'
 import { createYtDlpRunner } from './yt-dlp-runner.js'
 
-export type SmokeRoute = 'youtube' | 'tiktok'
+export type SmokeRoute = 'youtube' | 'tiktok' | 'hacker-news'
 type ResolvedSmokeRuntime = NonNullable<
   ReturnType<typeof resolveExecutableCrawlerRouteForUrl>
 >
@@ -36,7 +37,8 @@ type SmokeTargetMetadata = Omit<SmokeTarget, 'url'>
 
 const SMOKE_URL_DEFAULTS: Record<SmokeRoute, string> = {
   youtube: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
-  tiktok: 'https://www.tiktok.com/@scout2015'
+  tiktok: 'https://www.tiktok.com/@scout2015',
+  'hacker-news': 'https://news.ycombinator.com/item?id=8863'
 }
 
 const SMOKE_TARGET_METADATA: Record<SmokeRoute, SmokeTargetMetadata> = {
@@ -59,6 +61,16 @@ const SMOKE_TARGET_METADATA: Record<SmokeRoute, SmokeTargetMetadata> = {
     captureType: 'doc-page',
     language: 'en',
     region: 'global'
+  },
+  'hacker-news': {
+    title: 'Hacker News smoke capture',
+    sourceKind: 'community',
+    useAs: 'corroboration',
+    reportability: 'reportable',
+    riskLevel: 'low',
+    captureType: 'community-thread',
+    language: 'en',
+    region: 'global'
   }
 }
 
@@ -67,7 +79,14 @@ const getSmokeUrl = (route: SmokeRoute) => {
     return process.env.OPENFONS_SMOKE_YOUTUBE_URL ?? SMOKE_URL_DEFAULTS.youtube
   }
 
-  return process.env.OPENFONS_SMOKE_TIKTOK_URL ?? SMOKE_URL_DEFAULTS.tiktok
+  if (route === 'tiktok') {
+    return process.env.OPENFONS_SMOKE_TIKTOK_URL ?? SMOKE_URL_DEFAULTS.tiktok
+  }
+
+  return (
+    process.env.OPENFONS_SMOKE_HACKER_NEWS_URL ??
+    SMOKE_URL_DEFAULTS['hacker-news']
+  )
 }
 
 const buildSmokeTarget = (route: SmokeRoute): SmokeTarget => ({
@@ -100,7 +119,8 @@ export const runCrawlerExecutionSmoke = async ({
   createDispatcher = () =>
     createCrawlerExecutionDispatcher({
       ytDlpRunner: createYtDlpRunner(),
-      tiktokApiRunner: createTikTokApiRunner({ repoRoot })
+      tiktokApiRunner: createTikTokApiRunner({ repoRoot }),
+      hackerNewsApiRunner: createHackerNewsApiRunner()
     })
 }: {
   route: SmokeRoute
@@ -115,10 +135,6 @@ export const runCrawlerExecutionSmoke = async ({
   let runtime: ResolvedSmokeRuntime | undefined
 
   try {
-    if (!secretRoot) {
-      throw new Error('OPENFONS_SECRET_ROOT is required for crawler smoke validation')
-    }
-
     runtime = resolveRuntime({
       projectId: 'openfons',
       repoRoot,

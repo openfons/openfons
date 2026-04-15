@@ -29,6 +29,7 @@ import {
   buildOpportunityIntakeProfile,
   buildPlanningSignalBrief
 } from './planning/signal-brief.js';
+import { buildPlanningDiscoveryAudit } from './planning/discovery-audit.js';
 
 export class InvalidOpportunityInputError extends Error {}
 export class UnsupportedCompilationCaseError extends Error {}
@@ -234,6 +235,10 @@ export const buildCompilation = async (
     workflow,
     deps.buildAiProcurementCaseBundle
   );
+  const planningDiscovery = buildPlanningDiscoveryAudit({
+    opportunity,
+    topicRunId: caseBundle.topicRun.id
+  });
   const profile = resolveAiProcurementProfileForOpportunity(opportunity);
   const evidencePolicy = validateAiProcurementEvidence({
     sourceCaptures: caseBundle.sourceCaptures,
@@ -311,8 +316,14 @@ export const buildCompilation = async (
     tasks,
     workflow,
     topicRun: caseBundle.topicRun,
-    sourceCaptures: caseBundle.sourceCaptures,
-    collectionLogs: caseBundle.collectionLogs,
+    sourceCaptures: [
+      ...caseBundle.sourceCaptures,
+      ...planningDiscovery.sourceCaptures
+    ],
+    collectionLogs: [
+      ...caseBundle.collectionLogs,
+      ...planningDiscovery.collectionLogs
+    ],
     evidenceSet: caseBundle.evidenceSet,
     report,
     artifacts

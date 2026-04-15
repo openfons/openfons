@@ -103,6 +103,7 @@ Invoke-RestMethod `
 
 ```powershell
 pnpm exec vitest run `
+  tests/integration/control-api-config-center-acceptance.test.ts `
   tests/contract/config-center-ops-schema.test.ts `
   tests/integration/control-api-config-center-ops.test.ts `
   tests/integration/config-center-doctor.test.ts `
@@ -111,6 +112,17 @@ pnpm exec vitest run `
   tests/integration/control-api-config-center.test.ts `
   tests/integration/control-api-config-center-write.test.ts
 ```
+
+其中 `tests/integration/control-api-config-center-acceptance.test.ts` 应覆盖一条完整 operator 闭环：
+
+1. 读取当前 binding 与 revision
+2. 执行 `dryRun`
+3. 验证 `dryRun` 不写入 backup history
+4. 验证 no-op `apply` 不写入 backup history
+5. 执行真实 `apply`
+6. 查询 `doctor` 与 `backups`
+7. 用 `backupFile` 回滚
+8. 重新执行 `validate` 与 `doctor`
 
 ```powershell
 pnpm typecheck

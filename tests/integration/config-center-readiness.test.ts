@@ -44,6 +44,11 @@ describe('@openfons/config-center project readiness', () => {
       routeKey: 'tiktok',
       status: 'blocked'
     });
+    expect(
+      report.sources.find((source) => source.sourceId === 'hacker-news')
+    ).toMatchObject({
+      status: 'ready'
+    });
   });
 
   it('marks a source degraded when only fallback search routes remain ready', () => {
@@ -81,5 +86,10 @@ describe('@openfons/config-center project readiness', () => {
         })
       ])
     );
+    expect(
+      report.sources.find((source) => source.sourceId === 'hacker-news')
+    ).toMatchObject({
+      status: 'ready'
+    });
   });
 });

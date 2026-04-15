@@ -19,7 +19,14 @@ export const BUILTIN_PLUGIN_TYPES: PluginType[] = [
     id: 'crawler-adapter',
     displayName: 'Crawler Adapter',
     description: 'External collection adapter such as yt-dlp or twscrape.',
-    allowDrivers: ['yt-dlp', 'twscrape', 'tiktok-api', 'praw', 'media-crawler'],
+    allowDrivers: [
+      'yt-dlp',
+      'twscrape',
+      'tiktok-api',
+      'praw',
+      'media-crawler',
+      'hacker-news-api'
+    ],
     allowDependencies: [
       'browser-runtime',
       'account-source',
@@ -117,6 +124,15 @@ export const BUILTIN_PLUGIN_SPECS: PluginSpec[] = [
     optionalConfigFields: [],
     secretFields: [],
     allowedDependencyTypes: ['account-source', 'cookie-source', 'proxy-source'],
+    healthCheckKinds: ['none']
+  },
+  {
+    type: 'crawler-adapter',
+    driver: 'hacker-news-api',
+    requiredConfigFields: ['baseUrl'],
+    optionalConfigFields: [],
+    secretFields: [],
+    allowedDependencyTypes: [],
     healthCheckKinds: ['none']
   },
   {

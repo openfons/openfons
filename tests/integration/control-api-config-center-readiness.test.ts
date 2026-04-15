@@ -46,6 +46,13 @@ describe('control-api config-center readiness route', () => {
     ).toMatchObject({
       status: 'blocked'
     });
+    expect(
+      body.sources.find(
+        (source: { sourceId: string }) => source.sourceId === 'hacker-news'
+      )
+    ).toMatchObject({
+      status: 'ready'
+    });
   });
 
   it('returns structured not-found for missing project readiness requests', async () => {
@@ -62,6 +69,39 @@ describe('control-api config-center readiness route', () => {
       resource: 'project-binding',
       projectId: 'missing',
       retryable: false
+    });
+  });
+
+  it('keeps the Hacker News route ready even when discovery providers are degraded', async () => {
+    const repoRoot = mkdtempSync(path.join(os.tmpdir(), 'openfons-readiness-http-hn-'));
+    const secretRoot = mkdtempSync(
+      path.join(os.tmpdir(), 'openfons-readiness-http-hn-secrets-')
+    );
+
+    cpSync(path.join(process.cwd(), 'config'), path.join(repoRoot, 'config'), {
+      recursive: true
+    });
+    mkdirSync(path.join(secretRoot, 'project', 'openfons'), { recursive: true });
+
+    const app = createApp({
+      configCenter: { repoRoot, secretRoot }
+    });
+
+    const response = await app.request('/api/v1/config/projects/openfons/readiness');
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(
+      body.sources.find((source: { sourceId: string }) => source.sourceId === 'search')
+    ).toMatchObject({
+      status: 'degraded'
+    });
+    expect(
+      body.sources.find(
+        (source: { sourceId: string }) => source.sourceId === 'hacker-news'
+      )
+    ).toMatchObject({
+      status: 'ready'
     });
   });
 });

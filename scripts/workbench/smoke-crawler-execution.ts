@@ -9,8 +9,13 @@ const parseArgs = (args: string[] = process.argv.slice(2)) => {
   const route = args[routeIndex + 1] as SmokeRoute | undefined
   let outputPath: string | undefined
 
-  if (!route || (route !== 'youtube' && route !== 'tiktok')) {
-    throw new Error('usage: --route youtube|tiktok [--out relative/path.json]')
+  if (
+    !route ||
+    (route !== 'youtube' && route !== 'tiktok' && route !== 'hacker-news')
+  ) {
+    throw new Error(
+      'usage: --route youtube|tiktok|hacker-news [--out relative/path.json]'
+    )
   }
 
   if (outIndex >= 0) {

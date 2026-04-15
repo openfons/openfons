@@ -1,6 +1,7 @@
 export type ConfiguredCrawlerAdapterDriver =
   | 'yt-dlp'
   | 'tiktok-api'
+  | 'hacker-news-api'
   | 'twscrape'
   | 'praw'
   | 'media-crawler';

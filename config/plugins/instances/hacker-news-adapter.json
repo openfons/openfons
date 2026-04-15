@@ -1,0 +1,15 @@
+{
+  "id": "hacker-news-adapter",
+  "type": "crawler-adapter",
+  "driver": "hacker-news-api",
+  "enabled": true,
+  "scope": "project",
+  "config": {
+    "baseUrl": "https://hacker-news.firebaseio.com/v0"
+  },
+  "secrets": {},
+  "dependencies": [],
+  "policy": {
+    "mode": "public-first"
+  }
+}

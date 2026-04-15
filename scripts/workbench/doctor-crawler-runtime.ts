@@ -6,7 +6,7 @@ import {
   type CrawlerRoutePreflightOptions
 } from '../../services/control-api/src/collection/crawler-execution/preflight.js';
 
-type DoctorRoute = 'youtube' | 'tiktok';
+type DoctorRoute = 'youtube' | 'tiktok' | 'hacker-news';
 
 const parseArgs = (args: string[]) => {
   const route = args[args.indexOf('--route') + 1] as DoctorRoute | undefined;
@@ -18,9 +18,9 @@ const parseArgs = (args: string[]) => {
     : process.env.OPENFONS_SECRET_ROOT;
   const bootstrapMissing = args.includes('--bootstrap-missing');
 
-  if (route !== 'youtube' && route !== 'tiktok') {
+  if (route !== 'youtube' && route !== 'tiktok' && route !== 'hacker-news') {
     throw new Error(
-      'usage: --route youtube|tiktok [--project openfons] [--secret-root path] [--bootstrap-missing]'
+      'usage: --route youtube|tiktok|hacker-news [--project openfons] [--secret-root path] [--bootstrap-missing]'
     );
   }
 

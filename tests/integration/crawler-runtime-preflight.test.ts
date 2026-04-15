@@ -161,4 +161,29 @@ describe('crawler runtime preflight', () => {
       'Run pnpm smoke:crawler-execution -- --route youtube --out docs/workbench/generated/crawler-execution-smoke-youtube.json'
     );
   });
+
+  it('marks the Hacker News official API route as ready without secrets or host tooling', () => {
+    const secretRoot = createSecretRoot();
+
+    const report = createCrawlerRoutePreflightReport({
+      projectId: 'openfons',
+      routeKey: 'hacker-news',
+      repoRoot: process.cwd(),
+      secretRoot,
+      env: {},
+      commandExists: () => false
+    });
+
+    expect(report.status).toBe('ready');
+    expect(report.route).toMatchObject({
+      routeKey: 'hacker-news',
+      driver: 'hacker-news-api',
+      mode: 'public-first'
+    });
+    expect(report.hostChecks).toEqual([]);
+    expect(report.secretChecks).toEqual([]);
+    expect(report.nextSteps).toContain(
+      'Run pnpm smoke:crawler-execution -- --route hacker-news --out docs/workbench/generated/crawler-execution-smoke-hacker-news.json'
+    );
+  });
 });

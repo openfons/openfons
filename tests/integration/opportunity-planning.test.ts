@@ -8,6 +8,7 @@ import {
   buildPlanningSignalBrief
 } from '../../services/control-api/src/planning/signal-brief.js';
 import { planOpportunityFromQuestion } from '../../services/control-api/src/planning/pipeline.js';
+import { buildAiProcurementCase } from '../../services/control-api/src/cases/ai-procurement.js';
 
 describe('opportunity planning signal brief', () => {
   it('builds a comparison-oriented signal brief for ai procurement inputs', () => {
@@ -192,5 +193,72 @@ describe('opportunity planning signal brief', () => {
     expect(opportunity.planning?.trace.sourceCoverage.length).toBeGreaterThan(0);
     expect(opportunity.planning?.trace.searchRunIds).toEqual([]);
     expect(opportunity).not.toHaveProperty('evidenceSet');
+  });
+
+  it('bridges planning source coverage into auditable discovery captures during compile without promoting them to final evidence', async () => {
+    const planned = planOpportunityFromQuestion({
+      question:
+        'Can OpenRouter beat direct APIs for a small AI coding team in the US?'
+    });
+
+    const confirmed = {
+      ...planned,
+      planning: {
+        ...planned.planning!,
+        approval: {
+          status: 'confirmed' as const,
+          selectedOptionId: planned.planning!.recommendedOptionId,
+          confirmedAt: '2026-04-14T00:00:00.000Z'
+        },
+        trace: {
+          ...planned.planning!.trace,
+          steps: [
+            ...planned.planning!.trace.steps,
+            {
+              step: 'confirm_user_scope' as const,
+              status: 'completed' as const,
+              summary: 'Confirmed the recommended opportunity scope.'
+            }
+          ]
+        }
+      }
+    };
+
+    const compiled = await buildCompilation(confirmed, {
+      buildAiProcurementCaseBundle: async (opportunity, workflow) =>
+        buildAiProcurementCase(opportunity, workflow)
+    });
+    const discoveryCaptures = compiled.sourceCaptures.filter(
+      (capture) => capture.useAs === 'discovery-only'
+    );
+    const discoveryCaptureIds = new Set(
+      discoveryCaptures.map((capture) => capture.id)
+    );
+
+    expect(discoveryCaptures.length).toBeGreaterThan(0);
+    expect(
+      discoveryCaptures.some((capture) =>
+        capture.url.includes('/discovery/hacker-news')
+      )
+    ).toBe(true);
+    expect(
+      compiled.collectionLogs.some(
+        (log) =>
+          log.step === 'discover' &&
+          log.message.includes('Planning discovery coverage')
+      )
+    ).toBe(true);
+    expect(
+      compiled.evidenceSet.items.every(
+        (item) =>
+          !discoveryCaptureIds.has(item.captureId) &&
+          item.supportingCaptureIds.every((captureId) => !discoveryCaptureIds.has(captureId))
+      )
+    ).toBe(true);
+    expect(
+      compiled.report.sourceIndex.every(
+        (item) => !item.url.includes('planning.openfons.local/discovery/')
+      )
+    ).toBe(true);
   });
 });

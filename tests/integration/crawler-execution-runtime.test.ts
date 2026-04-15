@@ -38,6 +38,20 @@ const createConfigRepoRoot = ({
 };
 
 describe('crawler execution runtime', () => {
+  it('resolves backend-only route runtime for configured Hacker News urls', () => {
+    const runtime = resolveExecutableCrawlerRouteForUrl({
+      projectId: 'openfons',
+      repoRoot: process.cwd(),
+      url: 'https://news.ycombinator.com/item?id=8863'
+    });
+
+    expect(runtime?.routeKey).toBe('hacker-news');
+    expect(runtime?.collection.driver).toBe('hacker-news-api');
+    expect(runtime?.accounts).toEqual([]);
+    expect(runtime?.cookies).toEqual([]);
+    expect(runtime?.proxy).toBeUndefined();
+  });
+
   it('resolves backend-only route runtime for configured tiktok target url', () => {
     const secretRoot = mkdtempSync(path.join(os.tmpdir(), 'openfons-exec-runtime-'));
     const dir = path.join(secretRoot, 'project', 'openfons');
@@ -155,7 +169,9 @@ describe('crawler execution runtime', () => {
 });
 
 describe('crawler execution dispatcher', () => {
-  const createExecutionPlan = (driver: 'yt-dlp' | 'tiktok-api' | 'media-crawler') => ({
+  const createExecutionPlan = (
+    driver: 'yt-dlp' | 'tiktok-api' | 'media-crawler' | 'hacker-news-api'
+  ) => ({
     capturePlan: {
       topicRunId: 'topic_001',
       title: 'Test capture',
@@ -222,6 +238,28 @@ describe('crawler execution dispatcher', () => {
     expect(result).toBe(expected);
     expect(tiktokApiRunner).toHaveBeenCalledOnce();
     expect(ytDlpRunner).not.toHaveBeenCalled();
+  });
+
+  it('dispatches hacker-news-api plans to the official API runner', async () => {
+    const expected = {
+      sourceCapture: { id: 'cap_hn' },
+      collectionLogs: []
+    };
+    const ytDlpRunner = vi.fn();
+    const tiktokApiRunner = vi.fn();
+    const hackerNewsApiRunner = vi.fn(async () => expected);
+    const dispatcher = createCrawlerExecutionDispatcher({
+      ytDlpRunner,
+      tiktokApiRunner,
+      hackerNewsApiRunner
+    } as any);
+
+    const result = await dispatcher.run(createExecutionPlan('hacker-news-api'));
+
+    expect(result).toBe(expected);
+    expect(hackerNewsApiRunner).toHaveBeenCalledOnce();
+    expect(ytDlpRunner).not.toHaveBeenCalled();
+    expect(tiktokApiRunner).not.toHaveBeenCalled();
   });
 
   it('rejects unsupported crawler drivers explicitly', async () => {

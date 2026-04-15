@@ -73,9 +73,8 @@ const collectSearchPluginIds = (binding: ProjectBinding) =>
     ...Object.values(binding.routes).flatMap((route) => route.discovery ?? [])
   ]);
 
-const collectRoutePluginIds = (route: ProjectRouteBinding) =>
+const collectRouteExecutionPluginIds = (route: ProjectRouteBinding) =>
   unique([
-    ...(route.discovery ?? []),
     ...(route.browser ? [route.browser] : []),
     ...(route.collection ? [route.collection] : []),
     ...(route.accounts ?? []),
@@ -154,7 +153,10 @@ const buildCrawlerSourceReadiness = ({
   secretRoot: string;
   updatedAt: string;
 }): SourceReadiness => {
-  const seedPluginIds = collectRoutePluginIds(route);
+  // Discovery/search providers are reported under the top-level search source.
+  // Route readiness here should reflect only the execution closure needed to run
+  // the crawler route itself.
+  const seedPluginIds = collectRouteExecutionPluginIds(route);
   const pluginIds = expandPluginDependencyClosure({
     plugins: allPluginInstances,
     seedPluginIds

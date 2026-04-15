@@ -6,6 +6,7 @@
     "pinchtab-local",
     "local-browser-default",
     "youtube-adapter",
+    "hacker-news-adapter",
     "tiktok-adapter",
     "tiktok-account-main",
     "tiktok-cookie-main",
@@ -25,6 +26,11 @@
       "discovery": ["google-default", "ddg-default"],
       "collection": "youtube-adapter",
       "proxy": "global-proxy-pool",
+      "mode": "public-first"
+    },
+    "hacker-news": {
+      "discovery": ["google-default", "ddg-default"],
+      "collection": "hacker-news-adapter",
       "mode": "public-first"
     },
     "tiktok": {

@@ -9,7 +9,7 @@ import {
 } from '../../services/control-api/src/collection/crawler-adapters/registry.js';
 
 describe('crawler adapters from config center', () => {
-  it('builds route-aware adapters for youtube and tiktok', () => {
+  it('builds route-aware adapters for youtube, tiktok, and hacker-news', () => {
     const secretRoot = mkdtempSync(path.join(os.tmpdir(), 'openfons-crawlers-'));
     const dir = path.join(secretRoot, 'project', 'openfons');
     mkdirSync(dir, { recursive: true });
@@ -34,12 +34,15 @@ describe('crawler adapters from config center', () => {
 
     const youtube = registry.get('youtube');
     const tiktok = registry.get('tiktok');
+    const hackerNews = registry.get('hacker-news');
 
     expect(youtube?.driver).toBe('yt-dlp');
     expect(youtube?.requiresAuth).toBe(false);
     expect(tiktok?.driver).toBe('tiktok-api');
     expect(tiktok?.requiresAuth).toBe(true);
     expect(tiktok?.browserRuntime?.pluginId).toBe('pinchtab-local');
+    expect(hackerNews?.driver).toBe('hacker-news-api');
+    expect(hackerNews?.requiresAuth).toBe(false);
   });
 
   it('resolves a requested route without requiring unrelated crawler secrets', () => {
@@ -74,6 +77,13 @@ describe('crawler adapters from config center', () => {
         url: 'https://youtu.be/demo123'
       })
     ).toBe('youtube');
+
+    expect(
+      resolveCrawlerRouteKeyForUrl({
+        routeKeys: ['hacker-news'],
+        url: 'https://news.ycombinator.com/item?id=8863'
+      })
+    ).toBe('hacker-news');
   });
 
   it('maps non-openfons drivers from resolved route runtime instead of hardcoded route ids', () => {
@@ -134,6 +144,24 @@ describe('crawler adapters from config center', () => {
         proxy: undefined
       }).driver
     ).toBe('praw');
+
+    expect(
+      buildConfiguredCrawlerAdapter({
+        routeKey: 'hacker-news',
+        mode: 'public-first',
+        collection: {
+          pluginId: 'hacker-news-adapter',
+          driver: 'hacker-news-api',
+          type: 'crawler-adapter',
+          config: {},
+          secrets: {}
+        },
+        browser: undefined,
+        accounts: [],
+        cookies: [],
+        proxy: undefined
+      }).driver
+    ).toBe('hacker-news-api');
 
     expect(
       buildConfiguredCrawlerAdapter({

@@ -29,6 +29,7 @@ import {
 } from './search-client.js';
 import { resolveExecutableCrawlerRouteForUrl } from './crawler-execution/runtime.js';
 import { createCrawlerExecutionDispatcher } from './crawler-execution/dispatcher.js';
+import { createHackerNewsApiRunner } from './crawler-execution/hacker-news-api-runner.js';
 import { createYtDlpRunner } from './crawler-execution/yt-dlp-runner.js';
 import { createTikTokApiRunner } from './crawler-execution/tiktok-api-runner.js';
 
@@ -269,7 +270,8 @@ export const createAiProcurementRealCollectionBridge = ({
   const getCrawlerExecutionDispatcher = () => {
     crawlerExecutionDispatcher ??= createCrawlerExecutionDispatcher({
       ytDlpRunner: createYtDlpRunner(),
-      tiktokApiRunner: createTikTokApiRunner({ repoRoot })
+      tiktokApiRunner: createTikTokApiRunner({ repoRoot }),
+      hackerNewsApiRunner: createHackerNewsApiRunner()
     });
 
     return crawlerExecutionDispatcher;

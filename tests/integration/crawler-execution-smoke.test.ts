@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 
 const DEFAULT_YOUTUBE_SMOKE_URL = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ'
+const DEFAULT_HACKER_NEWS_SMOKE_URL = 'https://news.ycombinator.com/item?id=8863'
 
 const buildRuntime = (url = DEFAULT_YOUTUBE_SMOKE_URL) => ({
   projectId: 'openfons',
@@ -250,5 +251,58 @@ describe('crawler execution smoke harness', () => {
     expect(runCrawlerExecutionSmoke).toHaveBeenCalled()
     expect(exitHandler).toHaveBeenCalledWith(1)
     expect(result).toBe(mockResult)
+  })
+
+  it('supports the Hacker News smoke route and writes a success payload', async () => {
+    vi.doUnmock('../../services/control-api/src/collection/crawler-execution/smoke.js')
+    const runtime = {
+      ...buildRuntime(DEFAULT_HACKER_NEWS_SMOKE_URL),
+      routeKey: 'hacker-news',
+      collection: {
+        pluginId: 'hacker-news-adapter',
+        type: 'crawler-adapter',
+        driver: 'hacker-news-api',
+        config: {},
+        secrets: {}
+      },
+      proxy: undefined
+    }
+    const resolveRuntime = vi.fn(() => runtime)
+    const run = vi.fn(async () => ({
+      sourceCapture: createSourceCapture(DEFAULT_HACKER_NEWS_SMOKE_URL),
+      collectionLogs: createCollectionLogs()
+    }))
+    const outputPath = createOutputPath()
+    const runCrawlerExecutionSmoke = await loadSmokeHarness()
+
+    try {
+      const result = await runCrawlerExecutionSmoke({
+        route: 'hacker-news' as any,
+        repoRoot: process.cwd(),
+        outputPath,
+        resolveRuntime,
+        createDispatcher: () => ({ run })
+      } as any)
+
+      const diskPayload = JSON.parse(await fs.readFile(outputPath, 'utf8'))
+
+      expect(result).toEqual(diskPayload)
+      expect(result).toMatchObject({
+        status: 'success',
+        route: 'hacker-news',
+        runtime: {
+          routeKey: 'hacker-news',
+          driver: 'hacker-news-api'
+        }
+      })
+      expect(resolveRuntime).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: DEFAULT_HACKER_NEWS_SMOKE_URL
+        })
+      )
+      expect(run).toHaveBeenCalledOnce()
+    } finally {
+      await fs.rm(outputPath, { force: true })
+    }
   })
 })
